@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 class SlaughterhouseRecordViewSet(viewsets.ModelViewSet):
 
-    queryset = SlaughterhouseRecord.objects.all().order_by('-slaughter_date')
+    queryset = SlaughterhouseRecord.objects.all().order_by('-updated_at')
     serializer_class = SlaughterhouseRecordSerializer
 
 @csrf_exempt
@@ -72,7 +72,7 @@ def compare_weight_loss(request):
 
         return JsonResponse(comparison_results, safe=False)
     else:
-        return JsonResponse({'error': 'Only GET requests are supported for this endpoint'}, status=405)
+            return JsonResponse({'error': 'Only GET requests are supported for this endpoint'}, status=405)
 
 def supply_vs_demand_statistics(request):
     # Get total bred quantities per breed
@@ -104,4 +104,4 @@ def supply_vs_demand_statistics(request):
             'total_slaughtered': slaughtered_quantity,
         })
 
-    return JsonResponse({'supply_vs_demand_data': supply_vs_demand_data})
+    

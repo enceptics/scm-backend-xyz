@@ -194,7 +194,6 @@ class Quotation(models.Model):
     ]
 
     seller = models.ForeignKey(Seller, on_delete=models.CASCADE, null=True, blank=True)
-
     buyer = models.ForeignKey(Buyer, on_delete=models.CASCADE)
     product = models.CharField(max_length=100)  # Updated field name
     confirm = models.BooleanField(default=False)
