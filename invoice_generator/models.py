@@ -206,6 +206,40 @@ class Quotation(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def get_buyer_full_name(self):
+        if self.buyer:
+            return f'{self.buyer.buyer.first_name} {self.buyer.buyer.last_name}'
+        return "Unknown"
+    def get_seller_full_name(self):
+        if self.seller:
+            return f'{self.seller.seller.first_name} {self.seller.seller.last_name}'
+        return "Unknown"
+    def get_buyer_email(self):
+        if self.buyer:
+            return f'{self.buyer.buyer.email}'
+        return "Unknown"
+    def get_seller_email(self):
+        if self.seller:
+            return f'{self.seller.seller.email}'
+        return "Unknown"
+    def get_buyer_address(self):
+        if self.buyer:
+            return f'{self.buyer.buyer.address}'
+        return "Unknown"
+    def get_seller_address(self):
+        if self.seller:
+            return f'{self.seller.seller.address}'
+        return "Unknown"
+    def get_buyer_country(self):
+        if self.buyer:
+            return f'{self.buyer.buyer.country}'
+        return "Unknown"
+    def get_seller_county(self):
+        if self.seller:
+            return f'{self.seller.seller.county}'
+        return "Unknown"
+
+
     def __str__(self):
         return f"Quotation for {self.product} by {self.buyer}"
 
@@ -223,10 +257,18 @@ class LetterOfCredit(models.Model):
     issue_date = models.DateTimeField(auto_now_add=True)
     expiry_date = models.DateField(auto_now_add=True)
     status = models.CharField(max_length=255, choices=STATUS_CHOICES, default='sent_to_bank')
-    quotation = models.ForeignKey(Quotation, on_delete=models.CASCADE, related_name='letters_of_credit', null=True, blank=True)
-
     # File field for storing uploaded documents
     lc_document = models.FileField(upload_to='lc_documents/', null=True, blank=True)
+
+    def get_buyer_full_name(self):
+        if self.buyer:
+            return f'{self.buyer.buyer.first_name} {self.buyer.buyer.last_name} '
+        return "Unknown"
+
+    def get_seller_full_name(self):
+        if self.seller:
+            return f'{self.seller.seller.first_name} {self.seller.seller.last_name} '
+        return "Unknown"
 
     def __str__(self):
         return f'Letter of Credit #{self.id} from the bank, issued at {self.issue_date} - Status: {self.status} '

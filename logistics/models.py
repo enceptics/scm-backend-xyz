@@ -119,7 +119,7 @@ class LogisticsStatus(models.Model):
     logistics_company = models.CharField(max_length=255, null=True, blank=True)
     associated_control_center = models.ForeignKey(ControlCenter, on_delete=models.CASCADE, null=True, blank=True)
     invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE)
-    status = models.CharField(max_length=255, choices=STATUS_CHOICES, default="ordered")
+    status = models.CharField(max_length=255, choices=STATUS_CHOICES, default="Dispatched")
     package_info = models.ForeignKey(PackageInfo, on_delete=models.CASCADE, blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     is_status_updated = models.BooleanField(default=False)

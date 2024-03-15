@@ -141,14 +141,26 @@ class ProformaInvoiceFromTraderToSellerViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data)
 
+class BuyerAllViewSet(viewsets.ModelViewSet):
+    queryset = Buyer.objects.all()
+    serializer_class = BuyerSerializer
+
 class BuyerViewSet(viewsets.ModelViewSet):
     queryset = Buyer.objects.all().order_by('-created_at')
     serializer_class = BuyerSerializer
+    permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
         # Modify the request data to associate the buyer with the user
         request.data['user'] = request.user.id  # Assuming user is authenticated
         return super().create(request, *args, **kwargs)
+
+    def get_queryset(self):
+        # Retrieve the corresponding Seller instance based on the user
+        buyer = get_object_or_404(CustomUser, id=self.request.user.id)
+
+        # Filter sellers based on the retrieved Seller instance
+        return Buyer.objects.filter(buyer=buyer)
 
 class InvoiceViewSet(viewsets.ModelViewSet):
     queryset = Invoice.objects.all().order_by('-invoice_date')
@@ -218,10 +230,10 @@ class QuotationViewSet(viewsets.ModelViewSet):
             subject = 'Quotation Confirmation'
             
             # Buyer's name
-            buyer_name = instance.buyer.id if instance.buyer.buyer else 'Unknown Buyer'
+            buyer_name = f"{instance.buyer.buyer.first_name} {instance.buyer.buyer.last_name}" if instance.buyer.buyer else 'Unknown Buyer'
             buyer_email = instance.buyer.buyer.email
             # Seller's name
-            seller_name = instance.seller.seller.id if instance.seller else 'Unknown Seller'
+            seller_name = f"{instance.seller.seller.first_name} {instance.seller.seller.last_name}" if instance.seller else 'Unknown Seller'
             
             # Email context
             context = {'buyer_name': buyer_name, 'seller_name': seller_name}
@@ -248,10 +260,6 @@ class LetterOfCreditAllViewSet(viewsets.ModelViewSet):
 class DocumentToSellerViewSet(viewsets.ModelViewSet):
     queryset = DocumentToSeller.objects.all()
     serializer_class = DocumentToSellerSerializer
-
-   
-
-
 
 class LetterOfCreditViewSet(viewsets.ModelViewSet):
     queryset = LetterOfCredit.objects.all().order_by('-issue_date')

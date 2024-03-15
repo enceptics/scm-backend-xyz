@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Invoice, Buyer,LetterOfCredit, LetterOfCreditSellerToTrader, PurchaseOrder, ProformaInvoiceFromTraderToSeller, Quotation, DocumentToSeller
 from custom_registration.models import CustomUser  
+from custom_registration.serializers import SellerSerializer
 from logistics.serializers import LogisticsStatusSerializer, LogisticsStatus
 
 
@@ -83,20 +84,12 @@ class DocumentToSellerSerializer(serializers.ModelSerializer):
 
 
 class LetterOfCreditSerializer(serializers.ModelSerializer):
-    buyer = BuyerSerializer(allow_null=True,required=False)
-    invoice_number = serializers.SerializerMethodField()
+    buyer_full_name = serializers.CharField(source='get_buyer_full_name', read_only=True)
+    seller_full_name = serializers.CharField(source='get_seller_full_name', read_only=True)
 
     class Meta:
         model = LetterOfCredit
-        fields = ['id', 'status', 'buyer', 'lc_document', 'issue_date', 'invoice_number', 'status', 'quotation']
-
-    def get_buyer(self, obj):
-        return str(obj.buyer) if obj.buyer else None
-
-    def get_invoice_number(self, obj):
-        if hasattr(obj, 'invoice') and obj.invoice:
-            return obj.invoice.invoice_number
-        return None
+        fields = ['id', 'status', 'buyer', 'buyer_full_name', 'seller_full_name', 'seller', 'issue_date', 'lc_document']
 
 class LogisticsStatusSerializer(serializers.ModelSerializer):
     invoice = InvoiceSerializer()  
@@ -107,7 +100,15 @@ class LogisticsStatusSerializer(serializers.ModelSerializer):
 
 class QuotationSerializer(serializers.ModelSerializer):
     letter_of_credit = LetterOfCreditSerializer(allow_null=True, required=False)
+    buyer_full_name = serializers.CharField(source='get_buyer_full_name', allow_null=True, required=False)
+    seller_full_name = serializers.CharField(source='get_seller_full_name', allow_null=True, required=False)
+    buyer_email = serializers.CharField(source='get_buyer_email', allow_null=True, required=False)
+    seller_email = serializers.CharField(source='get_seller_email', allow_null=True, required=False)
+    buyer_address = serializers.CharField(source='get_buyer_address', allow_null=True, required=False)
+    buyer_country = serializers.CharField(source='get_buyer_country', allow_null=True, required=False)
+    seller_county = serializers.CharField(source='get_seller_county', allow_null=True, required=False)
+    seller_address = serializers.CharField(source='get_seller_address', allow_null=True, required=False)
 
     class Meta:
         model = Quotation
-        fields = ['id', 'seller', 'buyer', 'product', 'confirm', 'quantity', 'delivery_time', 'unit_price', 'market', 'message', 'status', 'created_at', 'letter_of_credit']
+        fields = ['id', 'seller','seller_county', 'buyer_country','seller_email','buyer_email','buyer_address','seller_address', 'buyer', 'product', 'confirm', 'quantity', 'delivery_time', 'unit_price', 'market', 'message', 'status', 'created_at', 'letter_of_credit', 'buyer_full_name', 'seller_full_name']

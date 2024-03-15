@@ -434,10 +434,21 @@ class CustomerServiceViewSet(viewsets.ModelViewSet):
     serializer_class = CustomerServiceSerializer
 
 # seller
-
+class SellerAllViewSet(viewsets.ModelViewSet):
+    queryset = Seller.objects.all()
+    serializer_class = SellerSerializer
+    
 class SellerViewSet(viewsets.ModelViewSet):
     queryset = Seller.objects.all()
     serializer_class = SellerSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Retrieve the corresponding Seller instance based on the user
+        seller = get_object_or_404(CustomUser, id=self.request.user.id)
+
+        # Filter sellers based on the retrieved Seller instance
+        return Seller.objects.filter(seller=seller)
 
     @action(detail=False, methods=['post'])
     def send_quotation_and_message_to_buyer(self, request):

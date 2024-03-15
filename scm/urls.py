@@ -36,8 +36,8 @@ from invoice_generator.views import (
     ProformaInvoiceFromTraderToSellerViewSet,
     QuotationViewSet,
     QuotationAllViewSet,
-    DocumentToSellerViewSet
-
+    DocumentToSellerViewSet,
+     BuyerAllViewSet
 )
 from slaughter_house.views import supply_vs_demand_statistics, compare_weight_loss
 from logistics.views import LogisticsStatusViewSet, OrderViewSet, ShipmentProgressViewSet, ArrivedOrderViewSet, LogisticsStatusAllViewSet, PackageInfoViewset, CollateralManagerViewSet, ControlCenterViewSet
@@ -82,7 +82,8 @@ from custom_registration.views import (
     PaymentViewSet, CustomerServiceViewSet,
     PasswordResetRequestView,
     PasswordResetConfirmView,
-    SellerViewSet
+    SellerViewSet,
+    SellerAllViewSet
 )
 
 from custom_registration import views
@@ -157,6 +158,7 @@ router.register(r'profiles', UserProfileViewSet, basename='profile')
 
 # sellers
 router.register(r'sellers', SellerViewSet, basename='sellers')
+router.register(r'all-sellers', SellerAllViewSet, basename='sellers')
 
 
 # Buyer
@@ -198,6 +200,7 @@ router.register(r'generate-invoice', InvoiceViewSet)
 router.register(r'invoices', InvoiceAllViewSet)
 
 router.register(r'buyers', BuyerViewSet)
+router.register(r'all-buyers', BuyerAllViewSet)
 
 # Control centers
 

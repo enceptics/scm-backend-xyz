@@ -103,5 +103,8 @@ def supply_vs_demand_statistics(request):
             'total_bred': total_bred,
             'total_slaughtered': slaughtered_quantity,
         })
+        
+    return JsonResponse({'supply_vs_demand_data': supply_vs_demand_data})
 
+    
     
