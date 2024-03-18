@@ -104,6 +104,33 @@ class BreaderTradeViewSet(viewsets.ModelViewSet):
 
 # ------------Breadder trade single user------
 
+class BreaderTradeSingleSellerViewSet(viewsets.ModelViewSet):
+    queryset = BreaderTrade.objects.all().order_by('-created_at')
+    serializer_class = BreaderTradeSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+
+        # Retrieve the corresponding Buyer instance based on the user
+        seller = get_object_or_404(BreaderTrade, seller=self.request.user)
+
+        # Filter invoices based on the retrieved Buyer instance
+        return BreaderTrade.objects.filter(seller=seller)
+
+        if user_supplies.exists():
+            # If the user has supplies, serialize and return them
+            serializer = self.get_serializer(user_supplies, many=True)
+            return Response(serializer.data)
+        else:
+            # If the user has not supplied any breeds, return a message
+            return Response({"message": "Supply list is empty."})
+    
+    def perform_create(self, serializer):
+        # Set the breeder field of BreaderTrade to the currently authenticated user
+        serializer.save(seller=self.request.user)
+
+# ------------Breadder trade single user------
+
 class BreaderTradeSingleUserViewSet(viewsets.ModelViewSet):
     queryset = BreaderTrade.objects.all().order_by('-created_at')
     serializer_class = BreaderTradeSerializer

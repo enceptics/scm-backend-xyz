@@ -259,7 +259,8 @@ class LetterOfCredit(models.Model):
     status = models.CharField(max_length=255, choices=STATUS_CHOICES, default='sent_to_bank')
     # File field for storing uploaded documents
     lc_document = models.FileField(upload_to='lc_documents/', null=True, blank=True)
-
+    quotatation = models.ForeignKey(Quotation, on_delete=models.CASCADE, null=True, blank=True)
+    
     def get_buyer_full_name(self):
         if self.buyer:
             return f'{self.buyer.buyer.first_name} {self.buyer.buyer.last_name} '

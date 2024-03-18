@@ -122,7 +122,7 @@ class CustomUser(AbstractUser):
     id_number = models.PositiveIntegerField(default=0, null=True, blank=True)
     email = models.EmailField(unique=True, null=True, blank=True)
     phone_number = PhoneNumberField(null=True, blank=True)
-    bank_account_number = models.CharField(max_length=30, default=1234567891011, null=True)
+    bank_account_number = models.CharField(max_length=30, null=True, blank=True)
     market = models.CharField(max_length=100, null=True, blank=True)
     community = models.CharField(max_length=100, null=True, blank=True)
     head_of_family = models.CharField(max_length=255,default='Example Name', null=True, blank=True)

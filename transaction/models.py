@@ -38,13 +38,33 @@ class BreaderTrade(models.Model):
     breeds_supplied = models.PositiveIntegerField(default=0)
     goat_weight = models.PositiveIntegerField(default=0)
     vaccinated = models.BooleanField(default=False, blank=True, null=True)
-    email = models.EmailField()
-    phone_number = PhoneNumberField(null=True)
-    id_number = models.PositiveIntegerField(null=True, blank=True)
-    bank_account_number = models.CharField(max_length=30, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     reference = models.CharField(max_length=20, unique=True, editable=False)
+
+    def get_breeder_email(self):
+        if self.breeder:
+            return f'{self.breeder.email}'
+        else:
+            return "No email for this user"
+
+    def get_breeder_phone_number(self):
+        if self.breeder:
+            return f'{self.breeder.phone_number}'
+        else:
+            return "No phone number for this user"
+
+    def get_breeder_id_number(self):
+        if self.breeder:
+            return f'{self.breeder.id_number}'
+        else:
+            return "No id number for this user"
+
+    def get_breeder_bank_account_number(self):
+        if self.breeder:
+            return f'{self.breeder.bank_account_number}'
+        else:
+            return "No bank acc. number for this user"
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)

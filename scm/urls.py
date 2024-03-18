@@ -17,7 +17,8 @@ from transaction.views import (
        AbattoirPaymentToBreaderViewSet,
        BreaderCountView, UserSuppliedBreedsViewSet,
         BreaderTradeSingleUserViewSet,
-        InventoryViewSet
+        InventoryViewSet,
+        BreaderTradeSingleSellerViewSet
 )
 from inventory_management.views import InventoryBreedViewSet, InventoryBreedSalesViewSet, BreedCutViewSet, BreederTotalSerializer, BreederTotalViewSet, BreedCutTotalViewSet
 from slaughter_house.views import SlaughterhouseRecordViewSet
@@ -37,7 +38,7 @@ from invoice_generator.views import (
     QuotationViewSet,
     QuotationAllViewSet,
     DocumentToSellerViewSet,
-     BuyerAllViewSet
+    BuyerAllViewSet
 )
 from slaughter_house.views import supply_vs_demand_statistics, compare_weight_loss
 from logistics.views import LogisticsStatusViewSet, OrderViewSet, ShipmentProgressViewSet, ArrivedOrderViewSet, LogisticsStatusAllViewSet, PackageInfoViewset, CollateralManagerViewSet, ControlCenterViewSet
@@ -125,6 +126,9 @@ router.register(r'inventory-breed-name', InventoryBreedViewSet)
 
 # Ready -breed and trade
 router.register(r'breader-trade', BreaderTradeViewSet)
+
+router.register(r'breader-trade-to-seller', BreaderTradeSingleSellerViewSet)
+
 router.register(r'breader-trade-id', BreaderTradeSingleUserViewSet)
 
 router.register(r'breeder_totals', BreederTotalViewSet, basename='cut_totals')
