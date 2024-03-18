@@ -34,7 +34,7 @@ class BreaderTradeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BreaderTrade
-        fields = ['id', 'email', 'phone_number', 'id_number', 'bank_account_number', 'breeder', 'seller', 'control_center', 'transaction_date', 'breed', 'breeds_supplied', 'goat_weight', 'vaccinated', 'created_at', 'price', 'reference', 'breeder_first_name', 'breeder_last_name', 'breeder_market', 'breeder_community', 'breeder_head_of_family']
+        fields = ['id', 'email', 'phone_number', 'id_number', 'bank_account_number', 'breeder', 'seller', 'control_center', 'transaction_date', 'breed', 'breeds_supplied', 'goat_weight', 'vaccinated', 'created_at', 'price', 'reference', 'breeder_first_name', 'breeder_last_name', 'breeder_market', 'breeder_community', 'breeder_head_of_family', 'seller']
 
 class InventorySerializer(serializers.ModelSerializer):
     trade = BreaderTradeSerializer(many=True)

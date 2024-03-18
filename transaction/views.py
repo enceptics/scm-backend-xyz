@@ -13,7 +13,7 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.core.mail import send_mail
 from rest_framework.permissions import IsAuthenticated
-
+from django.shortcuts import get_object_or_404
 from rest_framework import permissions
 from django.utils.html import strip_tags
 
@@ -110,20 +110,34 @@ class BreaderTradeSingleSellerViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
+        # Check the value of self.request.user
+        print("Authenticated User:", self.request.user)
 
-        # Retrieve the corresponding Buyer instance based on the user
-        seller = get_object_or_404(BreaderTrade, seller=self.request.user)
+        # Filter BreaderTrades based on the currently authenticated user as seller
+        queryset = BreaderTrade.objects.filter(seller=self.request.user)
 
-        # Filter invoices based on the retrieved Buyer instance
-        return BreaderTrade.objects.filter(seller=seller)
+        # Print the number of BreaderTrade objects returned
+        print("Number of BreaderTrades:", queryset.count())
 
-        if user_supplies.exists():
-            # If the user has supplies, serialize and return them
-            serializer = self.get_serializer(user_supplies, many=True)
-            return Response(serializer.data)
-        else:
-            # If the user has not supplied any breeds, return a message
-            return Response({"message": "Supply list is empty."})
+        # Return the queryset
+        return queryset
+
+
+    # def get_queryset(self):
+
+    #     # Retrieve the corresponding Buyer instance based on the user
+    #     seller = get_object_or_404(BreaderTrade, seller=self.request.user)
+
+    #     # Filter invoices based on the retrieved Buyer instance
+    #     return BreaderTrade.objects.filter(seller=seller)
+
+    #     if user_supplies.exists():
+    #         # If the user has supplies, serialize and return them
+    #         serializer = self.get_serializer(user_supplies, many=True)
+    #         return Response(serializer.data)
+    #     else:
+    #         # If the user has not supplied any breeds, return a message
+    #         return Response({"message": "Supply list is empty."})
     
     def perform_create(self, serializer):
         # Set the breeder field of BreaderTrade to the currently authenticated user

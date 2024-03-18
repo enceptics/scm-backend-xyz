@@ -20,7 +20,7 @@ from transaction.views import (
         InventoryViewSet,
         BreaderTradeSingleSellerViewSet
 )
-from inventory_management.views import InventoryBreedViewSet, InventoryBreedSalesViewSet, BreedCutViewSet, BreederTotalSerializer, BreederTotalViewSet, BreedCutTotalViewSet
+from inventory_management.views import InventoryBreedViewSet, InventoryBreedSalesViewSet, BreedCutViewSet, BreederTotalSerializer, BreederTotalViewSet, BreedCutTotalViewSet, BreederTotalSingleSellerViewSet
 from slaughter_house.views import SlaughterhouseRecordViewSet
 # from accounts.views import get_csrf_token
 from mpesa_payments.views import MpesaPaymentView
@@ -127,11 +127,13 @@ router.register(r'inventory-breed-name', InventoryBreedViewSet)
 # Ready -breed and trade
 router.register(r'breader-trade', BreaderTradeViewSet)
 
-router.register(r'breader-trade-to-seller', BreaderTradeSingleSellerViewSet)
+router.register(r'breader-trade-to-seller', BreaderTradeSingleSellerViewSet, basename='breader_trade_to_seller')
 
 router.register(r'breader-trade-id', BreaderTradeSingleUserViewSet)
 
-router.register(r'breeder_totals', BreederTotalViewSet, basename='cut_totals')
+router.register(r'all-breeder_totals', BreederTotalViewSet, basename='all-cut_totals')
+router.register(r'breeder_totals', BreederTotalSingleSellerViewSet, basename='cut_totals')
+
 router.register(r'part_totals_count', BreedCutTotalViewSet, basename='breeder_totals')
 
 # breeder single user

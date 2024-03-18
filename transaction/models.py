@@ -31,7 +31,7 @@ class Abattoir(models.Model):
 
 class BreaderTrade(models.Model):
     breeder = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    seller = models.ForeignKey(Seller, on_delete=models.CASCADE, null=True, blank=True)
+    seller = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True, related_name='sellers')
     control_center = models.ForeignKey(ControlCenter, on_delete=models.CASCADE, null=True, blank=True)
     transaction_date = models.DateField(auto_now_add=True)
     breed = models.CharField(max_length=255)
@@ -81,7 +81,7 @@ class BreaderTrade(models.Model):
 
 class Inventory(models.Model):
     name = models.CharField(max_length=255, blank=True, null=True)
-    trade = models.ManyToManyField(BreaderTrade, null=True, blank=True)
+    trade = models.ManyToManyField(BreaderTrade)
     seller = models.ForeignKey(Seller, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
