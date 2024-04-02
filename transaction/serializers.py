@@ -31,10 +31,12 @@ class BreaderTradeSerializer(serializers.ModelSerializer):
     phone_number = serializers.CharField(source='get_breeder_phone_number', read_only=True, allow_null=True)
     id_number = serializers.CharField(source='get_breeder_id_number', read_only=True, allow_null=True)
     bank_account_number = serializers.CharField(source='get_breeder_bank_account_number', read_only=True, allow_null=True)
+    seller_full_name = serializers.CharField(source='get_seller_full_name', read_only=True)
+
 
     class Meta:
         model = BreaderTrade
-        fields = ['id', 'email', 'phone_number', 'id_number', 'bank_account_number', 'breeder', 'seller', 'control_center', 'transaction_date', 'breed', 'breeds_supplied', 'goat_weight', 'vaccinated', 'created_at', 'price', 'reference', 'breeder_first_name', 'breeder_last_name', 'breeder_market', 'breeder_community', 'breeder_head_of_family', 'seller']
+        fields = ['id', 'email', 'phone_number', 'id_number', 'bank_account_number', 'breeder', 'seller', 'seller_full_name', 'control_center', 'transaction_date', 'breed', 'breeds_supplied', 'goat_weight', 'vaccinated', 'created_at', 'price', 'reference', 'breeder_first_name', 'breeder_last_name', 'breeder_market', 'breeder_community', 'breeder_head_of_family', 'seller']
 
 class InventorySerializer(serializers.ModelSerializer):
     trade = BreaderTradeSerializer(many=True)

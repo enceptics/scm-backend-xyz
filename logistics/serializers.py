@@ -41,6 +41,7 @@ class ControlCenterSerializer(serializers.ModelSerializer):
     assigned_agent_full_name = serializers.CharField(source='get_agent_full_name', read_only=True)
     formatted_created_at = serializers.SerializerMethodField()
     breadertrades = BreaderTradeSerializer(many=True, read_only=True, source='breadertrade_set')  # Include the related BreaderTrade data
+    seller_full_name = serializers.CharField(source='get_full_name', read_only=True)
 
     class Meta:
         model = ControlCenter       
@@ -51,7 +52,6 @@ class ControlCenterSerializer(serializers.ModelSerializer):
         return obj.created_at.strftime('%B %d, %Y %I:%M %p')
 
 class CollateralManagerSerializer(serializers.ModelSerializer):
-    assigned_agent_full_name = serializers.CharField(source='get_agent_full_name', read_only=True)
     full_name = serializers.CharField(source='get_full_name')
     username = serializers.CharField(source='get_user_name')
     email = serializers.CharField(source='get_user_email')
@@ -60,9 +60,16 @@ class CollateralManagerSerializer(serializers.ModelSerializer):
     formatted_created_at = serializers.SerializerMethodField()
 
     class Meta:
-        model = ControlCenter       
-        # fields = ['id', 'name', 'created_at', 'full_name', 'username', 'email', 'address', 'country', 'formatted_created_at']
+        model = CollateralManager       
         fields = '__all__'
 
     def get_formatted_created_at(self, obj):
         return obj.created_at.strftime('%B %d, %Y %I:%M %p')
+
+class ControlCenterTotalSerializer(serializers.ModelSerializer):
+    total_breed_supply = serializers.IntegerField()
+    total_slaughtered = serializers.IntegerField()
+
+    class Meta:
+        model = ControlCenter
+        fields = ['id', 'name', 'total_breed_supply', 'total_slaughtered']

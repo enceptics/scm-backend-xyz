@@ -16,7 +16,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions
 from django.utils.html import strip_tags
-
+from logistics.views import ControlCenter
 
 class AbattoirViewSet(viewsets.ModelViewSet):
     queryset = Abattoir.objects.all()
@@ -34,7 +34,7 @@ class InventoryViewSet(viewsets.ModelViewSet):
 logger = logging.getLogger(__name__)
 
 class UserSuppliedBreedsViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = BreaderTrade.objects.all()
+    queryset = BreaderTrade.objects.all().order_by('-created_at')
     serializer_class = BreaderTradeSerializer
     permission_classes = [IsAuthenticated]
 
@@ -109,39 +109,41 @@ class BreaderTradeSingleSellerViewSet(viewsets.ModelViewSet):
     serializer_class = BreaderTradeSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def get_queryset(self):
-        # Check the value of self.request.user
-        print("Authenticated User:", self.request.user)
-
-        # Filter BreaderTrades based on the currently authenticated user as seller
-        queryset = BreaderTrade.objects.filter(seller=self.request.user)
-
-        # Print the number of BreaderTrade objects returned
-        print("Number of BreaderTrades:", queryset.count())
-
-        # Return the queryset
-        return queryset
-
-
     # def get_queryset(self):
+    #     # Check the value of self.request.user
+    #     print("Authenticated User:", self.request.user)
 
-    #     # Retrieve the corresponding Buyer instance based on the user
-    #     seller = get_object_or_404(BreaderTrade, seller=self.request.user)
+    #     # Filter BreaderTrades based on the currently authenticated user as seller
+    #     queryset = BreaderTrade.objects.filter(seller=self.request.user)
 
-    #     # Filter invoices based on the retrieved Buyer instance
-    #     return BreaderTrade.objects.filter(seller=seller)
+    #     # Print the number of BreaderTrade objects returned
+    #     print("Number of BreaderTrades:", queryset.count())
 
-    #     if user_supplies.exists():
-    #         # If the user has supplies, serialize and return them
-    #         serializer = self.get_serializer(user_supplies, many=True)
-    #         return Response(serializer.data)
-    #     else:
-    #         # If the user has not supplied any breeds, return a message
-    #         return Response({"message": "Supply list is empty."})
+    #     # Return the queryset
+    #     return queryset
+
+    def get_queryset(self):
+        # Retrieve the control center associated with the authenticated user
+        control_center = get_object_or_404(ControlCenter, seller=self.request.user)
+        # Filter BreaderTrades based on the seller associated with the control center
+        queryset = BreaderTrade.objects.filter(control_center=control_center)
+        return queryset
     
     def perform_create(self, serializer):
-        # Set the breeder field of BreaderTrade to the currently authenticated user
-        serializer.save(seller=self.request.user)
+        # Retrieve the control center associated with the authenticated user
+        control_center = get_object_or_404(ControlCenter, seller=self.request.user)
+        # Retrieve the breeder from the request user (assuming the breeder is the authenticated user)
+        breeder = self.request.user
+        # Retrieve the seller associated with the control center
+        seller = control_center.seller
+        # Set the control center, breeder, and seller fields of BreaderTrade
+        serializer.save(control_center=control_center, breeder=breeder, seller=seller)
+        
+# ------------Breadder trade single user------
+
+class BreaderTradeAllSingleSellerViewSet(viewsets.ModelViewSet):
+    queryset = BreaderTrade.objects.all().order_by('-created_at')
+    serializer_class = BreaderTradeSerializer
 
 # ------------Breadder trade single user------
 

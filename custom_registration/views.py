@@ -11,7 +11,7 @@ from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 from rest_framework.decorators import api_view
 from django.shortcuts import get_object_or_404
 
-from .models import CustomUser, UserProfile, Payment, BankTeller, CustomerService, Seller
+from .models import CustomUser, UserProfile, Payment, BankTeller, CustomerService, Seller, Bank
 from logistics.models import CollateralManager
 from transaction.models import Breader
 from invoice_generator.models import Buyer
@@ -94,7 +94,7 @@ class CustomUserRegistrationViewSet(viewsets.ViewSet):
                 user.role = 'buyer'
                 Buyer.objects.create(buyer=user)
             elif user_type == 'breeder':
-                user.role = 'breeder'
+                usercreated_at.role = 'breeder'
                 Breader.objects.create(breeder=user)
             elif user_type == 'seller':
                 user.role = 'admin'
@@ -102,6 +102,9 @@ class CustomUserRegistrationViewSet(viewsets.ViewSet):
             elif user_type == 'collateral_manager':
                 user.role = 'collateral_manager'
                 CollateralManager.objects.create(name=user)
+            elif user_type == 'bank':
+                user.role = 'bank'
+                Bank.objects.create(bank_name=user)
             else:
                 # Handle invalid user types here
                 pass
@@ -435,7 +438,7 @@ class CustomerServiceViewSet(viewsets.ModelViewSet):
 
 # seller
 class SellerAllViewSet(viewsets.ModelViewSet):
-    queryset = Seller.objects.all()
+    queryset = Seller.objects.all().order_by('-created_at')
     serializer_class = SellerSerializer
     
 class SellerViewSet(viewsets.ModelViewSet):

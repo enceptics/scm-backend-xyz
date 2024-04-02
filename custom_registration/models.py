@@ -84,6 +84,7 @@ class Payment(models.Model):
 class CustomUser(AbstractUser):
     NO_ROLE = 'no_role'
     ABATTOIR = 'abattoir'
+    BANK = 'bank'
     EMPLOYEE= 'employee'
     SUPERUSER = 'superuser'
     BREEDER = 'breeder'
@@ -100,6 +101,7 @@ class CustomUser(AbstractUser):
     ROLE_CHOICES = [
         (NO_ROLE, 'No Role'),
         (ABATTOIR, 'Abattoir'),
+        (BANK, 'Bank'),
         (EMPLOYEE, 'employee'),
         (SUPERUSER, 'Superuser'),
         (BREEDER, 'Breeder'),
@@ -116,8 +118,8 @@ class CustomUser(AbstractUser):
 
     role = models.CharField(max_length=255, choices=ROLE_CHOICES, default=NO_ROLE)  # Default role can be changed
 
-    first_name = models.CharField(max_length=30)
-    last_name = models.CharField(max_length=30)
+    first_name = models.CharField(max_length=30, blank=True, null=True)
+    last_name = models.CharField(max_length=30 , blank=True, null=True)
     username = models.CharField(max_length=30, unique=True)
     id_number = models.PositiveIntegerField(default=0, null=True, blank=True)
     email = models.EmailField(unique=True, null=True, blank=True)
@@ -129,9 +131,11 @@ class CustomUser(AbstractUser):
     county = models.CharField(max_length=50, null=True, blank=True)
     country = models.CharField(max_length=50, null=True, blank=True)  
     address = models.TextField(null=True, blank=True)  # New field for address
+    bank_name = models.CharField(max_length=255, blank=True, null=True)
+    bank_branch = models.CharField(max_length=255, blank=True, null=True)
+    location = models.CharField(max_length=255)
     
     groups = models.ManyToManyField(Group, related_name='users', blank=True)
-
 
 
     def __str__(self):

@@ -42,11 +42,18 @@ class BreaderTrade(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     reference = models.CharField(max_length=20, unique=True, editable=False)
 
+    def get_seller_full_name(self):
+        if self.seller:
+            return f'{self.seller.first_name} {self.seller.last_name}'
+        else:
+            return "No email for this user"
+
     def get_breeder_email(self):
         if self.breeder:
             return f'{self.breeder.email}'
         else:
             return "No email for this user"
+
 
     def get_breeder_phone_number(self):
         if self.breeder:
@@ -77,7 +84,7 @@ class BreaderTrade(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.breeder.first_name} {self.breeder.last_name} supplied {self.breeds_supplied} {self.breed}'s to {self.seller} on {self.created_at}"
+        return f"{self.breeder.first_name} {self.breeder.last_name} supplied {self.breeds_supplied} {self.breed}'s to {self.control_center} on {self.created_at}"
 
 class Inventory(models.Model):
     name = models.CharField(max_length=255, blank=True, null=True)

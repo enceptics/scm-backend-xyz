@@ -3,13 +3,20 @@ from slaughter_house.models import SlaughterhouseRecord
 from rest_framework import viewsets
 from django.db.models import Sum
 from django.http import JsonResponse
-
+from rest_framework.decorators import action
+from django.http import JsonResponse
 from slaughter_house.serializers import SlaughterhouseRecordSerializer
 from inventory_management.models import BreedCut
 from transaction.models import BreaderTrade
 import logging
 from django.views.decorators.csrf import csrf_exempt
 from .serializers import ComparisonResultSerializer
+from rest_framework.response import Response
+from logistics.models import ControlCenter
+from django.http import Http404
+from rest_framework import viewsets, permissions
+from django.db import models  # Add this import
+
 logger = logging.getLogger(__name__)
 
 
@@ -24,9 +31,6 @@ def compare_weight_loss(request):
         # Retrieve all BreaderTrade records
         breader_trades = BreaderTrade.objects.all()
         
-        # Retrieve all BreedCut records
-        breed_cuts = BreedCut.objects.all()
-        
         # Perform comparison logic
         comparison_results = []
 
@@ -36,9 +40,22 @@ def compare_weight_loss(request):
             total_cut_weight = 0
             
             # Calculate the total weight cut for the breed
-            for cut in breed_cuts.filter(breed=breed):
-                if cut.weight:  # Check if weight is not None or empty
-                    total_cut_weight += cut.quantity * int(cut.weight)
+            breed_cuts = BreedCut.objects.filter(breed=breed)
+            for cut in breed_cuts:
+                total_cut_weight += cut.quantity * cut.weight
+
+            # Get the associated control center for the trade
+            control_center = trade.control_center
+
+            # Subtract slaughtered quantity from the total breed supply in the control center
+            if control_center:
+                slaughtered_quantity = control_center.slaughterhouserecord_set.filter(breed=breed).aggregate(total_slaughtered=models.Sum('quantity'))['total_slaughtered']
+                if slaughtered_quantity is not None:
+                    breeds_supplied = trade.breeds_supplied - slaughtered_quantity
+                else:
+                    breeds_supplied = trade.breeds_supplied
+            else:
+                breeds_supplied = trade.breeds_supplied
 
             # Calculate the weight loss percentage
             if trade_weight > 0:  # Check if trade_weight is not 0 to avoid division by zero
@@ -61,50 +78,45 @@ def compare_weight_loss(request):
                 'breed': breed,
                 'trade_weight': trade_weight,
                 'total_cut_weight': total_cut_weight,
+                'breeds_supplied': breeds_supplied,
                 'weight_loss_percentage': weight_loss_percentage,
                 'classification': classification
             }
 
             # Serialize the comparison result
             serializer = ComparisonResultSerializer(data=comparison_result)
-            serializer.is_valid()
-            comparison_results.append(serializer.data)
+            if serializer.is_valid():
+                comparison_results.append(serializer.data)
+            else:
+                # Handle serializer errors
+                return JsonResponse({'error': 'Serialization error'}, status=400)
 
         return JsonResponse(comparison_results, safe=False)
     else:
-            return JsonResponse({'error': 'Only GET requests are supported for this endpoint'}, status=405)
+        return JsonResponse({'error': 'Only GET requests are supported for this endpoint'}, status=405)
 
-def supply_vs_demand_statistics(request):
-    # Get total bred quantities per breed
-    bred_quantities = BreaderTrade.objects.values('breed').annotate(total_bred=Sum('breeds_supplied'))
+class SupplyVsDemandStatisticsViewSet(viewsets.ViewSet):
+    def list(self, request):
+        try:
+            # Assuming you have a way to get the currently logged-in seller's ID
+            seller_id = request.user.id
+            
+            # Get total bred quantities per breed for the specified seller
+            bred_quantities = BreaderTrade.objects.filter(seller_id=seller_id).values('breed').annotate(total_bred=Sum('breeds_supplied'))
 
-    # Get total slaughtered quantities per breed
-    slaughtered_quantities = SlaughterhouseRecord.objects.values('breed').annotate(total_slaughtered=Sum('quantity'))
+            # No need to calculate slaughtered quantities as per your requirement
+            
+            # Prepare supply vs demand data
+            supply_vs_demand_data = [
+                {
+                    'breed': bred_quantity['breed'],
+                    'total_bred': bred_quantity['total_bred'],
+                    'total_slaughtered': 0,  # Set slaughtered quantity to 0
+                }
+                for bred_quantity in bred_quantities
+            ]
 
-    # Combine the data for supply vs demand comparison
-    supply_vs_demand_data = []
+            return Response({'supply_vs_demand_data': supply_vs_demand_data})
 
-    for bred_quantity in bred_quantities:
-        breed = bred_quantity['breed']
-        total_bred = bred_quantity['total_bred']
-
-        slaughtered_quantity = next(
-            (item['total_slaughtered'] for item in slaughtered_quantities if item['breed'] == breed),
-            0
-        )
-
-        if slaughtered_quantity > total_bred:
-            # Log the error
-            logger.error(f"Breed: {breed}, Slaughtered Quantity: {slaughtered_quantity}, Total Breed Supply: {total_bred}")
-            logger.error(f"Remaining Breed Supply after slaughter: {total_bred - slaughtered_quantity}")
-
-        supply_vs_demand_data.append({
-            'breed': breed,
-            'total_bred': total_bred,
-            'total_slaughtered': slaughtered_quantity,
-        })
-        
-    return JsonResponse({'supply_vs_demand_data': supply_vs_demand_data})
-
-    
-    
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)

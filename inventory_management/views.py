@@ -4,10 +4,13 @@ from .models import InventoryBreed, InventoryBreedSales, BreedCut
 from .serializers import InventoryBreedSerializer, InventoryBreedSalesSerializer, BreedCutSerializer, BreederTotalSerializer, BreedCutTotalSerializer
 from transaction.models import BreaderTrade
 from slaughter_house.models import SlaughterhouseRecord
-from django.db.models import Sum
+from django.db.models import Sum, F, Value
+from django.db.models.functions import Coalesce
 from rest_framework.response import Response
+from custom_registration.models import CustomUser
 
 from logistics.models import ControlCenter
+from logistics.serializers import ControlCenterTotalSerializer
 
 class InventoryBreedViewSet(viewsets.ModelViewSet):
     queryset = InventoryBreed.objects.all()
@@ -17,28 +20,61 @@ class BreedCutViewSet(viewsets.ModelViewSet):
     queryset = BreedCut.objects.all()
     serializer_class = BreedCutSerializer
 
-
 class BreedCutTotalViewSet(viewsets.ViewSet):
 
     def list(self, request):
         try:
-            # Calculate total breed cut for each part_name
-            breed_cut_totals = (
-                BreedCut.objects
-                .values('breed', 'part_name', 'quantity', 'sale_type', 'sale_date')
-                .annotate(total_breed_cut=Sum('quantity'))
+            # Get the currently authenticated user
+            user = request.user
+
+            # Initialize user_control_centers as an empty queryset
+            user_control_centers = ControlCenter.objects.none()
+
+            # Get control centers associated with the user
+            if user.role == CustomUser.SELLER:
+                # Assuming the user is a seller
+                user_control_centers = ControlCenter.objects.filter(seller=user)
+
+            # Calculate total breed supply from BreaderTrade for control centers associated with the user
+            breeder_totals = (
+                BreaderTrade.objects
+                .filter(control_center__in=user_control_centers)
+                .values('control_center__id', 'breed')
+                .annotate(total_breed_supply=Sum('breeds_supplied'))
             )
 
-            # Convert the queryset to a list
-            cut_totals = list(breed_cut_totals)
+            # Calculate total slaughtered from SlaughterhouseRecord for all breeds
+            slaughtered_quantities = (
+                SlaughterhouseRecord.objects
+                .values('breed')
+                .annotate(total_slaughtered=Sum('quantity'))
+            )
 
-            # Ensure all entries have 'part_name' key
-            for entry in cut_totals:
-                entry['part_name'] = entry.get('part_name', None)
+            # Create a dictionary to hold the total breed supply per breed and control center
+            total_dict = {}
 
-            serializer = BreedCutTotalSerializer(cut_totals, many=True)
+            # Calculate total breed supply per control center and breed
+            for total in breeder_totals:
+                control_center_id = total['control_center__id']
+                breed = total['breed']
+                total_dict.setdefault((control_center_id, breed), {'control_center__id': control_center_id, 'breed': breed, 'total_breed_supply': 0})
+                total_dict[(control_center_id, breed)]['total_breed_supply'] += total['total_breed_supply']
 
-            return Response(serializer.data)
+            # Subtract slaughtered quantities from the total breed supply per control center and breed
+            for slaughtered_quantity in slaughtered_quantities:
+                breed = slaughtered_quantity['breed']
+                for key, value in total_dict.items():
+                    control_center_id, breed_in_dict = key
+                    if breed_in_dict == breed:
+                        total_dict[key]['total_breed_supply'] -= slaughtered_quantity['total_slaughtered']
+                        # Ensure the total breed supply doesn't go negative
+                        if total_dict[key]['total_breed_supply'] < 0:
+                            total_dict[key]['total_breed_supply'] = 0  # Set to 0 if negative
+
+            # Convert the dictionary values to a list
+            breeder_totals = list(total_dict.values())
+
+            return Response(breeder_totals)
 
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -148,47 +184,33 @@ class BreederTotalSingleSellerViewSet(viewsets.ViewSet):
             # Get the ID of the currently authenticated user (assuming it's the seller)
             seller_id = request.user.id
 
-            # Calculate total breed supply from BreaderTrade for the specific seller
-            breeder_totals = (
+            # Get control centers associated with the seller
+            seller_control_centers = ControlCenter.objects.filter(breadertrade__seller_id=seller_id).distinct()
+
+            # Aggregate total breeds supplied from BreaderTrade for control centers associated with the seller
+            control_center_totals = (
                 BreaderTrade.objects
-                .filter(seller_id=seller_id)  # Filter by the seller's ID
+                .filter(control_center__in=seller_control_centers)  # Filter BreaderTrades by control centers associated with the seller
                 .values('control_center__id', 'breed')
-                .annotate(total_breed_supply=Sum('breeds_supplied'))
+                .annotate(
+                    total_breed_supply=Sum('breeds_supplied'),  # Calculate total breed supply from related BreaderTrades
+                    total_slaughtered=Coalesce(Sum('control_center__slaughterhouserecord__quantity'), Value(0))  # Calculate total slaughtered from related SlaughterhouseRecords
+                )
             )
 
-            # Calculate total slaughtered from SlaughterhouseRecord
-            slaughtered_quantities = (
-                SlaughterhouseRecord.objects
-                .values('breed')
-                .annotate(total_slaughtered=Sum('quantity'))
-            )
+            # Deduct slaughtered quantity from total breed supply for each control center
+            for control_center_total in control_center_totals:
+                total_breed_supply = control_center_total['total_breed_supply']
+                total_slaughtered = control_center_total['total_slaughtered']
+                control_center_total['net_breed_supply'] = total_breed_supply - total_slaughtered if total_slaughtered is not None else total_breed_supply
+                # Ensure the net breed supply doesn't go negative
+                if control_center_total['net_breed_supply'] < 0:
+                    control_center_total['net_breed_supply'] = 0
 
-            # Create a dictionary to hold the total breed supply per breed and control center
-            total_dict = {}
+            # Sort the control_center_totals list based on net_breed_supply in descending order
+            control_center_totals = sorted(control_center_totals, key=lambda x: x['net_breed_supply'], reverse=True)
 
-            # Calculate total breed supply per control center and breed
-            for total in breeder_totals:
-                control_center_id = total['control_center__id']
-                breed = total['breed']
-                total_dict.setdefault((control_center_id, breed), {'breader__id': control_center_id, 'breed': breed, 'total_breed_supply': 0})
-                total_dict[(control_center_id, breed)]['total_breed_supply'] += total['total_breed_supply']
-
-            # Subtract slaughtered quantities from the total breed supply per control center and breed
-            for slaughtered_quantity in slaughtered_quantities:
-                breed = slaughtered_quantity['breed']
-                for key, value in total_dict.items():
-                    control_center_id, breed_in_dict = key
-                    if breed_in_dict == breed:
-                        total_dict[key]['total_breed_supply'] -= slaughtered_quantity['total_slaughtered']
-                        # Ensure the total breed supply doesn't go negative
-                        if total_dict[key]['total_breed_supply'] < 0:
-                            total_dict[key]['total_breed_supply'] = 0  # Set to 0 if negative
-
-            # Convert the dictionary values to a list
-            breeder_totals = list(total_dict.values())
-
-            serializer = BreederTotalSerializer(breeder_totals, many=True)
-            return Response(serializer.data)
+            return Response(control_center_totals)
 
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

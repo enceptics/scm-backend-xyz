@@ -226,7 +226,7 @@ class QuotationViewSet(viewsets.ModelViewSet):
         instance = serializer.save()
 
         if instance.confirm:
-            seller_email = 'pascalouma54@gmail.com'  # Fixed sender's email address
+            seller_email = 'intellima.tech@gmail.com'  # Fixed sender's email address
             subject = 'Quotation Confirmation'
             
             # Buyer's name
@@ -284,7 +284,6 @@ class LetterOfCreditViewSet(viewsets.ModelViewSet):
             [recipient_email],
             fail_silently=False,
         )
-    print(send_email_notification, 'sent')
 
     @action(detail=False, methods=['post'])
     def upload_lc_document(self, request, *args, **kwargs):
@@ -295,10 +294,9 @@ class LetterOfCreditViewSet(viewsets.ModelViewSet):
             buyer = request.buyer
             print(f"User: {buyer}")
 
-
             # Create the Letter of Credit
             letter_of_credit = LetterOfCredit.objects.create(buyer=buyer, status='received')
-
+            
             # Handle LC document upload
             lc_document = request.FILES.get('lc_document')
             letter_of_credit.lc_document = lc_document

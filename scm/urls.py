@@ -18,7 +18,8 @@ from transaction.views import (
        BreaderCountView, UserSuppliedBreedsViewSet,
         BreaderTradeSingleUserViewSet,
         InventoryViewSet,
-        BreaderTradeSingleSellerViewSet
+        BreaderTradeSingleSellerViewSet,
+        BreaderTradeAllSingleSellerViewSet
 )
 from inventory_management.views import InventoryBreedViewSet, InventoryBreedSalesViewSet, BreedCutViewSet, BreederTotalSerializer, BreederTotalViewSet, BreedCutTotalViewSet, BreederTotalSingleSellerViewSet
 from slaughter_house.views import SlaughterhouseRecordViewSet
@@ -40,7 +41,7 @@ from invoice_generator.views import (
     DocumentToSellerViewSet,
     BuyerAllViewSet
 )
-from slaughter_house.views import supply_vs_demand_statistics, compare_weight_loss
+from slaughter_house.views import SupplyVsDemandStatisticsViewSet, compare_weight_loss
 from logistics.views import LogisticsStatusViewSet, OrderViewSet, ShipmentProgressViewSet, ArrivedOrderViewSet, LogisticsStatusAllViewSet, PackageInfoViewset, CollateralManagerViewSet, ControlCenterViewSet
 
 
@@ -109,6 +110,10 @@ lc_detail = LetterOfCreditViewSet.as_view({'get': 'retrieve', 'put': 'update', '
 # Breeders
 router.register(r'traders', BreaderViewSet)
 
+# supply vs demand
+router.register(r'supply-vs-demand', SupplyVsDemandStatisticsViewSet, basename='supply-vs-demand')
+
+
 # Purchase order and Lc Local. Profoma invoice
 router.register(r'purchase-orders', PurchaseOrderViewSet, basename='purchase-orders')
 router.register(r'letters-of-credit-to-local-traders', LetterOfCreditSellerToTraderViewSet, basename='letters-of-credit-to-local-traders')
@@ -127,12 +132,14 @@ router.register(r'inventory-breed-name', InventoryBreedViewSet)
 # Ready -breed and trade
 router.register(r'breader-trade', BreaderTradeViewSet)
 
-router.register(r'breader-trade-to-seller', BreaderTradeSingleSellerViewSet, basename='breader_trade_to_seller')
+router.register(r'breader-trade-to-seller', BreaderTradeAllSingleSellerViewSet, basename='breader_trade_to_seller')
+router.register(r'breader-trade-seller', BreaderTradeSingleSellerViewSet, basename='breader_trade_seller')
 
 router.register(r'breader-trade-id', BreaderTradeSingleUserViewSet)
 
-router.register(r'all-breeder_totals', BreederTotalViewSet, basename='all-cut_totals')
+# router.register(r'all-breeder_totals', BreederTotalViewSet, basename='all-cut_totals')
 router.register(r'breeder_totals', BreederTotalSingleSellerViewSet, basename='cut_totals')
+
 
 router.register(r'part_totals_count', BreedCutTotalViewSet, basename='breeder_totals')
 
@@ -171,7 +178,6 @@ router.register(r'all-sellers', SellerAllViewSet, basename='sellers')
 router.register(r'register-buyer', CustomUserRegistrationViewSet, basename='register-buyer')
 router.register(r'send-quotation', QuotationViewSet, basename='send-quotation')
 router.register(r'quotations', QuotationAllViewSet, basename='quotations')
-
 
 # Payments
 
@@ -249,7 +255,7 @@ urlpatterns = [
     path('api/breader-count/', BreaderCountView.as_view(), name='breader-count'),
     # path('api/total_breeds_supplied/', total_breeds_supplied, name='total_breeds_supplied'),
     
-    path('api/supply-vs-demand/', supply_vs_demand_statistics, name='supply_vs_demand_statistics'),
+    # path('api/supply-vs-demand/', supply_vs_demand_statistics, name='supply_vs_demand_statistics'),
     path('api/compare-weight-loss-after-slaughter/', compare_weight_loss, name='compare-weight-loss-after-slaughter'),
 
     # Equity bank Payments
