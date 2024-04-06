@@ -11,6 +11,8 @@ from custom_registration.models import CustomUser
 
 from logistics.models import ControlCenter
 from logistics.serializers import ControlCenterTotalSerializer
+from django.db.models import F, Func
+from rest_framework.permissions import IsAuthenticated
 
 class InventoryBreedViewSet(viewsets.ModelViewSet):
     queryset = InventoryBreed.objects.all()
@@ -181,36 +183,53 @@ class BreederTotalSingleSellerViewSet(viewsets.ViewSet):
 
     def list(self, request):
         try:
-            # Get the ID of the currently authenticated user (assuming it's the seller)
             seller_id = request.user.id
 
-            # Get control centers associated with the seller
-            seller_control_centers = ControlCenter.objects.filter(breadertrade__seller_id=seller_id).distinct()
+            seller_control_centers = ControlCenter.objects.filter(breadertrade__isnull=False).distinct()
 
-            # Aggregate total breeds supplied from BreaderTrade for control centers associated with the seller
             control_center_totals = (
                 BreaderTrade.objects
-                .filter(control_center__in=seller_control_centers)  # Filter BreaderTrades by control centers associated with the seller
-                .values('control_center__id', 'breed')
+                .filter(control_center__in=seller_control_centers)
                 .annotate(
-                    total_breed_supply=Sum('breeds_supplied'),  # Calculate total breed supply from related BreaderTrades
-                    total_slaughtered=Coalesce(Sum('control_center__slaughterhouserecord__quantity'), Value(0))  # Calculate total slaughtered from related SlaughterhouseRecords
+                    created_at_formatted=F('control_center__created_at')
+                )
+                .values(
+                    'control_center__id',
+                    'control_center__name',
+                    'breed',
+                    'control_center__address',
+                    'control_center__assigned_collateral_agent',
+                    'control_center__contact',
+                    'control_center__seller',
+                    'created_at_formatted'
+                )
+                .annotate(
+                    total_breed_supply=Sum('breeds_supplied'),
+                    total_slaughtered=Coalesce(Sum('control_center__slaughterhouserecord__quantity'), Value(0))
                 )
             )
 
-            # Deduct slaughtered quantity from total breed supply for each control center
-            for control_center_total in control_center_totals:
-                total_breed_supply = control_center_total['total_breed_supply']
-                total_slaughtered = control_center_total['total_slaughtered']
-                control_center_total['net_breed_supply'] = total_breed_supply - total_slaughtered if total_slaughtered is not None else total_breed_supply
-                # Ensure the net breed supply doesn't go negative
-                if control_center_total['net_breed_supply'] < 0:
-                    control_center_total['net_breed_supply'] = 0
+            categorized_data = {}
+            for entry in control_center_totals:
+                control_center_id = entry['control_center__id']
+                control_center_name = entry['control_center__name']
+                breed = entry['breed']
+                breed_supply = entry['total_breed_supply']
+                total_slaughtered = entry['total_slaughtered']
+                net_breed_supply = breed_supply - total_slaughtered if total_slaughtered is not None else breed_supply
+                if control_center_id not in categorized_data:
+                    categorized_data[control_center_id] = {'name': control_center_name, 'breeds': {}}
+                if breed not in categorized_data[control_center_id]['breeds']:
+                    categorized_data[control_center_id]['breeds'][breed] = {'total_breed_supply': breed_supply, 'total_slaughtered': total_slaughtered, 'net_breed_supply': net_breed_supply}
+                else:
+                    categorized_data[control_center_id]['breeds'][breed]['total_breed_supply'] += breed_supply
+                    categorized_data[control_center_id]['breeds'][breed]['total_slaughtered'] += total_slaughtered
+                    categorized_data[control_center_id]['breeds'][breed]['net_breed_supply'] += net_breed_supply
 
-            # Sort the control_center_totals list based on net_breed_supply in descending order
-            control_center_totals = sorted(control_center_totals, key=lambda x: x['net_breed_supply'], reverse=True)
-
-            return Response(control_center_totals)
+            formatted_response = [{'control_center_id': key, 'name': value['name'], 'breeds': value['breeds']} for key, value in categorized_data.items()]
+            formatted_response.reverse()
+            
+            return Response(formatted_response)
 
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

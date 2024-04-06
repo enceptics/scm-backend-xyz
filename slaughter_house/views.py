@@ -47,16 +47,16 @@ def compare_weight_loss(request):
             # Get the associated control center for the trade
             control_center = trade.control_center
 
+            # Calculate breeds supplied
+            breeds_supplied = trade.breeds_supplied
+            
             # Subtract slaughtered quantity from the total breed supply in the control center
             if control_center:
-                slaughtered_quantity = control_center.slaughterhouserecord_set.filter(breed=breed).aggregate(total_slaughtered=models.Sum('quantity'))['total_slaughtered']
+                slaughtered_quantity = control_center.slaughterhouserecord_set.filter(breed=breed).aggregate(total_slaughtered=Sum('quantity'))['total_slaughtered']
                 if slaughtered_quantity is not None:
-                    breeds_supplied = trade.breeds_supplied - slaughtered_quantity
-                else:
-                    breeds_supplied = trade.breeds_supplied
-            else:
-                breeds_supplied = trade.breeds_supplied
-
+                    # Ensure breeds_supplied does not become negative
+                    breeds_supplied = max(0, breeds_supplied - slaughtered_quantity)
+            
             # Calculate the weight loss percentage
             if trade_weight > 0:  # Check if trade_weight is not 0 to avoid division by zero
                 weight_loss_percentage = ((trade_weight - total_cut_weight) / trade_weight) * 100
@@ -83,18 +83,12 @@ def compare_weight_loss(request):
                 'classification': classification
             }
 
-            # Serialize the comparison result
-            serializer = ComparisonResultSerializer(data=comparison_result)
-            if serializer.is_valid():
-                comparison_results.append(serializer.data)
-            else:
-                # Handle serializer errors
-                return JsonResponse({'error': 'Serialization error'}, status=400)
+            comparison_results.append(comparison_result)
 
         return JsonResponse(comparison_results, safe=False)
     else:
         return JsonResponse({'error': 'Only GET requests are supported for this endpoint'}, status=405)
-
+        
 class SupplyVsDemandStatisticsViewSet(viewsets.ViewSet):
     def list(self, request):
         try:

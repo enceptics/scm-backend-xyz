@@ -49,7 +49,7 @@ class ControlCenter(models.Model):
     location = models.CharField(max_length=100, null=True, blank=True)
     address = models.CharField(max_length=255, null=True, blank=True)
     contact = models.CharField(max_length=255, null=True, blank=True)
-    seller = models.ForeignKey(Seller, on_delete=models.CASCADE, null=True, blank=True)
+    seller = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)
     assigned_collateral_agent = models.ForeignKey(CollateralManager, on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
