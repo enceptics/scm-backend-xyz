@@ -2,7 +2,7 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from phonenumber_field.modelfields import PhoneNumberField
-from custom_registration.models import CustomUser, Bank, Seller
+from custom_registration.models import CustomUser, Seller
 from logistics.models import ControlCenter
 from datetime import datetime
 import uuid
@@ -11,10 +11,12 @@ import string
 from logistics.models import ControlCenter
 from django.utils import timezone
 from django.core.exceptions import ValidationError
+from django.db.models import F, Func
 
 
 class Breader(models.Model):    
     breeder = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    
     def __str__(self):
 
         return f'{self.breeder.first_name} {self.breeder.last_name} '
@@ -23,7 +25,7 @@ class Abattoir(models.Model):
 
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     breeders = models.ManyToManyField(Breader, related_name='abattoirs_registered', blank=True)
-    bank = models.ForeignKey(Bank, on_delete=models.CASCADE, default=1)
+    # bank = models.ForeignKey(Bank, on_delete=models.CASCADE, default=1)
 
     def __str__(self):
 
@@ -42,6 +44,14 @@ class BreaderTrade(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     reference = models.CharField(max_length=20, unique=True, editable=False)
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.control_center:
+            # Increment the net breed supply by adding the newly supplied breeds
+            control_center = ControlCenter.objects.get(pk=self.control_center.pk)
+            control_center.net_breed_supply += self.breeds_supplied
+            control_center.save()
+
     def get_seller_full_name(self):
         if self.seller:
             return f'{self.seller.first_name} {self.seller.last_name}'
@@ -53,7 +63,6 @@ class BreaderTrade(models.Model):
             return f'{self.breeder.email}'
         else:
             return "No email for this user"
-
 
     def get_breeder_phone_number(self):
         if self.breeder:

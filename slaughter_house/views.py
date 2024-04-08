@@ -89,6 +89,7 @@ def compare_weight_loss(request):
     else:
         return JsonResponse({'error': 'Only GET requests are supported for this endpoint'}, status=405)
         
+
 class SupplyVsDemandStatisticsViewSet(viewsets.ViewSet):
     def list(self, request):
         try:
@@ -114,3 +115,4 @@ class SupplyVsDemandStatisticsViewSet(viewsets.ViewSet):
 
         except Exception as e:
             return Response({'error': str(e)}, status=500)
+

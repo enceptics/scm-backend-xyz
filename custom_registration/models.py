@@ -19,26 +19,25 @@ class Status(models.Model):
     def __str__(self):
         return f"Status - {self.status_id}"
 
-class Bank(models.Model):
-    bank_id = models.AutoField(primary_key=True)
-    bank_name = models.CharField(max_length=50)
-    bank_code = models.CharField(max_length=50, unique=True)
-    bank_abbreviation = models.CharField(max_length=50)
-    swift_code = models.CharField(max_length=50, unique=True)
+# class Bank(models.Model):
+#     bank_id = models.AutoField(primary_key=True)
+#     bank_name = models.CharField(max_length=50)
+#     bank_code = models.CharField(max_length=50, unique=True)
+#     bank_abbreviation = models.CharField(max_length=50)
+#     swift_code = models.CharField(max_length=50, unique=True)
 
-    def __str__(self):
-        return self.bank_name 
+#     def __str__(self):
+#         return self.bank_name 
 
-class BankBranch(models.Model):
-    bank = models.ForeignKey(Bank, on_delete=models.CASCADE)
-    bank_branch_id = models.AutoField(primary_key=True)
-    bank_branch_name = models.CharField(max_length=100)
-    branch_code = models.CharField(max_length=50, unique=True)
-    head_office = models.CharField(max_length=100)
+# class BankBranch(models.Model):
+#     bank = models.ForeignKey(Bank, on_delete=models.CASCADE)
+#     bank_branch_id = models.AutoField(primary_key=True)
+#     bank_branch_name = models.CharField(max_length=100)
+#     branch_code = models.CharField(max_length=50, unique=True)
+#     head_office = models.CharField(max_length=100)
 
-    def __str__(self):
-        return self.bank_branch_name  
-
+#     def __str__(self):
+#         return self.bank_branch_name  
 
 class Payment(models.Model):
 
@@ -117,7 +116,6 @@ class CustomUser(AbstractUser):
     ]
 
     role = models.CharField(max_length=255, choices=ROLE_CHOICES, default=NO_ROLE)  # Default role can be changed
-
     first_name = models.CharField(max_length=30, blank=True, null=True)
     last_name = models.CharField(max_length=30 , blank=True, null=True)
     username = models.CharField(max_length=30, unique=True)
@@ -133,8 +131,7 @@ class CustomUser(AbstractUser):
     address = models.TextField(null=True, blank=True)  # New field for address
     bank_name = models.CharField(max_length=255, blank=True, null=True)
     bank_branch = models.CharField(max_length=255, blank=True, null=True)
-    location = models.CharField(max_length=255)
-    
+    location = models.CharField(max_length=255, blank=True, null=True)
     groups = models.ManyToManyField(Group, related_name='users', blank=True)
 
 
@@ -149,8 +146,8 @@ class PasswordReset(models.Model):
 
 class BankTeller(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-    bank = models.ForeignKey(Bank, on_delete=models.CASCADE)
-    bank_branch = models.ForeignKey(BankBranch, on_delete=models.CASCADE)  
+    # bank = models.ForeignKey(Bank, on_delete=models.CASCADE)
+    # bank_branch = models.ForeignKey(BankBranch, on_delete=models.CASCADE)  
 
     def __str__(self):
 

@@ -51,6 +51,7 @@ class ControlCenter(models.Model):
     contact = models.CharField(max_length=255, null=True, blank=True)
     seller = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)
     assigned_collateral_agent = models.ForeignKey(CollateralManager, on_delete=models.CASCADE, null=True, blank=True)
+    net_breed_supply = models.PositiveIntegerField(default=0, null=True, blank=True)  # Add this field
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
     def get_agent_full_name(self):
@@ -65,10 +66,8 @@ class ControlCenter(models.Model):
         else:
             return "Not assigned"
 
-
     def __str__(self):
         return self.name
-
 
 class Order(models.Model):
     order_number = models.CharField(max_length=20)
@@ -139,8 +138,6 @@ class LogisticsStatus(models.Model):
         except AttributeError:
             return None
 
-
-    
     def save(self, *args, **kwargs):
         # Populate buyer and seller from the associated invoice
         if not self.buyer or not self.seller:
@@ -149,9 +146,6 @@ class LogisticsStatus(models.Model):
                 self.buyer = invoice.buyer
                 self.seller = invoice.seller
         super().save(*args, **kwargs)
-
-    
-
 
     @property       
     def is_arrived(self):

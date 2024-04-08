@@ -260,7 +260,7 @@ class AbattoirPaymentToBreaderViewSet(viewsets.ModelViewSet):
 
         # Additional logic related to payment details can be performed here
         # For example, check payment status, update related models, log information, etc.
-
+                                                                          
         # Assume the Breeder model has a 'name' field
         breeder_first_name = instance.breeder_trade.breeder.first_name
         breeder_last_name = instance.breeder_trade.breeder.last_name
@@ -331,6 +331,8 @@ class AbattoirPaymentToBreaderViewSet(viewsets.ModelViewSet):
 
             return Response(serializer.data)
         else:
+
+
             # Handle payment failure, return an appropriate response
             return Response({'error': 'Payment processing failed'}, status=status.HTTP_400_BAD_REQUEST)
 

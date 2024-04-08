@@ -3,11 +3,12 @@ from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from django.utils.text import slugify
 from inventory_management.choices import BREED_CHOICES, PART_CHOICES, SALE_CHOICES
-from custom_registration.models import CustomUser, Bank
+from custom_registration.models import CustomUser
 from django.utils import timezone
 from datetime import timedelta
 # from transaction.models import Breader
 from custom_registration.models import Seller
+
 # ---------------Seller Purchase order--------------------------------------------
 
 class PurchaseOrder(models.Model):
@@ -39,8 +40,6 @@ class PurchaseOrder(models.Model):
 
 class LetterOfCreditSellerToTrader(models.Model):
     # Header Information
-
-   
     # Terms and Conditions
     # Define choices for shipment periods
     SHIPMENT_PERIODS = [
@@ -78,7 +77,7 @@ class LetterOfCreditSellerToTrader(models.Model):
 
     # seller = models.ForeignKey(Abattoir, on_delete=models.CASCADE)
     # breeder = models.ForeignKey(Breader, on_delete=models.CASCADE)
-    bank = models.ForeignKey(Bank, on_delete=models.CASCADE)
+    # bank = models.ForeignKey(Bank, on_delete=models.CASCADE)
     lc_number = models.CharField(max_length=100, unique=True)
     date = models.DateField(auto_now_add=True)
     beneficiary_name = models.CharField(max_length=255)
@@ -213,7 +212,7 @@ class Quotation(models.Model):
     def get_seller_full_name(self):
         if self.seller:
             return f'{self.seller.seller.first_name} {self.seller.seller.last_name}'
-        return "Unknown"
+        return "Unknown"    
     def get_buyer_email(self):
         if self.buyer:
             return f'{self.buyer.buyer.email}'

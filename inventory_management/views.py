@@ -205,6 +205,7 @@ class BreederTotalSingleSellerViewSet(viewsets.ViewSet):
                 )
                 .annotate(
                     total_breed_supply=Sum('breeds_supplied'),
+                    net_breed_supply=F('control_center__net_breed_supply'),
                     total_slaughtered=Coalesce(Sum('control_center__slaughterhouserecord__quantity'), Value(0))
                 )
             )
@@ -216,7 +217,7 @@ class BreederTotalSingleSellerViewSet(viewsets.ViewSet):
                 breed = entry['breed']
                 breed_supply = entry['total_breed_supply']
                 total_slaughtered = entry['total_slaughtered']
-                net_breed_supply = breed_supply - total_slaughtered if total_slaughtered is not None else breed_supply
+                net_breed_supply = entry['net_breed_supply']
                 if control_center_id not in categorized_data:
                     categorized_data[control_center_id] = {'name': control_center_name, 'breeds': {}}
                 if breed not in categorized_data[control_center_id]['breeds']:
