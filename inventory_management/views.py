@@ -183,10 +183,13 @@ class BreederTotalSingleSellerViewSet(viewsets.ViewSet):
 
     def list(self, request):
         try:
+            # Get the current user's ID
             seller_id = request.user.id
+            
+            # Filter control centers where the seller has breeder trades
+            seller_control_centers = ControlCenter.objects.filter(breadertrade__seller_id=seller_id).distinct()
 
-            seller_control_centers = ControlCenter.objects.filter(breadertrade__isnull=False).distinct()
-
+            # Query breeder trades for the seller's control centers
             control_center_totals = (
                 BreaderTrade.objects
                 .filter(control_center__in=seller_control_centers)
@@ -210,6 +213,7 @@ class BreederTotalSingleSellerViewSet(viewsets.ViewSet):
                 )
             )
 
+            # Process and categorize the data
             categorized_data = {}
             for entry in control_center_totals:
                 control_center_id = entry['control_center__id']
@@ -227,6 +231,7 @@ class BreederTotalSingleSellerViewSet(viewsets.ViewSet):
                     categorized_data[control_center_id]['breeds'][breed]['total_slaughtered'] += total_slaughtered
                     categorized_data[control_center_id]['breeds'][breed]['net_breed_supply'] += net_breed_supply
 
+            # Reverse the response and return it
             formatted_response = [{'control_center_id': key, 'name': value['name'], 'breeds': value['breeds']} for key, value in categorized_data.items()]
             formatted_response.reverse()
             
