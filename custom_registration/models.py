@@ -19,26 +19,6 @@ class Status(models.Model):
     def __str__(self):
         return f"Status - {self.status_id}"
 
-# class Bank(models.Model):
-#     bank_id = models.AutoField(primary_key=True)
-#     bank_name = models.CharField(max_length=50)
-#     bank_code = models.CharField(max_length=50, unique=True)
-#     bank_abbreviation = models.CharField(max_length=50)
-#     swift_code = models.CharField(max_length=50, unique=True)
-
-#     def __str__(self):
-#         return self.bank_name 
-
-# class BankBranch(models.Model):
-#     bank = models.ForeignKey(Bank, on_delete=models.CASCADE)
-#     bank_branch_id = models.AutoField(primary_key=True)
-#     bank_branch_name = models.CharField(max_length=100)
-#     branch_code = models.CharField(max_length=50, unique=True)
-#     head_office = models.CharField(max_length=100)
-
-#     def __str__(self):
-#         return self.bank_branch_name  
-
 class Payment(models.Model):
 
     SENT_TO_BANK = 'payment_initiated'

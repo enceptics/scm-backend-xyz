@@ -5,7 +5,6 @@ BREED_CHOICES = [
     ('sheep', 'Sheep'),
     ('cows', 'Cows'),
     ('pigs', 'Pigs'),
-    # Add more choices as needed
 ]
 
 PART_CHOICES = [
