@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container">
+        <h4 class="mt-n2 mb-3" style="color: #001b42;">Supply history</h4>
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Supplier</th>
+                        <th>Control Center</th>
+                        <th>Product</th>
+                        <th>Number supplied</th>
+                        <th> Weight</th>
+                        <th>Vaccinated</th>
+                        <th>Price</th>
+                        <!-- Add more columns as needed -->
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for trade in breeder_trades %}
+                        <tr style="font-size: 14px;">
+                            <td>{{ trade.transaction_date }}</td>
+                            <td>{{ trade.breeder }}</td>
+                            <td>{{ trade.control_center }}</td>
+                            <td>{{ trade.breed }}</td>
+                            <td>{{ trade.breeds_supplied }}</td>
+                            <td>{{ trade.goat_weight }}</td>
+                            <td>{{ trade.vaccinated }}</td>
+                            <td>{{ trade.price }}</td>
+                            <!-- Add more columns as needed -->
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <!-- Pagination links -->
+        <div class="pagination justify-content-center">
+            <span class="step-links">
+                {% if breeder_trades.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ breeder_trades.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ breeder_trades.number }} of {{ breeder_trades.paginator.num_pages }}.
+                </span>
+
+                {% if breeder_trades.has_next %}
+                    <a href="?page={{ breeder_trades.next_page_number }}">next</a>
+                    <a href="?page={{ breeder_trades.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+    </div>
+{% endblock %}

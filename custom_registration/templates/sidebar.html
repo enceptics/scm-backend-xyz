@@ -1,0 +1,101 @@
+{% load static %}
+
+<ul class="navbar-nav bg-gradient sidebar sidebar-dark accordion" id="accordionSidebar" style="background-color: #001b42;">
+
+    <!-- Sidebar - Brand -->
+    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{% url 'home' %}">
+        <div class="sidebar-brand-icon rotate-n-15">
+            <i class="fas fa-laugh-wink"></i>
+        </div>
+        <div class="sidebar-brand-text mx-3">Intellima</div>
+    </a>
+
+    <!-- Divider -->
+    <hr class="sidebar-divider  mb-0">
+
+    <!-- Nav Item - Dashboard -->
+    <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
+        <a class="nav-link" href="{% url 'home' %}">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Admin</span></a>
+    </li>
+    <hr class="sidebar-divider my-0">
+
+    {% if request.user.role == 'seller' or request.user.is_superuser %}
+    <!-- Nav Item - Sellers -->
+    <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
+        <a class="nav-link" href="{% url 'home' %}">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Sellers</span></a>
+    </li>
+    <hr class="sidebar-divider my-0">
+    {% endif %}
+
+    {% if request.user.role == 'buyer' or request.user.is_superuser %}
+    <!-- Nav Item - Buyers -->
+    <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
+        <a class="nav-link" href="{% url 'buyer_dashboard' %}">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Buyers</span></a>
+    </li>
+    <hr class="sidebar-divider my-0">
+    {% endif %}
+
+    {% if request.user.role == 'seller' or request.user.is_superuser %}
+    <!-- Nav Item - Stock Shift -->
+    <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
+        <a class="nav-link" href="{% url 'stock_shift_dashboard' %}">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Stock Shift</span></a>
+    </li>
+    <hr class="sidebar-divider my-0">
+    {% endif %}
+
+    {% if request.user.role == 'breeder' or request.user.is_superuser %}
+    <!-- Nav Item - Suppliers -->
+    <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
+        <a class="nav-link" href="{% url 'breeder_dashboard' %}">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Suppliers</span></a>
+    </li>
+    <hr class="sidebar-divider my-0">
+    {% endif %}
+
+    {% if request.user.role == 'bank' or request.user.is_superuser %}
+    <!-- Nav Item - Bank -->
+    <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
+        <a class="nav-link" href="{% url 'bank_dashboard' %}">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Bank</span></a>
+    </li>
+    <hr class="sidebar-divider my-0">
+    {% endif %}
+
+    {% if request.user.role == 'bank' or request.user.is_superuser %}
+    <!-- Nav Item - Control Centers -->
+    <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
+        <a class="nav-link" href="{% url 'control_centers_dashboard' %}">
+            <i class="fas fa-fw fa-users"></i>
+            <span>Control Centers</span></a>
+    </li>
+    <hr class="sidebar-divider my-0">
+    {% endif %}
+
+    {% if request.user.role == 'bank' or request.user.is_superuser %}
+    <!-- Nav Item - Export Management -->
+    <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
+        <a class="nav-link" href="{% url 'export_management' %}">
+            <i class="fas fa-fw fa-cart-plus"></i>
+            <span>Export Management</span></a>
+    </li>
+    <hr class="sidebar-divider my-0">
+    {% endif %}
+<p></p>
+<p></p>
+
+    <!-- Sidebar Toggler (Sidebar) -->
+    <div class="text-center d-none d-md-inline">
+        <button class="rounded-circle border-0" id="sidebarToggle"></button>
+    </div>
+
+</ul>

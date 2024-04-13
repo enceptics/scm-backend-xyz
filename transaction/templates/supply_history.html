@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container">
+        <h4 class="mt-n4 mb-3" style="color: #001b42;">Supply History</h4>
+        {% if supplies %}
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Product</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Control center</th>
+                            <th>Seller</th>
+                            <th>Vaccinated</th>
+                            <th>Reference No.</th>
+                            <!-- Add more columns as needed -->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for supply in supplies %}
+                            <tr style="font-size: 14px;">
+                                <td>{{ supply.created_at }}</td>
+                                <td>{{ supply.breed }}</td>
+                                <td>{{ supply.breeds_supplied }}</td>
+                                <td>{{ supply.price }}</td>
+                                <td>{{ supply.control_center }}</td>
+                                <td>{{ supply.seller }}</td>
+                                <td>{{ supply.vaccinated }}</td>
+                                <td>{{ supply.reference }}</td>
+                                <!-- Add more columns as needed -->
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <!-- Pagination links -->
+            <div class="pagination justify-content-center">
+                <span class="step-links">
+                    {% if supplies.has_previous %}
+                        <a href="?page=1">&laquo; first</a>
+                        <a href="?page={{ supplies.previous_page_number }}">previous</a>
+                    {% endif %}
+
+                    <span class="current">
+                        Page {{ supplies.number }} of {{ supplies.paginator.num_pages }}.
+                    </span>
+
+                    {% if supplies.has_next %}
+                        <a href="?page={{ supplies.next_page_number }}">next</a>
+                        <a href="?page={{ supplies.paginator.num_pages }}">last &raquo;</a>
+                    {% endif %}
+                </span>
+            </div>
+        {% else %}
+            <div class="alert alert-warning mt-3" role="alert">
+                <span class="fa fa-exclamation-circle mr-2"></span>
+                Your supply history is empty.
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

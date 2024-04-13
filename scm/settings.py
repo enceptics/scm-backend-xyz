@@ -97,7 +97,11 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_daraja',
     'phonenumber_field',
+    'crispy_forms',
+    'bootstrap4'
 ]
+
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 # EQUITY BANK CREDENTIALS
 # Read Jenga credentials from .env file
@@ -151,6 +155,11 @@ EMAIL_HOST_USER = 'pascalouma54@gmail.com'  # Your email address
 EMAIL_HOST_PASSWORD = 'jcfgolmahddantnv'
 EMAIL_USE_SSL = False
 
+PROTOCOL = 'http'
+DOMAIN = '127.0.0.1:8000'
+
+SITE_NAME = 'Intellima'
+
 ACCOUNT_EMAIL_REQUIRED = True
 EMAIL_CONFIRM_REDIRECT_BASE_URL = \
     "http://localhost:5173/email/confirm/"
@@ -176,7 +185,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
-
 ]
 
 TEMPLATES = [

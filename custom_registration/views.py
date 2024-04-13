@@ -40,6 +40,66 @@ from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from transaction.models import Breader
 
+# Templates
+from django.shortcuts import render
+
+from .forms import CustomUserRegistrationForm, CustomPasswordResetForm, CustomLoginForm  # Import the CustomUserRegistrationForm
+
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login
+from django.contrib import messages
+
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView
+from django.contrib.auth import get_user_model
+from django.contrib.auth import logout
+
+from django.contrib.auth.views import PasswordResetCompleteView
+from django.views.generic import TemplateView
+
+from django.conf import settings
+
+protocol = settings.PROTOCOL
+domain = settings.DOMAIN
+
+User = get_user_model()
+
+class CustomPasswordResetView(PasswordResetView):
+    def save(self, domain_override=None, subject_template_name='auth/password_reset_subject.txt', email_template_name='auth/password_reset_email.html', use_https=False, token_generator=default_token_generator, from_email=None, request=None, html_email_template_name=None, extra_email_context=None):
+        # Generate the password reset token and uid
+        email = self.cleaned_data["email"]
+        domain = domain_override if domain_override is not None else settings.DOMAIN
+        site_name = settings.SITE_NAME
+        protocol = 'https' if use_https else 'http'
+        context = {
+            'email': email,
+            'domain': domain,
+            'site_name': site_name,
+            'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+            'user': user,
+            'token': token_generator.make_token(user),
+            'protocol': protocol,
+        }
+        # Render the email content
+        subject = render_to_string(subject_template_name, context)
+        # Email subject *must not* contain newlines
+        subject = ''.join(subject.splitlines())
+        email_message = render_to_string(email_template_name, context)
+        send_mail(subject, email_message, from_email, [email], fail_silently=False)
+        return email
+        
+class CustomPasswordResetConfirmView(PasswordResetConfirmView):
+    success_url = reverse_lazy('password_reset_complete')  # Corrected URL name
+    template_name = 'auth/password_reset_confirm.html'
+
+class CustomPasswordResetCompleteView(PasswordResetCompleteView):
+    template_name = 'auth/password_reset_complete.html'
+    success_url = reverse_lazy('password_reset_complete')
+
+class CustomPasswordResetDoneView(TemplateView):
+    template_name = 'auth/password_reset_done.html'  # Specify the template name
+
+
 class GetUserRole(APIView):
     def get(self, request):
         if request.user.is_authenticated:
@@ -156,7 +216,7 @@ class PasswordResetRequestView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class PasswordResetConfirmView(APIView):
+class CustomPasswordResetConfirmationView(APIView):
     serializer_class = PasswordResetConfirmSerializer
 
     def post(self, request, uidb64, token):
@@ -493,3 +553,200 @@ class SellerViewSet(viewsets.ModelViewSet):
     #         queryset = Seller.objects.filter(breeder=breeder)
 
     #         return queryset
+
+# TEMPLATES
+
+def home(request):
+    # Add any context data you want to pass to the template
+    context = {
+        'title': 'Home Page',
+        'content': 'Welcome to our website!',
+    }
+    # Render the 'home.html' template with the provided context
+    return render(request, 'home.html', context)
+
+from django.contrib.auth.forms import UserCreationForm
+from .forms import BuyerRegistrationForm, BreederRegistrationForm, SellerRegistrationForm, BankRegistrationForm, CollateralManagerRegistrationForm
+def register_buyer(request):
+    if request.method == 'POST':
+        form = BuyerRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.role = CustomUser.BUYER
+            user.save()
+            return redirect('login')
+    else:
+        form = BuyerRegistrationForm()
+    return render(request, 'auth/buyer_registration.html', {'form': form})
+
+def register_breeder(request):
+    if request.method == 'POST':
+        form = BreederRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.role = CustomUser.BREEDER
+            user.save()
+            return redirect('login')
+    else:
+        form = BreederRegistrationForm()
+    return render(request, 'auth/breeder_registration.html', {'form': form})
+
+def register_seller(request):
+    if request.method == 'POST':
+        form = SellerRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.role = CustomUser.SELLER
+            user.save()
+            return redirect('login')
+    else:
+        form = SellerRegistrationForm()
+    return render(request, 'auth/seller_registration.html', {'form': form})
+
+def register_bank(request):
+    if request.method == 'POST':
+        form = BankRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.role = CustomUser.BANK
+            user.save()
+            return redirect('login')
+    else:
+        form = BankRegistrationForm()
+    return render(request, 'auth/bank_registration.html', {'form': form})
+
+def register_collateral_manager(request):
+    if request.method == 'POST':
+        form = CollateralManagerRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.role = CustomUser.COLLATERAL_MANAGER
+            user.save()
+            return redirect('login')
+    else:
+        form = CollateralManagerRegistrationForm()
+    return render(request, 'auth/collateral_manager_registration.html', {'form': form})
+
+    # Registration
+def register_user(request):
+    if request.method == 'POST':
+        form = CustomUserRegistrationForm(request.POST)
+        if form.is_valid():
+            user_type = form.cleaned_data.get('user_type')
+            # Create user instance based on user type
+            if user_type == 'seller':
+                user = Seller.objects.create_user(**form.cleaned_data)
+                user.is_seller = True  # Assign seller role
+            elif user_type == 'breeder':
+                user = Breeder.objects.create_user(**form.cleaned_data)
+                user.is_breeder = True  # Assign breeder role
+            elif user_type == 'buyer':
+                user = Buyer.objects.create_user(**form.cleaned_data)
+                user.is_buyer = True  # Assign buyer role
+            # Add more user types as needed
+
+            user.save()  # Save user with assigned role
+
+            # Redirect to respective dashboard
+            if user:
+                if user_type == 'seller':
+                    return redirect('/seller_dashboard/')  # Replace with seller dashboard URL
+                elif user_type == 'breeder':
+                    return redirect('/breeder_dashboard/')  # Replace with breeder dashboard URL
+                elif user_type == 'buyer':
+                    return redirect('/buyer_dashboard/')  # Replace with buyer dashboard URL
+                # Add more redirects for other user types
+    else:
+        form = CustomUserRegistrationForm()
+
+    return render(request, 'auth/register.html', {'form': form})
+
+def login_view(request):
+    if request.method == 'POST':
+        form = CustomLoginForm(request.POST)  # Pass request.POST to initialize the form with user input
+        if form.is_valid():  # Check if the form is valid
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)
+                # Determine user's role and redirect accordingly
+                if user.role == CustomUser.ADMIN:
+                    return redirect('/admin/')  # Redirect admin users to admin page
+                elif user.role == CustomUser.BREEDER:
+                    return redirect('/dashboard/breeder/')  # Redirect breeders to breeder dashboard
+              
+                elif user.role == CustomUser.BUYER:
+                    return redirect('/dashboard/buyer/')  # Redirect buyers to buyer dashboard
+                elif user.role == CustomUser.BANK:
+                    return redirect('/dashboard/bank/')  # Redirect buyers to buyer dashboard
+                elif user.role == CustomUser.SELLER:
+                    return redirect('/dashboard/seller/')  # Redirect sellers to seller dashboard
+                elif user.role == CustomUser.WAREHOUSE_PERSONNEL:
+                    return redirect('/warehouse_personnel_dashboard/')  # Redirect warehouse personnel to warehouse personnel dashboard
+                elif user.role == CustomUser.INVENTORY_MANAGER:
+                    return redirect('/inventory_manager_dashboard/')  # Redirect inventory managers to inventory manager dashboard
+                elif user.role == CustomUser.SLAUGHTERHOUSE_MANAGER:
+                    return redirect('/slaughterhouse_manager_dashboard/')  # Redirect slaughterhouse managers to slaughterhouse manager dashboard
+                elif user.role == CustomUser.COLLATERAL_MANAGER:
+                    return redirect('/collateral_manager_dashboard/')
+                else:
+                    # Handle other roles or scenarios
+                    return redirect('/')  # Redirect to a generic dashboard
+            else:
+                # Return an invalid login message
+                messages.error(request, 'Invalid username or password.')
+    else:
+        form = CustomLoginForm()  # If it's a GET request, initialize an empty form
+
+    return render(request, 'auth/login.html', {'form': form})  # Pass the form to the template for rendering
+
+def logout_view(request):
+    logout(request)
+    # Redirect to a specific page after logout, if needed
+    return redirect('home')  # Replace 'home' with the name of your homepage URL pattern
+
+def seller_dashboard(request):
+    if request.user.role != 'seller' and not request.user.is_superuser:
+        return redirect('unauthorized')
+    return render(request, 'home.html')
+
+def buyer_dashboard(request):
+    if request.user.role != 'buyer' and not request.user.is_superuser:
+        return redirect('unauthorized')
+    return render(request, 'buyer_dashboard.html')
+
+def breeder_dashboard(request):
+    if request.user.role != 'breeder' and not request.user.is_superuser:
+        return redirect('unauthorized')
+    return render(request, 'breeder_dashboard.html')
+
+def bank_dashboard(request):
+    if request.user.role != 'bank' and not request.user.is_superuser:
+        return redirect('unauthorized')
+    return render(request, 'bank_dashboard.html')
+
+def control_centers_dashboard(request):
+    if request.user.role != 'control_centers' and not request.user.is_superuser:
+        return redirect('unauthorized')
+    return render(request, 'control_centers_dashboard.html')
+
+def export_management_dashboard(request):
+    if request.user.role != 'export_management' and not request.user.is_superuser:
+        return redirect('unauthorized')
+    return render(request, 'export_management_dashboard.html')
+
+def stock_shift_dashboard(request):
+    # Add logic to retrieve data for the seller dashboard
+    # For example, retrieve orders, sales, or any other relevant information
+    
+    context = {
+        # Add context data for the seller dashboard template
+        'title': 'Stock shift Dashboard',
+        'content': 'Welcome !',
+    }
+    
+    return render(request, 'stock_shift.html', context)
+
+def unauthorized(request):
+    return render(request, 'unauthorized.html')

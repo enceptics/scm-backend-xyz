@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Registration</title>
+</head>
+<body>
+
+<h1>User Registration</h1>
+
+<!-- Buyer Registration Form -->
+<form class="user" method="post" action="{% url 'register_buyer' %}">
+    {% csrf_token %}
+    <h2>Buyer Registration</h2>
+    <div class="form-group">
+        <label for="id_username">Username</label>
+        {{ form.username }}
+    </div>
+    <div class="form-group">
+        <label for="id_password">Password</label>
+        {{ form.password }}
+    </div>
+    <!-- Additional fields for buyer -->
+    <div class="form-group">
+        <label for="id_buyer_additional_field1">Additional Field 1 for Buyer</label>
+        {{ form.buyer_additional_field1 }}
+    </div>
+    <div class="form-group">
+        <label for="id_buyer_additional_field2">Additional Field 2 for Buyer</label>
+        {{ form.buyer_additional_field2 }}
+    </div>
+    <button type="submit" class="btn btn-primary btn-user btn-block">Register as Buyer</button>
+</form>
+
+<!-- Breeder Registration Form -->
+<form class="user" method="post" action="{% url 'register_breeder' %}">
+    {% csrf_token %}
+    <h2>Breeder Registration</h2>
+    <div class="form-group">
+        <label for="id_username">Username</label>
+        {{ form.username }}
+    </div>
+    <div class="form-group">
+        <label for="id_password">Password</label>
+        {{ form.password }}
+    </div>
+    <!-- Additional fields for breeder -->
+    <div class="form-group">
+        <label for="id_breeder_additional_field1">Additional Field 1 for Breeder</label>
+        {{ form.breeder_additional_field1 }}
+    </div>
+    <div class="form-group">
+        <label for="id_breeder_additional_field2">Additional Field 2 for Breeder</label>
+        {{ form.breeder_additional_field2 }}
+    </div>
+    <button type="submit" class="btn btn-primary btn-user btn-block">Register as Breeder</button>
+</form>
+
+<!-- Seller Registration Form -->
+<form class="user" method="post" action="{% url 'register_seller' %}">
+    {% csrf_token %}
+    <h2>Seller Registration</h2>
+    <div class="form-group">
+        <label for="id_username">Username</label>
+        {{ form.username }}
+    </div>
+    <div class="form-group">
+        <label for="id_password">Password</label>
+        {{ form.password }}
+    </div>
+    <!-- Additional fields for seller -->
+    <div class="form-group">
+        <label for="id_seller_additional_field1">Additional Field 1 for Seller</label>
+        {{ form.seller_additional_field1 }}
+    </div>
+    <div class="form-group">
+        <label for="id_seller_additional_field2">Additional Field 2 for Seller</label>
+        {{ form.seller_additional_field2 }}
+    </div>
+    <button type="submit" class="btn btn-primary btn-user btn-block">Register as Seller</button>
+</form>
+
+<!-- Bank Registration Form -->
+<form class="user" method="post" action="{% url 'register_bank' %}">
+    {% csrf_token %}
+    <h2>Bank Registration</h2>
+    <div class="form-group">
+        <label for="id_username">Username</label>
+        {{ form.username }}
+    </div>
+    <div class="form-group">
+        <label for="id_password">Password</label>
+        {{ form.password }}
+    </div>
+    <!-- Additional fields for bank -->
+    <div class="form-group">
+        <label for="id_bank_additional_field1">Additional Field 1 for Bank</label>
+        {{ form.bank_additional_field1 }}
+    </div>
+    <div class="form-group">
+        <label for="id_bank_additional_field2">Additional Field 2 for Bank</label>
+        {{ form.bank_additional_field2 }}
+    </div>
+    <button type="submit" class="btn btn-primary btn-user btn-block">Register as Bank</button>
+</form>
+
+<!-- Collateral Manager Registration Form -->
+<form class="user" method="post" action="{% url 'register_collateral_manager' %}">
+    {% csrf_token %}
+    <h2>Collateral Manager Registration</h2>
+    <div class="form-group">
+        <label for="id_username">Username</label>
+        {{ form.username }}
+    </div>
+    <div class="form-group">
+        <label for="id_password">Password</label>
+        {{ form.password }}
+    </div>
+    <!-- Additional fields for collateral manager -->
+    <div class="form-group">
+        <label for="id_collateral_manager_additional_field1">Additional Field 1 for Collateral Manager</label>
+        {{ form.collateral_manager_additional_field1 }}
+    </div>
+    <div class="form-group">
+        <label for="id_collateral_manager_additional_field2">Additional Field 2 for Collateral Manager</label>
+        {{ form.collateral_manager_additional_field2 }}
+    </div>
+    <button type="submit" class="btn btn-primary btn-user btn-block">Register as Collateral Manager</button>
+</form>
+
+<!-- Other Registration Forms (if any) -->
+
+</body>
+</html>

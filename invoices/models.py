@@ -111,14 +111,11 @@ class Invoice(models.Model):
     date_created = models.DateTimeField(blank=True, null=True)
     last_updated = models.DateTimeField(blank=True, null=True)
 
-
     def __str__(self):
         return '{} {}'.format(self.title, self.uniqueId)
 
-
     def get_absolute_url(self):
         return reverse('invoice-detail', kwargs={'slug': self.slug})
-
 
     def save(self, *args, **kwargs):
         if self.date_created is None:
@@ -131,7 +128,6 @@ class Invoice(models.Model):
         self.last_updated = timezone.localtime(timezone.now())
 
         super(Invoice, self).save(*args, **kwargs)
-
 
 class Settings(models.Model):
 
@@ -151,21 +147,17 @@ class Settings(models.Model):
     emailAddress = models.CharField(null=True, blank=True, max_length=100)
     taxNumber = models.CharField(null=True, blank=True, max_length=100)
 
-
     #Utility fields
     uniqueId = models.CharField(null=True, blank=True, max_length=100)
     slug = models.SlugField(max_length=500, unique=True, blank=True, null=True)
     date_created = models.DateTimeField(blank=True, null=True)
     last_updated = models.DateTimeField(blank=True, null=True)
 
-
     def __str__(self):
         return '{} {} {}'.format(self.clientName, self.province, self.uniqueId)
 
-
     def get_absolute_url(self):
         return reverse('settings-detail', kwargs={'slug': self.slug})
-
 
     def save(self, *args, **kwargs):
         if self.date_created is None:

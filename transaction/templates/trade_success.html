@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Success
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="card shadow mb-4">
+                    <div class="card-body">
+                        <h2 class="text-center text-success mb-4">Success!</h2>
+                        <p class="text-center">Form submission successful.</p>
+                        <div class="text-center">
+                            <a href="{% url 'home' %}" class="btn btn-primary">Go to Home</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

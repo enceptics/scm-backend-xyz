@@ -17,6 +17,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import permissions
 from django.utils.html import strip_tags
 from logistics.views import ControlCenter
+from django.shortcuts import render, redirect
 
 class AbattoirViewSet(viewsets.ModelViewSet):
     queryset = Abattoir.objects.all()
@@ -357,3 +358,63 @@ class AbattoirPaymentToBreaderViewSet(viewsets.ModelViewSet):
         except AbattoirPaymentToBreader.DoesNotExist:
             return Response({'error': 'Payment not found'}, status=status.HTTP_404_NOT_FOUND)
 # END PAYMENT
+
+# TEMPLATES
+from .forms import BreaderTradeForm
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def create_breader_trade(request):
+    if request.method == 'POST':
+        form = BreaderTradeForm(request.POST, user=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect('success_url')  # Redirect to success URL
+    else:
+        form = BreaderTradeForm(user=request.user)
+    return render(request, 'create_breader_trade.html', {'form': form})
+
+def success_view(request):
+    return render(request, 'trade_success.html')
+
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
+def supply_history(request):
+    # Filter supply history items by current breeder
+    current_breeder = request.user
+    supply_history = BreaderTrade.objects.filter(breeder=current_breeder).order_by('-created_at')
+
+    # Paginate the supply history items
+    paginator = Paginator(supply_history, 5)  # Show 5 items per page
+    page_number = request.GET.get('page')
+    try:
+        supplies = paginator.page(page_number)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        supplies = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range, deliver last page of results.
+        supplies = paginator.page(paginator.num_pages)
+
+    # Pass the paginated supplies to the template
+    return render(request, 'supply_history.html', {'supplies': supplies})
+
+def seller_breeder_trade(request):
+    # Retrieve breeder trades for the current seller
+    current_seller = request.user
+    breeder_trades = BreaderTrade.objects.filter(seller=current_seller)
+
+    # Paginate the breeder trades
+    paginator = Paginator(breeder_trades, 5)  # Show 5 items per page
+    page_number = request.GET.get('page')
+    try:
+        breeder_trades = paginator.page(page_number)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        breeder_trades = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range, deliver last page of results.
+        breeder_trades = paginator.page(paginator.num_pages)
+
+    # Pass the paginated breeder trades to the template
+    return render(request, 'seller_supply_history.html', {'breeder_trades': breeder_trades})

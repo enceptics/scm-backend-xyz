@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buyer Registration</title>
+</head>
+<body>
+    <h1>Buyer Registration</h1>
+    <form class="user" method="post" action="{% url 'buyer_register' %}">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="id_username">Username</label>
+            {{ form.username }}
+        </div>
+        <div class="form-group">
+            <label for="id_password">Password</label>
+            {{ form.password }}
+        </div>
+        <!-- Additional fields for buyer -->
+        <div class="form-group">
+            <label for="id_buyer_additional_field1">Additional Field 1 for Buyer</label>
+            {{ form.buyer_additional_field1 }}
+        </div>
+        <div class="form-group">
+            <label for="id_buyer_additional_field2">Additional Field 2 for Buyer</label>
+            {{ form.buyer_additional_field2 }}
+        </div>
+        <button type="submit" class="btn btn-primary btn-user btn-block">Register Buyer</button>
+    </form>
+</body>
+</html>

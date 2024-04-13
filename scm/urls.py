@@ -8,6 +8,8 @@ from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
 # from accounts.views import Profile, ProfileViewset
 # from accounts import views
+from transaction import views as trade_views  # Import views as trade_views
+
 from transaction.views import (
     AbattoirPaymentToBreaderViewSet,
     BreaderViewSet,
@@ -19,8 +21,9 @@ from transaction.views import (
         BreaderTradeSingleUserViewSet,
         InventoryViewSet,
         BreaderTradeSingleSellerViewSet,
-        BreaderTradeAllSingleSellerViewSet
+        BreaderTradeAllSingleSellerViewSet,
 )
+from invoice_generator import views as quotation_views
 from inventory_management.views import InventoryBreedViewSet, InventoryBreedSalesViewSet, BreedCutViewSet, BreederTotalSerializer, BreederTotalViewSet, BreedCutTotalViewSet, BreederTotalSingleSellerViewSet
 from slaughter_house.views import SlaughterhouseRecordViewSet
 # from accounts.views import get_csrf_token
@@ -43,7 +46,6 @@ from invoice_generator.views import (
 )
 from slaughter_house.views import SupplyVsDemandStatisticsViewSet, compare_weight_loss
 from logistics.views import LogisticsStatusViewSet, OrderViewSet, ShipmentProgressViewSet, ArrivedOrderViewSet, LogisticsStatusAllViewSet, PackageInfoViewset, CollateralManagerViewSet, ControlCenterViewSet
-
 
 from dj_rest_auth.registration.views import (
     ResendEmailVerificationView,
@@ -69,6 +71,7 @@ from allauth.account.views import (
 #     GetUserRole,
 # )
 
+from custom_registration import views
 
 from custom_registration.views import (
     CustomTokenObtainPairView,
@@ -83,16 +86,19 @@ from custom_registration.views import (
     RoleListView,
     PaymentViewSet, CustomerServiceViewSet,
     PasswordResetRequestView,
-    PasswordResetConfirmView,
+    CustomPasswordResetView,
+    CustomPasswordResetConfirmView,
+    CustomPasswordResetConfirmationView,
+    CustomPasswordResetCompleteView,
+    CustomPasswordResetDoneView,
     SellerViewSet,
-    SellerAllViewSet
+    SellerAllViewSet,
 )
 
 from custom_registration import views
 
 # Payments
 from payments.views import make_payment
-
 
 router = DefaultRouter()
 # app_name = 'payments'
@@ -112,7 +118,6 @@ router.register(r'traders', BreaderViewSet)
 
 # supply vs demand
 router.register(r'supply-vs-demand', SupplyVsDemandStatisticsViewSet, basename='supply-vs-demand')
-
 
 # Purchase order and Lc Local. Profoma invoice
 router.register(r'purchase-orders', PurchaseOrderViewSet, basename='purchase-orders')
@@ -139,16 +144,12 @@ router.register(r'breader-trade-id', BreaderTradeSingleUserViewSet)
 
 # router.register(r'all-breeder_totals', BreederTotalViewSet, basename='all-cut_totals')
 router.register(r'breeder_totals', BreederTotalSingleSellerViewSet, basename='cut_totals')
-
-
 router.register(r'part_totals_count', BreedCutTotalViewSet, basename='breeder_totals')
 
 # breeder single user
 router.register(r'user-supplied-breeds', UserSuppliedBreedsViewSet, basename='user-supplied-breeds')
 
-
 # Inventory management
-
 router.register(r'abattoirs', AbattoirViewSet)
 router.register(r'breaders', BreaderViewSet)
 router.register(r'breed-cut', BreedCutViewSet)
@@ -172,7 +173,6 @@ router.register(r'profiles', UserProfileViewSet, basename='profile')
 # sellers
 router.register(r'sellers', SellerViewSet, basename='sellers')
 router.register(r'all-sellers', SellerAllViewSet, basename='sellers')
-
 
 # Buyer
 router.register(r'register-buyer', CustomUserRegistrationViewSet, basename='register-buyer')
@@ -233,11 +233,9 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('intellima_administration/', admin.site.urls),
 
     # new purchase order
-
-    
 
     # custom registration
 
@@ -249,7 +247,7 @@ urlpatterns = [
     path('api/roles/', RoleListView.as_view(), name='role-list'),
 
     path('api/password-reset/', PasswordResetRequestView.as_view(), name='password-reset'),
-    path('api/password-reset/confirm/<str:uidb64>/<str:token>/', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
+    path('api/password-reset/confirm/<str:uidb64>/<str:token>/', CustomPasswordResetConfirmationView.as_view(), name='password-reset-confirm'),
 
     path('api/', include(router.urls)),
     path('api/breader-count/', BreaderCountView.as_view(), name='breader-count'),
@@ -298,8 +296,46 @@ urlpatterns = [
     # path('registration/', include('custom_registration.urls')),
     path('drf/', include('rest_framework.urls', namespace='rest_framework')),
     path('swagger/<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
-    path('', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('intellima_base_apis', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+
+    # TEMPLATES
+
+    # auth
+    path('', views.home, name='home'),  # Ensure the URL pattern ends with a trailing slash
+    path('register/', views.register_user, name='register'),
+    path('login/', views.login_view, name='login'),
+    path('password_reset/', CustomPasswordResetView.as_view(), name='password_reset'),
+    path('reset/<uidb64>/<token>/', CustomPasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('reset/complete/', CustomPasswordResetCompleteView.as_view(), name='password_reset_complete'),
+    path('password_reset/done/', CustomPasswordResetDoneView.as_view(), name='password_reset_done'),  # Add this line
+    path('logout/', views.logout_view, name='custom_logout'),
+
+    path('register/buyer/', views.register_buyer, name='buyer_register'),
+    path('register/breeder/', views.register_breeder, name='breeder_register'),
+    path('register/seller/', views.register_seller, name='seller_register'),
+    path('register/bank/', views.register_bank, name='bank_register'),
+    path('register/collateral-manager/', views.register_collateral_manager, name='collateral_manager_register'),
+    path('unauthorized/', views.unauthorized, name='unauthorized'),
+
+    # dashboards
+    path('dashboard/seller/', views.seller_dashboard, name='seller_dashboard'),
+    path('dashboard/breeder/', views.breeder_dashboard, name='breeder_dashboard'),
+    path('dashboard/buyer/', views.buyer_dashboard, name='buyer_dashboard'),
+    path('dashboard/stock-shift/', views.stock_shift_dashboard, name='stock_shift_dashboard'),
+    path('dashboard/bank/', views.bank_dashboard, name='bank_dashboard'),
+    path('dashboard/control-centers/', views.control_centers_dashboard, name='control_centers_dashboard'),
+    path('dashboard/export-management/', views.export_management_dashboard, name='export_management'),
+
+    # Transaction urls
+    path('trade/create_breader_trade/', trade_views.create_breader_trade, name='create_breader_trade'),
+    path('trade/success/', trade_views.success_view, name='success_url'),
+    path('trade/supply-history/', trade_views.supply_history, name='supply_history'),
+    path('trade/seller_supply-history/', trade_views.seller_breeder_trade, name='seller_supply_history'),
+
+    # Quotatopn
+    path('quotation/list/', quotation_views.quotation_list, name='quotation_list'),
+    path('quotation/create/', quotation_views.create_quotation, name='create_quotation'),
 ]
 
 # Only add this when we are in debug mode.

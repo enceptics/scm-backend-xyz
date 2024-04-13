@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %} Suppliers {% endblock title %}
+
+{% block content %}
+<h5 class="mb-4 mt-2" style="color: #001b40;">Product supplies</h5>
+<p style="margin-top: 0;">Go to active orders to view details of new orders and the market we will be collecting from.</p>
+  
+<div class="row">
+    <div class="col-xs-12 col-md-4 col-lg-4">
+      <div class="card mt-2" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+        <div class="card-body">
+          <i class="fas fa-bell mb-2" style="font-size: 40px; color: #001b40;"></i>
+          <h5 class="card-title">Active orders</h5>
+          <p class="card-text">Click to go to active orders.</p>
+          <a href="{% url 'create_breader_trade' %}" class="btn text-white" style="background-color: #001b40;">View orders</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xs-12 col-md-4 col-lg-4">
+      <div class="card mt-2" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+        <div class="card-body">
+          <i class="fas fa-box mb-2" style="font-size: 40px; color: #001b40;"></i>
+          <h5 class="card-title">Supply products</h5>
+          <p class="card-text">Click below to supply your products.</p>
+          <a href="{% url 'create_breader_trade' %}" class="btn btn text-white" style="background-color: #001b40;">Supply products</a>
+        </div>
+      </div>
+    </div>
+  
+    <!-- Bread supplies status -->
+    <div class="col-xs-12 col-md-4 col-lg-4">
+      <div class="card mt-2" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+        <div class="card-body">
+          <i class="fas fa-money-bill-wave" style="font-size: 40px; color: #001b40;"></i>
+          <h5 class="card-title">Breed Supply History</h5>
+          <p class="card-text">Go to your supply history.</p>
+          <a href="{% url 'supply_history' %}" class="btn btn text-white" style="background-color: #001b40;">View history</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Empty history message -->
+  {% if emptyHistoryMessageVisible %}
+  <div class="alert alert-warning mt-2" role="alert">
+    Your breed supply history is empty.
+  </div>
+  {% endif %}
+{% endblock %}
+

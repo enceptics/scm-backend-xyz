@@ -108,7 +108,7 @@ class CustomUser(AbstractUser):
     head_of_family = models.CharField(max_length=255,default='Example Name', null=True, blank=True)
     county = models.CharField(max_length=50, null=True, blank=True)
     country = models.CharField(max_length=50, null=True, blank=True)  
-    address = models.TextField(null=True, blank=True)  # New field for address
+    address = models.CharField(max_length=100, null=True, blank=True)  # New field for address
     bank_name = models.CharField(max_length=255, blank=True, null=True)
     bank_branch = models.CharField(max_length=255, blank=True, null=True)
     location = models.CharField(max_length=255, blank=True, null=True)

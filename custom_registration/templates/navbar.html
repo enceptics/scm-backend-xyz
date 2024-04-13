@@ -1,0 +1,66 @@
+{% load static %}
+<nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+    <!-- Sidebar Toggle (Topbar) -->
+    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+        <i class="fa fa-bars"></i>
+    </button>
+
+    <!-- Topbar Navbar -->
+    <ul class="navbar-nav ml-auto">
+        <div class="topbar-divider d-none d-sm-block"></div>
+        <!-- Nav Item - User Information -->
+        <li class="nav-item dropdown no-arrow">
+            <div class="user-info-dropdown mx-3">
+                <div class="dropdown" onClick={handleProfileDropdownToggle}>
+                    
+                    {% if request.user.is_authenticated %}
+                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    {% if request.user.first_name or request.user.last_name %}
+                    <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{request.user.first_name}} {{request.user.last_name}}</span>
+                    {% else %}
+                    <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ request.user.username }}</span>
+                    {% endif %}
+                    <img class="img-profile rounded-circle"
+                        src="{% static 'img/undraw_profile.svg' %}">
+                </a>
+                    {% else %}
+                    <div class="d-flex"> <!-- Add flexbox container -->
+                        
+                        <a class="nav-link" href="{% url 'login' %}">
+                            <button class="btn-secondary btn-sm  text-dark" style="background: white; border: 1px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); border-radius: 5px;">
+
+                            <i class="fa fa-sign-in-alt"></i> Log In
+                            </button>
+                        </a>
+                        <a class="nav-link" href="{% url 'register' %}">
+                            <button class=" btn-outline-secondary btn-sm text-white" style="background: #28a745; border: 1px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); border-radius: 5px;">
+                            <i class="fa fa-user-plus"></i> Sign Up
+                            </button>
+                        </a>
+                    </div>
+                    {% endif %}
+                    <div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list"
+                        style="position: fixed; top: 70px; width: 300px; margin: 5px 20px 0 0; background-color: rgb(249, 250, 251); box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);"
+                        {% if isProfileDropdownVisible %} style="display: block;" {% endif %}>
+                        {% if request.user.is_authenticated %}
+                        <a class="dropdown-item" href="">
+                            <i class="dw dw-user1"></i> Profile
+                        </a>
+                        <a class="dropdown-item" href="#">
+                            <i class="dw dw-settings2"></i> Setting
+                        </a>
+                        <a class="dropdown-item" href="faq.html">
+                            <i class="dw dw-help"></i> Help
+                        </a>
+                        <a class="dropdown-item" href="{% url 'home' %}" data-toggle="modal" data-target="#logoutModal">
+                            <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                            Logout
+                        </a>    
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </li>
+    </ul>
+</nav>

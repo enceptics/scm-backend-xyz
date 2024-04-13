@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container-fluid">
+        <h4 class="mt-n3">Supply products</h4>
+        <div class="card shadow mb-4 p-3">
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group d-none">
+                        <label for="id_breeder">Breeder</label>
+                        <select class="form-control" id="id_breeder" name="breeder" style="display: none;">
+                            <!-- You can remove the options if the user can only select themselves -->
+                            <option value="{{ request.user.pk }}" selected>{{ request.user }}</option>
+                        </select>
+                        <input type="text" class="form-control" value="{{ request.user }}" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_seller">Seller</label>
+                        {{ form.seller }}
+                        <div class="invalid-feedback">
+                            {{ form.seller.errors }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="id_control_center">Control Center</label>
+                        {{ form.control_center }}
+                        <div class="invalid-feedback">
+                            {{ form.control_center.errors }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="id_breed">Breed</label>
+                        {{ form.breed }}
+                        <div class="invalid-feedback">
+                            {{ form.breed.errors }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="id_breeds_supplied">Breeds Supplied</label>
+                        {{ form.breeds_supplied }}
+                        <div class="invalid-feedback">
+                            {{ form.breeds_supplied.errors }}
+                        </div>
+                    </div>
+                    <!-- Add more fields in this column -->
+                </div>
+                <div class="col-md-6">
+                   
+                    <div class="form-group">
+                        <label for="id_goat_weight">Weight</label>
+                        {{ form.goat_weight }}
+                        <div class="invalid-feedback">
+                            {{ form.goat_weight.errors }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="id_vaccinated">Vaccinated</label>
+                        {{ form.vaccinated }}
+                        <div class="invalid-feedback">
+                            {{ form.vaccinated.errors }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="id_price">Price</label>
+                        {{ form.price }}
+                        <div class="invalid-feedback">
+                            {{ form.price.errors }}
+                        </div>
+                    </div>
+                    <!-- Add more fields in this column -->
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+    </div>
+
+{% endblock %}

@@ -365,4 +365,71 @@ def download_lc_document(request, lc_id):
     response['Content-Disposition'] = f'attachment; filename={lc.lc_document.name}'
     return response
 
+
+# TEMPLATES
+
+# views.py
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import Quotation
+from .forms import QuotationForm
+
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
+def quotation_list(request):
+    try:
+        # Retrieve quotations for the current user (assuming the user is a seller)
+        current_seller = Seller.objects.get(seller=request.user)
+        quotations = Quotation.objects.filter(seller=current_seller)
+
+        # Paginate the quotations
+        paginator = Paginator(quotations, 5)  # Show 5 items per page
+        page_number = request.GET.get('page')
+        try:
+            quotations = paginator.page(page_number)
+        except PageNotAnInteger:
+            # If page is not an integer, deliver first page.
+            quotations = paginator.page(1)
+        except EmptyPage:
+            # If page is out of range, deliver last page of results.
+            quotations = paginator.page(paginator.num_pages)
+    except Seller.DoesNotExist:
+        # If no seller is found for the current user, return an empty list of quotations
+        quotations = []
+
+    # Pass the paginated quotations to the template
+    return render(request, 'quotation_list.html', {'quotations': quotations})
+
+def create_quotation(request):
+    
+    if request.method == 'POST':
+        form = QuotationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Quotation created successfully!')
+            return redirect('quotation_list')
+    else:
+        form = QuotationForm()
+    return render(request, 'create_quotation.html', {'form': form})
+
+def update_quotation(request, pk):
+    quotation = get_object_or_404(Quotation, pk=pk)
+    if request.method == 'POST':
+        form = QuotationForm(request.POST, instance=quotation)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Quotation updated successfully!')
+            return redirect('quotation_list')
+    else:
+        form = QuotationForm(instance=quotation)
+    return render(request, 'update_quotation.html', {'form': form})
+
+def delete_quotation(request, pk):
+    quotation = get_object_or_404(Quotation, pk=pk)
+    if request.method == 'POST':
+        quotation.delete()
+        messages.success(request, 'Quotation deleted successfully!')
+        return redirect('quotation_list')
+    return render(request, 'delete_quotation.html', {'quotation': quotation})
+
    

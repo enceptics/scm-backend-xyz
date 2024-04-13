@@ -1,0 +1,53 @@
+<!-- quotation_list.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Quotations</h2>
+    <a href="{% url 'create_quotation' %}" class="btn btn-primary">Create Quotation</a>
+
+    <table class="table mt-3">
+        <thead>
+            <tr>
+                <th>Seller</th>
+                <th>Buyer</th>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for quotation in page_obj %}
+            <tr>
+                <td>{{ quotation.seller }}</td>
+                <td>{{ quotation.buyer }}</td>
+                <td>{{ quotation.product }}</td>
+                <td>{{ quotation.quantity }}</td>
+                <td>{{ quotation.unit_price }}</td>
+                <td>{{ quotation.status }}</td>
+                
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Pagination links -->
+    <div class="pagination justify-content-center">
+        <span class="step-links">
+            {% if page_obj.has_previous %}
+                <a href="?page=1">&laquo; first</a>
+                <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+            {% endif %}
+
+            <span class="current">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
+{% endblock %}
