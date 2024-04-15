@@ -372,64 +372,118 @@ def download_lc_document(request, lc_id):
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .models import Quotation
-from .forms import QuotationForm
+from .forms import QuotationForm, LetterOfCreditForm
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
+from django.contrib.auth.decorators import login_required
+
+@login_required
 def quotation_list(request):
+    """View to display a list of quotations for the currently logged-in user."""
+    # Retrieve the currently logged-in user
+    user = request.user
+
     try:
-        # Retrieve quotations for the current user (assuming the user is a seller)
-        current_seller = Seller.objects.get(seller=request.user)
-        quotations = Quotation.objects.filter(seller=current_seller)
-
-        # Paginate the quotations
-        paginator = Paginator(quotations, 5)  # Show 5 items per page
-        page_number = request.GET.get('page')
-        try:
-            quotations = paginator.page(page_number)
-        except PageNotAnInteger:
-            # If page is not an integer, deliver first page.
-            quotations = paginator.page(1)
-        except EmptyPage:
-            # If page is out of range, deliver last page of results.
-            quotations = paginator.page(paginator.num_pages)
+        # Attempt to get the associated Seller instance for the logged-in user
+        seller = user.seller_set.get()
+        # Filter quotations based on the seller
+        quotations = Quotation.objects.filter(seller=seller).order_by('-created_at')    
     except Seller.DoesNotExist:
-        # If no seller is found for the current user, return an empty list of quotations
-        quotations = []
+        # If the user is not associated with a Seller instance, set quotations to an empty queryset
+        quotations = Quotation.objects.none()
 
-    # Pass the paginated quotations to the template
-    return render(request, 'quotation_list.html', {'quotations': quotations})
+    # Paginate the filtered quotations queryset
+    paginator = Paginator(quotations, 10)  # Show 10 quotations per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
+    return render(request, 'quotation_list.html', {'page_obj': page_obj})
+        
+def quotation_detail(request, quotation_id):
+    """View to display details of a specific quotation."""
+    quotation = get_object_or_404(Quotation, pk=quotation_id)
+    return render(request, 'quotation_detail.html', {'quotation': quotation})
+
+from django.contrib import messages
+
+@login_required
 def create_quotation(request):
-    
+    """View to create a new quotation."""
     if request.method == 'POST':
         form = QuotationForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Quotation created successfully!')
-            return redirect('quotation_list')
+            quotation = form.save(commit=False)
+            # Retrieve the seller associated with the logged-in user
+            seller = Seller.objects.get(seller=request.user)
+            quotation.seller = seller
+            quotation.save()
+            # Redirect to the success template upon successful creation
+            return redirect('quotation_created')
+        else:
+            # If the form is not valid, display error messages
+            messages.error(request, 'Failed to create quotation. Please check the form.')
     else:
-        form = QuotationForm()
+        # Initialize the form with the seller field set to the seller associated with the logged-in user
+        seller = Seller.objects.get(seller=request.user)
+        form = QuotationForm(initial={'seller': seller})
+    
     return render(request, 'create_quotation.html', {'form': form})
 
-def update_quotation(request, pk):
-    quotation = get_object_or_404(Quotation, pk=pk)
+def quotation_created(request):
+    """Success template for quotation creation."""
+    return render(request, 'quotation_success.html')
+
+def update_quotation(request, quotation_id):
+    """View to update an existing quotation."""
+    quotation = get_object_or_404(Quotation, pk=quotation_id)
     if request.method == 'POST':
-        form = QuotationForm(request.POST, instance=quotation)
+        # Process form data
+        # Example: Update quotation object based on form data
+        # quotation.seller = request.POST['seller']
+        # quotation.save()
+        return JsonResponse({'success': True})
+    else:
+        return render(request, 'update_quotation.html', {'quotation': quotation})
+
+def delete_quotation(request, quotation_id):
+    """View to delete an existing quotation."""
+    quotation = get_object_or_404(Quotation, pk=quotation_id)
+    quotation.delete()
+    return JsonResponse({'success': True})
+
+# LC
+
+def letter_of_credit_create(request):
+    if request.method == 'POST':
+        form = LetterOfCreditForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Quotation updated successfully!')
-            return redirect('quotation_list')
+            return redirect('letter_of_credit_list')
     else:
-        form = QuotationForm(instance=quotation)
-    return render(request, 'update_quotation.html', {'form': form})
+        form = LetterOfCreditForm()
+    return render(request, 'letter_of_credit_create.html', {'form': form})
 
-def delete_quotation(request, pk):
-    quotation = get_object_or_404(Quotation, pk=pk)
+def letter_of_credit_list(request):
+    letters_of_credit = LetterOfCredit.objects.all().order_by('-issue_date')
+    context = {
+        'letters_of_credit': letters_of_credit,
+    }
+    return render(request, 'letter_of_credit_list.html', context)
+
+def update_letter_of_credit_status(request):
     if request.method == 'POST':
-        quotation.delete()
-        messages.success(request, 'Quotation deleted successfully!')
-        return redirect('quotation_list')
-    return render(request, 'delete_quotation.html', {'quotation': quotation})
+        letter_of_credit_id = request.POST.get('letter_of_credit_id')
+        new_status = request.POST.get('status')
+        if letter_of_credit_id and new_status:
+            letter_of_credit = LetterOfCredit.objects.get(pk=letter_of_credit_id)
+            letter_of_credit.status = new_status
+            letter_of_credit.save()
+            # You can return a JSON response to indicate success
+            return JsonResponse({'status': 'success'})
+    # If the request method is not POST or data is missing, return an error response
+    return JsonResponse({'status': 'error'})
 
-   
+def letter_of_credit_detail(request, pk):
+    letter_of_credit = get_object_or_404(LetterOfCredit, pk=pk)
+    return render(request, 'letter_of_credit_detail.html', {'letter_of_credit': letter_of_credit})

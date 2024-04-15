@@ -24,6 +24,8 @@ from transaction.views import (
         BreaderTradeAllSingleSellerViewSet,
 )
 from invoice_generator import views as quotation_views
+from invoice_generator import views as lc_views
+
 from inventory_management.views import InventoryBreedViewSet, InventoryBreedSalesViewSet, BreedCutViewSet, BreederTotalSerializer, BreederTotalViewSet, BreedCutTotalViewSet, BreederTotalSingleSellerViewSet
 from slaughter_house.views import SlaughterhouseRecordViewSet
 # from accounts.views import get_csrf_token
@@ -336,6 +338,14 @@ urlpatterns = [
     # Quotatopn
     path('quotation/list/', quotation_views.quotation_list, name='quotation_list'),
     path('quotation/create/', quotation_views.create_quotation, name='create_quotation'),
+    path('quotation/created/', quotation_views.quotation_created, name='quotation_created'),
+
+    # LC
+    path('letters/', lc_views.letter_of_credit_list, name='letter_of_credit_list'),
+    path('letters/<int:pk>/',lc_views.letter_of_credit_detail, name='letter_of_credit_detail'),
+    path('letters/create/', lc_views.letter_of_credit_create, name='letter_of_credit_create'), # Add this line
+    path('update_letter_of_credit_status/', lc_views.update_letter_of_credit_status, name='update_letter_of_credit_status'),
+
 ]
 
 # Only add this when we are in debug mode.

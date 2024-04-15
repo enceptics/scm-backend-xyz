@@ -205,6 +205,15 @@ class Quotation(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
+    @property
+    def pdf_url(self):
+        # Assuming each quotation has a unique identifier 'id'
+        quotation_id = self.id
+        # Construct the URL to the PDF file based on your project's file structure
+        # Replace 'path_to_pdf_directory' with the actual path to your PDF directory
+        pdf_file_path = f'/static/pdf_quotations/quotation_{quotation_id}.pdf'
+        return pdf_file_path
+
     def get_buyer_full_name(self):
         if self.buyer:
             return f'{self.buyer.buyer.first_name} {self.buyer.buyer.last_name}'
@@ -241,6 +250,38 @@ class Quotation(models.Model):
 
     def __str__(self):
         return f"Quotation for {self.product} by {self.buyer}"
+        
+import os
+from django.conf import settings
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from .models import Quotation
+
+@receiver(post_save, sender=Quotation)
+def generate_quotation_pdf(sender, instance, created, **kwargs):
+    if created:
+        try:
+            # Generate the file path for the PDF within the media directory
+            pdf_directory = os.path.join(settings.MEDIA_ROOT, 'pdf_quotations')
+            os.makedirs(pdf_directory, exist_ok=True)  # Ensure the directory exists
+            pdf_path = os.path.join(pdf_directory, f'quotation_{instance.id}.pdf')
+
+            # Generate the PDF content
+            with open(pdf_path, 'wb') as f:
+                pdf_canvas = canvas.Canvas(f, pagesize=letter)
+                pdf_canvas.drawString(100, 750, f"Quotation ID: {instance.id}")
+                # Add more content as needed
+                pdf_canvas.save()
+
+            # Save the PDF path to the Quotation object
+            instance.pdf_path = pdf_path
+            instance.save()
+
+        except Exception as e:
+            # Handle exceptions
+            print(f"Error generating PDF: {e}")
 
 
 class LetterOfCredit(models.Model):

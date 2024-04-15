@@ -1,0 +1,14 @@
+<!-- Supply vs Demand Statistics per Breed section -->
+{% for breed, data in statistics.items %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Breed: {{ breed }}</h5>
+                <p class="card-text">Total Supply: {{ data.total_supply }}</p>
+                <p class="card-text">Total Demand: {{ data.total_demand }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}

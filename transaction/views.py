@@ -4,6 +4,8 @@ from .models import Abattoir, Breader, BreaderTrade, AbattoirPaymentToBreader, I
 from custom_registration.models import Seller
 from .serializers import AbattoirSerializer, BreaderSerializer, BreaderTradeSerializer, AbattoirPaymentToBreaderSerializer, InventorySerializer
 import logging
+from slaughter_house.models import SlaughterhouseRecord
+from .models import AbattoirPaymentToBreader
 from rest_framework.decorators import action
 from django.http import JsonResponse
 from rest_framework.views import APIView
@@ -418,3 +420,24 @@ def seller_breeder_trade(request):
 
     # Pass the paginated breeder trades to the template
     return render(request, 'seller_supply_history.html', {'breeder_trades': breeder_trades})
+
+# Supply vs demand
+from django.http import JsonResponse
+
+def supply_vs_demand_statistics(request):
+    # Query BreaderTrade and SlaughterhouseRecord models to fetch data
+    breeder_trades = BreaderTrade.objects.all()
+    slaughter_records = SlaughterhouseRecord.objects.all()
+
+    # Perform calculations to determine supply vs demand
+    total_breeder_trades = sum(trade.breeds_supplied for trade in breeder_trades)
+    total_slaughter_records = sum(record.quantity for record in slaughter_records)
+
+    # Format the data as JSON
+    supply_data = {
+        'labels': ['Total Breeder Trades', 'Total Slaughter Records'],
+        'values': [total_breeder_trades, total_slaughter_records],
+    }
+
+    # Return the JSON response
+    return JsonResponse({'supply_data': supply_data})

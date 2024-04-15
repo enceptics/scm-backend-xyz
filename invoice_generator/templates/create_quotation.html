@@ -13,15 +13,18 @@
                         {% csrf_token %}
                         <div class="row">
                             <div class="col-md-6">
-                                <div class="form-group">
-                                    {{ form.seller.label_tag }}
-                                    {{ form.seller }}
+                                <div class="form-group d-none">
+                                    <label for="id_seller">Seller</label>
+                                    <select class="form-control" id="id_seller" name="seller" disabled>
+                                        <option value="{{ request.user.id }}" selected>{{ request.user }}</option>
+                                    </select>
                                     {% if form.seller.errors %}
                                         <div class="invalid-feedback">
                                             {{ form.seller.errors }}
                                         </div>
                                     {% endif %}
                                 </div>
+                                
                                 <div class="form-group">
                                     {{ form.buyer.label_tag }}
                                     {{ form.buyer }}
@@ -49,8 +52,6 @@
                                         </div>
                                     {% endif %}
                                 </div>
-                            </div>
-                            <div class="col-md-6">
                                 <div class="form-group">
                                     {{ form.unit_price.label_tag }}
                                     {{ form.unit_price }}
@@ -69,6 +70,9 @@
                                         </div>
                                     {% endif %}
                                 </div>
+                            </div>
+                            <div class="col-md-6">
+                                
                                 <div class="form-group">
                                     {{ form.message.label_tag }}
                                     {{ form.message }}
@@ -84,6 +88,15 @@
                                     {% if form.market.errors %}
                                         <div class="invalid-feedback">
                                             {{ form.market.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-group">
+                                    {{ form.status.label_tag }}
+                                    {{ form.status }}
+                                    {% if form.status.errors %}
+                                        <div class="invalid-feedback">
+                                            {{ form.status.errors }}
                                         </div>
                                     {% endif %}
                                 </div>

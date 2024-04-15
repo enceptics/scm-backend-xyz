@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h4>Letter of Credit List</h4>
+    {% if letters_of_credit %}
+        <form method="post" action="{% url 'update_letter_of_credit_status' %}">
+            {% csrf_token %}
+            <div class="table-responsive">
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Buyer</th>
+                        <th>Seller</th>
+                        <th>Issue Date</th>
+                        <th>Status</th>
+                        <th>L.C Document</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for letter_of_credit in letters_of_credit %}
+                    <tr>
+                        <td>{{ letter_of_credit.get_buyer_full_name }}</td>
+                        <td>{{ letter_of_credit.get_seller_full_name }}</td>
+                        <td>{{ letter_of_credit.issue_date }}</td>
+                        <td>{{ letter_of_credit.status }}</td>
+
+                        <td style="font-size: 14px;">
+                            {% if letter_of_credit.lc_document %}
+                                <a href="{{ letter_of_credit.lc_document.url }}">View/Download</a>
+                            {% else %}
+                                Not available
+                            {% endif %}
+                        </td>
+
+                        <td style="font-size: 14px;">
+                            <select name="status">
+                                <option value="pending" {% if letter_of_credit.status == 'pending' %}selected{% endif %}>Pending</option>
+                                <option value="sent_to_bank" {% if letter_of_credit.status == 'sent_to_bank' %}selected{% endif %}>Sent to bank</option>
+                                <option value="approved" {% if letter_of_credit.status == 'approved' %}selected{% endif %}>Approved</option>
+                                <option value="rejected" {% if letter_of_credit.status == 'rejected' %}selected{% endif %}>Rejected</option>
+                            </select>
+                        </td>
+                       
+                        <td>
+                            <button type="submit" name="letter_of_credit_id" value="{{ letter_of_credit.id }}">Save</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        </form>
+        <div class="pagination justify-content-center">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+    {% else %}
+        <p>No letters of credit available.</p>
+    {% endif %}
+{% endblock %}
