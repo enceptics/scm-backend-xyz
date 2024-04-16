@@ -202,6 +202,8 @@ class Quotation(models.Model):
     message = models.TextField()  # Updated field name
     market = models.CharField(max_length=100, null=True, blank=True)  # Updated field name
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active')  # New field for status
+    rejected = models.BooleanField(default=False)
+    explanation = models.TextField(blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 

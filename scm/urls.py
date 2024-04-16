@@ -341,6 +341,9 @@ urlpatterns = [
     path('quotation/list/', quotation_views.quotation_list, name='quotation_list'),
     path('quotation/create/', quotation_views.create_quotation, name='create_quotation'),
     path('quotation/created/', quotation_views.quotation_created, name='quotation_created'),
+    path('buyer/quotations/', quotation_views.buyer_quotation_list, name='buyer_quotation_list'),
+    path('buyer/quotations/confirm/<int:quotation_id>/', quotation_views.confirm_quotation, name='confirm_quotation'),
+    path('buyer/quotations/reject/<int:quotation_id>/', quotation_views.reject_quotation, name='reject_quotation'),
 
     # LC
     path('letters/', lc_views.letter_of_credit_list, name='letter_of_credit_list'),

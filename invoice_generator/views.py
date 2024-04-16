@@ -405,6 +405,55 @@ def quotation_detail(request, quotation_id):
     quotation = get_object_or_404(Quotation, pk=quotation_id)
     return render(request, 'quotation_detail.html', {'quotation': quotation})
 
+@login_required
+def buyer_quotation_list(request):
+    """View to display a list of quotations intended for the buyer."""
+    # Retrieve the Buyer instance corresponding to the logged-in user
+    try:
+        buyer = Buyer.objects.get(buyer=request.user)  # Assuming the field name is 'user' in Buyer model
+    except Buyer.DoesNotExist:
+        # Handle the case where the buyer does not exist
+        # You may want to redirect the user or display an error message
+        buyer = None
+
+    if buyer:
+        # Filter quotations based on the buyer's information
+        quotations = Quotation.objects.filter(buyer=buyer).order_by('-created_at')
+
+        # Render the template with filtered quotations
+        return render(request, 'buyer_quotation_list.html', {'quotations': quotations})
+    else:
+        # Handle the case where the buyer does not exist
+        # You may want to redirect the user or display an error message
+        return render(request, 'buyer_quotation_list.html', {'quotations': None})
+
+@login_required
+def confirm_quotation(request, quotation_id):
+    """View to confirm a quotation."""
+    quotation = get_object_or_404(Quotation, pk=quotation_id)
+
+    if not quotation.confirm:
+        quotation.confirm = True
+        quotation.save()
+        messages.success(request, 'Quotation confirmed successfully.')
+    else:
+        messages.error(request, 'Quotation is already confirmed.')
+
+    return redirect('buyer_quotation_list')
+
+@login_required
+def reject_quotation(request, quotation_id):
+    """View to reject an existing quotation."""
+    quotation = get_object_or_404(Quotation, pk=quotation_id)
+    if request.method == 'POST':
+        explanation = request.POST.get('explanation', '')
+        quotation.explanation = explanation  # Save the explanation to the quotation
+        quotation.rejected = True  # Set the rejected field to True
+        quotation.save()  # Save the changes to the database
+        return redirect('buyer_quotation_list')  # Redirect to the quotation list page
+    else:
+        return render(request, 'reject_quotation.html', {'quotation': quotation})
+
 from django.contrib import messages
 
 @login_required

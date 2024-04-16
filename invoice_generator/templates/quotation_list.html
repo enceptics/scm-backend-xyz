@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
     <h4 class="" style="color: #001b42;">Quotations list</h4>
@@ -23,7 +24,7 @@
                         <td>{{ quotation.product }}</td>
                         <td>{{ quotation.quantity }}</td>
                         <td>{{ quotation.unit_price }}</td>
-                        <td>
+                        <td id="{{ quotation.id }}-status">
                             {% if quotation.status_changed %}
                                 <span class="badge badge-warning">Status Changed</span>
                             {% endif %}
@@ -31,10 +32,18 @@
                         </td>
                         <td>
                             {% if quotation.confirm %}
-                                <span class="badge badge-success">Confirmed</span>
+                            <span class="badge badge-success">Confirmed</span>
+                        {% else %}
+                            {% if quotation.rejected %}
+                                <span class="badge badge-danger">Rejected</span>
+                                {% if quotation.explanation %}
+                                    <button class="btn btn-link btn-sm" onclick="showRejectionModal('{{ quotation.explanation }}')">View Message</button>
+                                {% endif %}
                             {% else %}
-                                <span class="badge badge-danger">Not Confirmed</span>
+                                <span class="badge badge-warning">Not Confirmed</span>
                             {% endif %}
+                        {% endif %}
+                        
                         </td>
                         <td style="font-size: 14px;">
                             <a href="{{ quotation.pdf_url }}">View PDF</a>
@@ -64,29 +73,38 @@
             <i class="fas fa-exclamation-circle"></i> Quotation list is empty.
         </div>
     {% endif %}
+
+    <!-- Rejection Message Modal -->
+    <div class="modal fade" id="rejectionModal" tabindex="-1" role="dialog" aria-labelledby="rejectionModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="rejectionModalLabel">Reason for Rejection </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p id="rejectionMessage"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        var quotations = JSON.parse('{{ quotations|safe }}');
-
-        // Add status change notification
-        quotations.forEach(function(quotation) {
-            if (quotation.status_changed) {
-                var card = document.getElementById(quotation.id); // Assuming each card has an id corresponding to the quotation id
-                var notification = document.createElement('span');
-                notification.classList.add('badge', 'badge-warning');
-                notification.innerText = 'Status Changed';
-                card.appendChild(notification);
-            }
-
-            // Add confirmation status indicator
-            var confirmationStatus = document.createElement('span');
-            confirmationStatus.classList.add('badge', quotation.confirm ? 'badge-success' : 'badge-danger');
-            confirmationStatus.innerText = quotation.confirm ? 'Confirmed' : 'Not Confirmed';
-
-            var statusColumn = document.getElementById(quotation.id + '-status'); // Assuming each status column has an id with format quotation_id-status
-            statusColumn.appendChild(confirmationStatus);
-        });
-    });
-</script>
+{% block javascripts %}
+    {{ block.super }}
+    <!-- JavaScript for rejectionModal -->
+    {% block rejection_modal_scripts %}
+    <script>
+        function showRejectionModal(message) {
+            var modal = $('#rejectionModal');
+            modal.find('#rejectionMessage').text(message);
+            modal.modal('show');
+        }
+    </script>
+    {% endblock %}
+{% endblock %}

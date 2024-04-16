@@ -12,7 +12,10 @@
                     <th>Quantity</th>
                     <th>Unit Price</th>
                     <th>Status</th>
-                    <th>Confirmation status</th>
+                    <th>Confirmation</th>
+                    {% if not quotations.0.confirm and not quotations.0.rejected %}
+                        <th>Actions</th>
+                    {% endif %}
                     <th>View PDF</th>
                 </tr>
             </thead>
@@ -27,10 +30,27 @@
                         <td>
                             {% if quotation.confirm %}
                                 <span class="btn btn-sm btn-success">Confirmed</span>
+                            {% elif quotation.rejected %}
+                                <span class="btn btn-sm btn-danger">Rejected</span>
                             {% else %}
-                                <span class="btn btn-sm btn-danger">Not Confirmed</span>
+                                <span class="btn btn-sm btn-warning">Not Confirmed</span>
                             {% endif %}
                         </td>
+                        {% if not quotation.confirm and not quotation.rejected %}
+                            <td>
+                                <form action="{% url 'confirm_quotation' quotation.id %}" method="post" style="margin-right: 10px;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm mx-1" style="background-color: #001b42; color: wheat;">Confirm</button>
+                                </form>
+                                <form action="{% url 'reject_quotation' quotation.id %}" method="post">
+                                    {% csrf_token %}
+                                    <div style="display: flex; align-items: center;">
+                                        <button type="submit" class="btn btn-sm btn-danger mx-1">Reject</button>
+                                        <textarea name="explanation" placeholder="Explanation for rejection" style="flex-grow: 1; margin-left: 10px;" required></textarea>
+                                    </div>
+                                </form>
+                            </td>
+                        {% endif %}
                         <td style="font-size: 14px;">
                             <a href="{{ quotation.pdf_url }}">View PDF</a>
                         </td>
