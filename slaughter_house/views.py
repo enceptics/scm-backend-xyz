@@ -116,3 +116,28 @@ class SupplyVsDemandStatisticsViewSet(viewsets.ViewSet):
         except Exception as e:
             return Response({'error': str(e)}, status=500)
 
+def supply_vs_demand_statistics(request):
+    try:
+        # Get total bred quantities per breed for all sellers
+        bred_quantities = BreaderTrade.objects.values('breed').annotate(total_bred=Sum('breeds_supplied'))
+
+        # No need to calculate slaughtered quantities as per your requirement
+        
+        # Prepare supply vs demand data
+        supply_vs_demand_data = [
+            {
+                'breed': bred_quantity['breed'],
+                'total_bred': bred_quantity['total_bred'],
+                'total_slaughtered': 0,  # Set slaughtered quantity to 0
+            }
+            for bred_quantity in bred_quantities
+        ]
+
+        print(supply_vs_demand_data)  # Add this line for debugging
+
+        # Render the template with the data
+        return render(request, 'supply_demand_statistics.html', {'supply_vs_demand_data': supply_vs_demand_data})
+
+    except Exception as e:
+        # Handle exceptions appropriately
+        return render(request, 'error.html', {'error_message': str(e)})

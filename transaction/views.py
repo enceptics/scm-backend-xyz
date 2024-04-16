@@ -441,3 +441,25 @@ def supply_vs_demand_statistics(request):
 
     # Return the JSON response
     return JsonResponse({'supply_data': supply_data})
+
+def breed_supply_vs_demand_statistics(request):
+    # Query BreaderTrade and SlaughterhouseRecord models to fetch data
+    breeder_trades = BreaderTrade.objects.all()
+    slaughter_records = SlaughterhouseRecord.objects.all()
+
+    # Perform calculations to determine supply vs demand
+    total_breeder_trades = sum(trade.breeds_supplied for trade in breeder_trades)
+    total_slaughter_records = sum(record.quantity for record in slaughter_records)
+
+    # Format the data as JSON
+    supply_data = {
+        'labels': ['Total Breeder Trades', 'Total Slaughter Records'],
+        'values': [total_breeder_trades, total_slaughter_records],
+    }
+
+    # Pass the supply data to the template context
+    context = {
+        'supply_data': json.dumps(supply_data)  # Convert Python dictionary to JSON string
+    }
+
+    return render(request, 'home.html', context)

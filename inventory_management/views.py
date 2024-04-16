@@ -239,3 +239,71 @@ class BreederTotalSingleSellerViewSet(viewsets.ViewSet):
 
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# Templates
+from django.shortcuts import render
+
+def inventory_information(request):
+    # Fetch all control centers
+    control_centers = ControlCenter.objects.all().order_by('-created_at')
+
+    # Initialize total net breed supply
+    total_net_breed_supply = 0
+
+    # Iterate over each control center
+    for center in control_centers:
+        # Fetch all unique breeds associated with the control center
+        breeds = BreaderTrade.objects.filter(control_center=center).values_list('breed', flat=True).distinct()
+
+        # Iterate over each breed
+        for breed in breeds:
+            # Calculate total supplied for the breed
+            total_supplied = BreaderTrade.objects.filter(control_center=center, breed=breed).aggregate(total_supplied=Sum('breeds_supplied'))['total_supplied'] or 0
+
+            # Ensure that total supplied is not negative
+            total_supplied = max(total_supplied, 0)
+
+            # Add total supplied to the total net breed supply
+            total_net_breed_supply += total_supplied
+
+    # Dictionary to store inventory information organized by control center and breed
+    inventory_info = {}
+
+    for center in control_centers:
+        inventory_info[center.name] = {}
+
+        # Fetch all unique breeds associated with the control center
+        breeds = BreaderTrade.objects.filter(control_center=center).values_list('breed', flat=True).distinct()
+
+        # Iterate over each breed
+        for breed in breeds:
+            # Initialize inventory info for the breed if it doesn't exist
+            if breed not in inventory_info[center.name]:
+                inventory_info[center.name][breed] = {
+                    'total_supplied': 0,
+                    'total_slaughtered': 0,
+                    'total_remaining': 0
+                }
+
+            # Calculate total supplied and total slaughtered for the breed
+            total_supplied = BreaderTrade.objects.filter(control_center=center, breed=breed).aggregate(total=Sum('breeds_supplied'))['total'] or 0
+            total_slaughtered = SlaughterhouseRecord.objects.filter(control_center=center, breed=breed).aggregate(total=Sum('quantity'))['total'] or 0
+            
+            # Ensure that total supplied is not negative
+            total_supplied = max(total_supplied, 0)
+
+            # Calculate total remaining for the breed
+            net_supply = center.net_breed_supply
+            total_remaining = max(net_supply - total_slaughtered, 0)
+
+            # Update inventory info for the breed
+            inventory_info[center.name][breed]['total_supplied'] += total_supplied
+            inventory_info[center.name][breed]['total_slaughtered'] += total_slaughtered
+            inventory_info[center.name][breed]['total_remaining'] = total_remaining
+
+    context = {
+        'inventory_info': inventory_info,
+        'totalNetBreedSupply': total_net_breed_supply,
+
+    }
+    return render(request, 'inventory_information.html', context)

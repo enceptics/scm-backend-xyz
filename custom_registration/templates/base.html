@@ -12,7 +12,10 @@
     <meta name="author" content="">
     <!-- Example using CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.6.3/css/foundation.min.css">
-
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{% static 'js/chart-area.js' %}"></script>
+    <script src="{% static 'js/chart-pie.js' %}"></script>
+    <script src="{% static 'vendor/chart.js/Chart.min.js' %}"></script>
     <title>{% block title %}{% endblock %}</title>
 
     <!-- Custom fonts for this template-->
@@ -78,6 +81,7 @@
 
     </div>
     <!-- End of Page Wrapper -->
+    
 
     <!-- Scroll to Top Button-->
     <a class="scroll-to-top rounded" href="#page-top">

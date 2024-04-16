@@ -5,7 +5,6 @@
 
     {% if page_obj %}
         <table class="table mt-3">
-
             <thead>
                 <tr>
                     <th>Buyer</th>
@@ -17,7 +16,6 @@
                     <th>View PDF</th>
                 </tr>
             </thead>
-
             <tbody>
                 {% for quotation in page_obj %}
                     <tr>
@@ -25,15 +23,19 @@
                         <td>{{ quotation.product }}</td>
                         <td>{{ quotation.quantity }}</td>
                         <td>{{ quotation.unit_price }}</td>
-                        <td>{{ quotation.status }}</td>
+                        <td>
+                            {% if quotation.status_changed %}
+                                <span class="badge badge-warning">Status Changed</span>
+                            {% endif %}
+                            {{ quotation.status }}
+                        </td>
                         <td>
                             {% if quotation.confirm %}
-                                <span style="color: #001b42;">Confirmed</span>
+                                <span class="badge badge-success">Confirmed</span>
                             {% else %}
-                                <span style="color: red;">Not Confirmed</span>
+                                <span class="badge badge-danger">Not Confirmed</span>
                             {% endif %}
                         </td>
-                        
                         <td style="font-size: 14px;">
                             <a href="{{ quotation.pdf_url }}">View PDF</a>
                         </td>
@@ -41,26 +43,21 @@
                 {% endfor %}
             </tbody>
         </table>
-
         <!-- Pagination links -->
         <div class="pagination justify-content-center">
             <span class="step-links">
-
                 {% if page_obj.has_previous %}
                     <a href="?page=1">&laquo; first</a>
                     <a href="?page={{ page_obj.previous_page_number }}">previous</a>
                 {% endif %}
-
                 <span class="current">
                     Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
                 </span>
-
                 {% if page_obj.has_next %}
                     <a href="?page={{ page_obj.next_page_number }}">next</a>
                     <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
                 {% endif %}
             </span>
-
         </div>
     {% else %}
         <div class="alert alert-warning mt-3" role="alert">
@@ -68,3 +65,28 @@
         </div>
     {% endif %}
 {% endblock %}
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var quotations = JSON.parse('{{ quotations|safe }}');
+
+        // Add status change notification
+        quotations.forEach(function(quotation) {
+            if (quotation.status_changed) {
+                var card = document.getElementById(quotation.id); // Assuming each card has an id corresponding to the quotation id
+                var notification = document.createElement('span');
+                notification.classList.add('badge', 'badge-warning');
+                notification.innerText = 'Status Changed';
+                card.appendChild(notification);
+            }
+
+            // Add confirmation status indicator
+            var confirmationStatus = document.createElement('span');
+            confirmationStatus.classList.add('badge', quotation.confirm ? 'badge-success' : 'badge-danger');
+            confirmationStatus.innerText = quotation.confirm ? 'Confirmed' : 'Not Confirmed';
+
+            var statusColumn = document.getElementById(quotation.id + '-status'); // Assuming each status column has an id with format quotation_id-status
+            statusColumn.appendChild(confirmationStatus);
+        });
+    });
+</script>

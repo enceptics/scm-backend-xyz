@@ -25,6 +25,8 @@ from transaction.views import (
 )
 from invoice_generator import views as quotation_views
 from invoice_generator import views as lc_views
+from inventory_management import views as inventory_views
+from slaughter_house import views as slaugher_house_views
 
 from inventory_management.views import InventoryBreedViewSet, InventoryBreedSalesViewSet, BreedCutViewSet, BreederTotalSerializer, BreederTotalViewSet, BreedCutTotalViewSet, BreederTotalSingleSellerViewSet
 from slaughter_house.views import SlaughterhouseRecordViewSet
@@ -345,6 +347,12 @@ urlpatterns = [
     path('letters/<int:pk>/',lc_views.letter_of_credit_detail, name='letter_of_credit_detail'),
     path('letters/create/', lc_views.letter_of_credit_create, name='letter_of_credit_create'), # Add this line
     path('update_letter_of_credit_status/', lc_views.update_letter_of_credit_status, name='update_letter_of_credit_status'),
+
+    # Inventory
+    path('inventory/control-center/', inventory_views.inventory_information, name='inventory_information'),
+    path('supply_demand/', slaugher_house_views.supply_vs_demand_statistics, name='supply_demand_statistics'),
+
+
 
 ]
 

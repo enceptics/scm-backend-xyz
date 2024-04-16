@@ -4,7 +4,6 @@ from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from invoice_generator.models import Invoice, Buyer, Seller
 from custom_registration.models import CustomUser
-# from transaction.models import BreaderTrade
 from inventory_management.choices import BREED_CHOICES, PART_CHOICES, SALE_CHOICES
 
 # Control centers

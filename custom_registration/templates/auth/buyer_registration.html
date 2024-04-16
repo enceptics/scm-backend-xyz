@@ -1,32 +1,95 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buyer Registration</title>
-</head>
-<body>
-    <h1>Buyer Registration</h1>
-    <form class="user" method="post" action="{% url 'buyer_register' %}">
-        {% csrf_token %}
-        <div class="form-group">
-            <label for="id_username">Username</label>
-            {{ form.username }}
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <!-- Outer Row -->
+    <div class="row justify-content-center mt-n5">
+
+        <div class="col-lg-12 col-md-12">
+
+            <div class="card o-hidden border-0 shadow-lg my-5">
+                <div class="card-body p-0">
+                    <!-- Nested Row within Card Body -->
+                    <div class="row">
+                        <!-- Image Column -->
+                        <div class="col-lg-6 d-none d-lg-block bg-login-image"></div>
+                        <!-- Form Column -->
+                        <div class="col-lg-6 p-5">
+                            <div class="text-center">
+                                <h1 class="h4 text-gray-900 mb-4">Buyer Registration</h1>
+                            </div>
+                            <form class="user mt-n3" method="post" action="{% url 'buyer_register' %}">
+                                {% csrf_token %}
+                                <div class="row">
+                                    <!-- First Column -->
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="id_username">Username</label>
+                                            {{ form.username }}
+                                            {% for error in form.username.errors %}
+                                                <p class="text-danger">{{ error }}</p>
+                                            {% endfor %}
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="first_name">First Name</label>
+                                            {{ form.first_name }}
+                                            {% for error in form.first_name.errors %}
+                                                <p class="text-danger">{{ error }}</p>
+                                            {% endfor %}
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="last_name">Last name</label>
+                                            {{ form.last_name }}
+                                            {% for error in form.last_name.errors %}
+                                                <p class="text-danger">{{ error }}</p>
+                                            {% endfor %}
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="email">Email</label>
+                                            {{ form.email }}
+                                            {% for error in form.email.errors %}
+                                                <p class="text-danger">{{ error }}</p>
+                                            {% endfor %}
+                                        </div>
+                                    
+                                       
+                                    </div>
+                                    <!-- Second Column -->
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="address">Address</label>
+                                            {{ form.address }}
+                                            {% for error in form.address.errors %}
+                                                <p class="text-danger">{{ error }}</p>
+                                            {% endfor %}
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="password">Password</label>
+                                            {{ form.password1 }}
+                                            {% for error in form.password1.errors %}
+                                                <p class="text-danger">{{ error }}</p>
+                                            {% endfor %}
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="confirm_password">Confirm password</label>
+                                            {{ form.password2 }}
+                                            {% for error in form.password2.errors %}
+                                                <p class="text-danger">{{ error }}</p>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-user btn-block">Register Breeder</button>
+                            </form>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
-        <div class="form-group">
-            <label for="id_password">Password</label>
-            {{ form.password }}
-        </div>
-        <!-- Additional fields for buyer -->
-        <div class="form-group">
-            <label for="id_buyer_additional_field1">Additional Field 1 for Buyer</label>
-            {{ form.buyer_additional_field1 }}
-        </div>
-        <div class="form-group">
-            <label for="id_buyer_additional_field2">Additional Field 2 for Buyer</label>
-            {{ form.buyer_additional_field2 }}
-        </div>
-        <button type="submit" class="btn btn-primary btn-user btn-block">Register Buyer</button>
-    </form>
-</body>
-</html>
+
+    </div>
+
+{% endblock content %}
