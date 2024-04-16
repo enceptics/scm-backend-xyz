@@ -302,7 +302,8 @@ class LetterOfCredit(models.Model):
     # File field for storing uploaded documents
     lc_document = models.FileField(upload_to='lc_documents/', null=True, blank=True)
     quotatation = models.ForeignKey(Quotation, on_delete=models.CASCADE, null=True, blank=True)
-    
+    rejection_reason = models.TextField(blank=True, null=True)
+
     def get_buyer_full_name(self):
         if self.buyer:
             return f'{self.buyer.buyer.first_name} {self.buyer.buyer.last_name} '

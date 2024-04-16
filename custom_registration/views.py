@@ -677,7 +677,7 @@ def login_view(request):
                     return redirect('/dashboard/breeder/')  # Redirect breeders to breeder dashboard
               
                 elif user.role == CustomUser.BUYER:
-                    return redirect('/dashboard/buyer/')  # Redirect buyers to buyer dashboard
+                    return redirect('/buyer/quotations/')  # Redirect buyers to buyer dashboard
                 elif user.role == CustomUser.BANK:
                     return redirect('/dashboard/bank/')  # Redirect buyers to buyer dashboard
                 elif user.role == CustomUser.SELLER:

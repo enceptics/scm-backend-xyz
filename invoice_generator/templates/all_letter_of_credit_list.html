@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+
+
+    <h4>All Letters of Credit</h4>
+
+    <table class="table mt-3">
+        <thead>
+            <tr>
+                <th>L.C ID</th>
+                <th>Buyer</th>
+                <th>Seller</th>
+                <th>Issue Date</th>
+                <th>Expiry Date</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for lc in letters_of_credit %}
+            <tr>
+                <td>{{ lc.id }}</td>
+                <td>{{ lc.get_buyer_full_name }}</td>
+                <td>{{ lc.get_seller_full_name }}</td>
+                <td>{{ lc.issue_date }}</td>
+                <td>{{ lc.expiry_date }}</td>
+                <td>{{ lc.status }}</td>
+               
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7">No letters of credit available.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ block.super }}
+    <!-- JavaScript for rejectionModal -->
+    {% block rejection_modal_scripts %}
+    <script>
+        function showRejectionModal(message) {
+            var modal = $('#rejectionModal');
+            modal.find('#rejectionMessage').text(message);
+            modal.modal('show');
+        }
+    </script>
+    {% endblock %}
+{% endblock %}

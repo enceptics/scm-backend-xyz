@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2><i class="fas fa-check-circle text-success"></i> Success</h2>
+    <p>The status of the letter of credit has been successfully updated.</p>
+    <p>Letter of Credit ID: {{ letter.pk }}</p>
+    <p>Status: {{ letter.status }}</p>
+
+    <p><a href="{% url 'seller_letter_of_credit_list' %}">Go back to LCs</a></p>
+{% endblock %}

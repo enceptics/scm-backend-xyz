@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    Seller Letter of Credits
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h4>Letter of Credits from the bank</h4>
+        {% if letters %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Buyer</th>
+                        <th>Issue Date</th>
+                        <th>Status</th>
+                        <th>LC Document</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for letter in letters %}
+                        <tr>
+                            <td>{{ letter.buyer }}</td>
+                            <td>{{ letter.issue_date }}</td>
+                            <td>{{ letter.status }}</td>
+                            <td>
+                                {% if letter.lc_document %}
+                                    <a href="{{ letter.lc_document.url }}">View/Download</a>
+                                {% else %}
+                                    Not available
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if letter.status == 'sent_to_bank' %}
+                                <div class="d-flex">
+                                    <form method="POST" action="{% url 'update_letter_of_credit_status' letter.id %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="status" value="approved">
+                                        <button class="btn btn-sm btn-success" type="submit">Approve</button>
+                                    </form>
+                                    <form method="POST" action="{% url 'update_letter_of_credit_status' letter.id %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="status" value="rejected">
+                                        <textarea class="mt-2" name="reason" placeholder="Reason for rejection" required></textarea>  <!-- Add textarea for reason -->
+                                        <button class="btn btn-sm btn-danger" type="submit">Reject</button>
+                                    </form>
+                                </div>
+                                   
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No letter of credits available.</p>
+        {% endif %}
+    </div>
+{% endblock %}

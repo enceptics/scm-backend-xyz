@@ -502,37 +502,88 @@ def delete_quotation(request, quotation_id):
     return JsonResponse({'success': True})
 
 # LC
-
+@login_required
 def letter_of_credit_create(request):
     if request.method == 'POST':
         form = LetterOfCreditForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
-            return redirect('letter_of_credit_list')
+            # Redirect to a success URL or a specific view
+            return redirect('lc_creation_success')  # Assuming 'lc_successfully_created' is a URL pattern name
+        # If the form is not valid, re-render the form with validation errors
     else:
         form = LetterOfCreditForm()
     return render(request, 'letter_of_credit_create.html', {'form': form})
 
-def letter_of_credit_list(request):
+def lc_creation_success(request):
+    return render(request, 'lc_successfully_created.html')
+    
+@login_required
+def all_letter_of_credit_list(request):
     letters_of_credit = LetterOfCredit.objects.all().order_by('-issue_date')
     context = {
         'letters_of_credit': letters_of_credit,
     }
-    return render(request, 'letter_of_credit_list.html', context)
+    return render(request, 'all_letter_of_credit_list.html', context)
 
-def update_letter_of_credit_status(request):
+@login_required
+def seller_letter_of_credit_list(request):
+    try:
+        seller = Seller.objects.get(seller=request.user)
+    except Seller.DoesNotExist:
+        seller = None
+
+    if seller:
+        letters = LetterOfCredit.objects.filter(seller=seller).order_by('-issue_date')
+        return render(request, 'seller_letter_of_credit_list.html', {'letters': letters})
+    else:
+        return render(request, 'error.html', {'message': 'You are not authorized to view this page.'})
+
+@login_required
+def buyer_letter_of_credit_list(request):
+    try:
+        buyer = Buyer.objects.get(buyer=request.user)
+    except Buyer.DoesNotExist:
+        buyer = None
+
+    if buyer:
+        letters = LetterOfCredit.objects.filter(buyer=buyer).order_by('-issue_date')
+        return render(request, 'buyer_letter_of_credit_list.html', {'letters': letters})
+    else:
+        return render(request, 'error.html', {'message': 'You are not authorized to view this page.'})
+
+from django.http import JsonResponse
+
+def update_letter_of_credit_status(request, pk):
     if request.method == 'POST':
-        letter_of_credit_id = request.POST.get('letter_of_credit_id')
         new_status = request.POST.get('status')
-        if letter_of_credit_id and new_status:
-            letter_of_credit = LetterOfCredit.objects.get(pk=letter_of_credit_id)
-            letter_of_credit.status = new_status
-            letter_of_credit.save()
-            # You can return a JSON response to indicate success
-            return JsonResponse({'status': 'success'})
-    # If the request method is not POST or data is missing, return an error response
-    return JsonResponse({'status': 'error'})
+        rejection_reason = request.POST.get('reason')  # Correctly get rejection reason from POST data
+        if new_status:
+            try:
+                # Retrieve the LetterOfCredit object using the provided pk
+                letter_of_credit = get_object_or_404(LetterOfCredit, pk=pk)
+                # Update the status
+                letter_of_credit.status = new_status
+                # If status is rejected, save the rejection reason
+                if new_status == 'rejected':
+                    letter_of_credit.rejection_reason = rejection_reason
+                letter_of_credit.save()
+                # Pass the letter_of_credit object to the context
+                context = {'letter': letter_of_credit}
+                # Render success HTML template with the context
+                return render(request, 'lc_success.html', context)
+            except LetterOfCredit.DoesNotExist:
+                # If the LetterOfCredit object does not exist, render an error HTML template
+                return render(request, 'lc_error.html')
+        else:
+            # If the 'status' field is missing in the POST data, return an error response
+            return HttpResponse('Missing status field in POST data', status=400)
+    else:
+        # If the request method is not POST, return an error response
+        return HttpResponse('Only POST requests are allowed', status=405)
 
+
+        
 def letter_of_credit_detail(request, pk):
     letter_of_credit = get_object_or_404(LetterOfCredit, pk=pk)
     return render(request, 'letter_of_credit_detail.html', {'letter_of_credit': letter_of_credit})

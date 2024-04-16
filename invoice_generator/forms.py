@@ -16,7 +16,7 @@ class QuotationForm(forms.ModelForm):
 class LetterOfCreditForm(forms.ModelForm):
     class Meta:
         model = LetterOfCredit
-        fields = ['buyer', 'seller', 'lc_document', 'status']
+        fields = ['buyer', 'seller', 'lc_document']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

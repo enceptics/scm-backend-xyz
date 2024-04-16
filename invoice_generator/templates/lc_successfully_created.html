@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2><i class="fas fa-check-circle text-success"></i> Success</h2>
+    The document has been successfully submitted awaiting seller confirmation. <br>
+    We will start processing upon seller confirmation.
+<p></p> 
+   <p><a href="{% url 'seller_letter_of_credit_list' %}">Go back to LCs</a></p>
+{% endblock %}

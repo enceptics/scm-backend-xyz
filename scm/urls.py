@@ -346,10 +346,14 @@ urlpatterns = [
     path('buyer/quotations/reject/<int:quotation_id>/', quotation_views.reject_quotation, name='reject_quotation'),
 
     # LC
-    path('letters/', lc_views.letter_of_credit_list, name='letter_of_credit_list'),
+    path('all_lcs/', lc_views.all_letter_of_credit_list, name='all_letter_of_credit_list'),
+    path('seller_lcs/', lc_views.seller_letter_of_credit_list, name='seller_letter_of_credit_list'),
+    path('buyer_lcs/', lc_views.buyer_letter_of_credit_list, name='buyer_letter_of_credit_list'),
+    path('lc_creation_success/', lc_views.lc_creation_success, name='lc_creation_success'),
+
     path('letters/<int:pk>/',lc_views.letter_of_credit_detail, name='letter_of_credit_detail'),
     path('letters/create/', lc_views.letter_of_credit_create, name='letter_of_credit_create'), # Add this line
-    path('update_letter_of_credit_status/', lc_views.update_letter_of_credit_status, name='update_letter_of_credit_status'),
+    path('update_letter_of_credit_status/<int:pk>/', lc_views.update_letter_of_credit_status, name='update_letter_of_credit_status'),
 
     # Inventory
     path('inventory/control-center/', inventory_views.inventory_information, name='inventory_information'),
