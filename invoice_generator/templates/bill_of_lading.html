@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="card mb-4 mt-3" style="width: 100%; margin: auto; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); border-radius: 10px;">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center">
+        <h5 class="card-title" style="color: #999999;">List of shipments & related bill of lading documents</h5>
+      </div>
+      <!-- Your progress bar code -->
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr style="background-color: #f8f9fa; color: #666666;">
+              <th style="color: #666666; font-size: 16px;">Bill of Lading</th>
+              <th style="color: #666666; font-size: 12px;">Current Status</th>
+              <th style="color: #666666; font-size: 12px;">Buyer</th>
+              <th style="color: #666666; font-size: 12px;">Seller</th>
+              <th style="color: #666666; font-size: 12px;">Logistics Company</th>
+              <th style="color: #666666; font-size: 12px;">Shipping Mode</th>
+              <!-- <th style="color: #666666; font-size: 12px;">Time of Delivery</th> -->
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Render logistics status using Django template syntax -->
+            {% for item in currentItems %}
+            <tr>
+              <td>{{ item.bill_of_lading }}</td>
+              <td>{{ item.status }}</td>
+              <td>{{ item.buyer }}</td>
+              <td>{{ item.seller }}</td>
+              <td>{{ item.logistics_company }}</td>
+              <td>{{ item.shipping_mode }}</td>
+              <!-- Add more columns if needed -->
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <!-- Render pagination using Django template syntax -->
+      <nav aria-label="Pagination">
+        <ul class="pagination">
+          {% for page in pages %}
+          <li class="page-item {% if currentPage == page %}active{% endif %}">
+            <a class="page-link" href="#" onclick="paginate({{ page }})">{{ page }}</a>
+          </li>
+          {% endfor %}
+        </ul>
+      </nav>
+    </div>
+  </div>
+
+  {% endblock %}
+
+  

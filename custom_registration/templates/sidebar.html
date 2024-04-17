@@ -17,14 +17,14 @@
     <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
         <a class="nav-link" href="{% url 'home' %}">
             <i class="fas fa-fw fa-tachometer-alt"></i>
-            <span>Admin</span></a>
+            <span>Home</span></a>
     </li>
     <hr class="sidebar-divider my-0">
 
     {% if request.user.role == 'seller' or request.user.is_superuser %}
     <!-- Nav Item - Sellers -->
     <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
-        <a class="nav-link" href="{% url 'home' %}">
+        <a class="nav-link" href="{% url 'seller_dashboard' %}">
             <i class="fas fa-fw fa-tachometer-alt"></i>
             <span>Sellers</span></a>
     </li>
@@ -84,7 +84,7 @@
     {% if request.user.role == 'bank' or request.user.is_superuser %}
     <!-- Nav Item - Export Management -->
     <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
-        <a class="nav-link" href="{% url 'letter_of_credit_create' %}">
+        <a class="nav-link" href="{% url 'all_letter_of_credit_list' %}">
             <i class="fas fa-fw fa-cart-plus"></i>
             <span>Letter of credit</span></a>
     </li>
@@ -93,7 +93,7 @@
     {% if request.user.role == 'bank' or request.user.is_superuser %}
     <!-- Nav Item - Export Management -->
     <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
-        <a class="nav-link" href="{% url 'letter_of_credit_create' %}">
+        <a class="nav-link" href="">
             <i class="fas fa-fw fa-cart-plus"></i>
             <span>Bill of lading</span></a>
     </li>

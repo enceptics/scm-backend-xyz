@@ -1,11 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Unauthorized</title>
-</head>
-<body>
-    <h1>Unauthorized Access</h1>
-    <p>You are not authorized to view this page.</p>
-</body>
-</html>
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} Unauthorized Access {% endblock %}
+
+{% block content %}
+    <h3>Oops! <span style="font-size: 17px;">You've reached the land of 'Nope'!"</span></h3>
+
+    <p>Shh! Whispering penguins and stealthy hamsters only. No humans allowed!</p>
+    
+    <p><a href="javascript:history.back()">Bye 👋</a></p>
+{% endblock %}

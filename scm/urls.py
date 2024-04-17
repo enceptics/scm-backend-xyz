@@ -27,6 +27,7 @@ from invoice_generator import views as quotation_views
 from invoice_generator import views as lc_views
 from inventory_management import views as inventory_views
 from slaughter_house import views as slaugher_house_views
+from custom_registration import views as custom_reg_views
 
 from inventory_management.views import InventoryBreedViewSet, InventoryBreedSalesViewSet, BreedCutViewSet, BreederTotalSerializer, BreederTotalViewSet, BreedCutTotalViewSet, BreederTotalSingleSellerViewSet
 from slaughter_house.views import SlaughterhouseRecordViewSet
@@ -357,9 +358,20 @@ urlpatterns = [
 
     # Inventory
     path('inventory/control-center/', inventory_views.inventory_information, name='inventory_information'),
+    path('bank/inventory/control-center/<int:center_id>', inventory_views.bank_inventory_information, name='bank_inventory_information'),
+
     path('supply_demand/', slaugher_house_views.supply_vs_demand_statistics, name='supply_demand_statistics'),
 
+    # Sellers, buyers, cmanagers
+    path('list/sellers/', custom_reg_views.sellers_list, name='sellers_list'),
+    path('list/buyers/', custom_reg_views.buyers_list, name='buyers_list'),
+    path('list/collateral-managers/', custom_reg_views.collateral_managers_list, name='collateral_managers_list'),
 
+    path('details/seller/<int:seller_id>/', views.seller_details, name='seller_details'),
+    path('details/collateral_manager/<int:collateral_manager_id>/', views.collateral_manager_details, name='collateral_manager_details'),
+    path('list/buyers/<int:buyer_id>/', custom_reg_views.buyer_details, name='buyer_details'),
+
+    path('assign_collateral_manager/', views.assign_collateral_manager, name='assign_collateral_manager'),
 
 ]
 

@@ -51,7 +51,35 @@
     </style>
 </head>
 <body>
-    <h4>Create Letter of Credit</h4>
+    <div class="container">
+            <div class="row mt-n4 mb-3" style="font-size: 15px; background-color: #001b40; color: white;">
+                <ul class="nav nav-tabs " id="myTab" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="home-tab" data-toggle="tab" href="#dashboard" role="tab" aria-controls="dashboard" aria-selected="true"">Create L.C </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="quotation-tab" href="{% url 'all_letter_of_credit_list' %}" style="color: #d9d9d9; text-decoration: none;">List of L.Cs</a>
+                    </li>
+                    
+                
+                </ul>
+                <span class="ml-auto mx-2 mt-2">{{request.user.username}} Bank</span>
+            
+                <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade show active" id="dashboard" role="tabpanel" aria-labelledby="home-tab">
+                        <!-- Dashboard content here -->
+                    </div>
+                    <div class="tab-pane fade" id="quotation" role="tabpanel" aria-labelledby="quotation-tab">
+                        <!-- Send quotation content here -->
+                    </div>
+                    <div class="tab-pane fade" id="control-centers" role="tabpanel" aria-labelledby="control-centers-tab">
+                        <!-- Control centers content here -->
+                    </div>
+                </div>
+            </div>
+
+    <h5>Create Letter of Credit</h5>
+    <hr>
     <div class="col-md-8">
     <form class="mb-4 " method="post" enctype="multipart/form-data">
         {% csrf_token %}

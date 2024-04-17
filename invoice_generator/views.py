@@ -504,6 +504,8 @@ def delete_quotation(request, quotation_id):
 # LC
 @login_required
 def letter_of_credit_create(request):
+    if request.user.role != 'bank' and not request.user.is_superuser:
+        return redirect('unauthorized')
     if request.method == 'POST':
         form = LetterOfCreditForm(request.POST, request.FILES)
         if form.is_valid():
@@ -520,6 +522,9 @@ def lc_creation_success(request):
     
 @login_required
 def all_letter_of_credit_list(request):
+    if request.user.role != 'bank' and not request.user.is_superuser:
+        return redirect('unauthorized')
+
     letters_of_credit = LetterOfCredit.objects.all().order_by('-issue_date')
     context = {
         'letters_of_credit': letters_of_credit,

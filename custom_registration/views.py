@@ -709,10 +709,10 @@ def logout_view(request):
 def seller_dashboard(request):
     if request.user.role != 'seller' and not request.user.is_superuser:
         return redirect('unauthorized')
-    return render(request, 'home.html')
+    return render(request, 'seller_dashboard.html')
 
 def buyer_dashboard(request):
-    if request.user.role != 'buyer' and not request.user.is_superuser:
+    if control_centers_dashboard.user.role != 'buyer' and not request.user.is_superuser:
         return redirect('unauthorized')
     return render(request, 'buyer_dashboard.html')
 
@@ -726,15 +726,10 @@ def bank_dashboard(request):
         return redirect('unauthorized')
     return render(request, 'bank_dashboard.html')
 
-def control_centers_dashboard(request):
-    if request.user.role != 'control_centers' and not request.user.is_superuser:
-        return redirect('unauthorized')
-    return render(request, 'control_centers_dashboard.html')
-
 def export_management_dashboard(request):
     if request.user.role != 'export_management' and not request.user.is_superuser:
         return redirect('unauthorized')
-    return render(request, 'export_management_dashboard.html')
+    return render(request, 'export_management.html')
 
 def stock_shift_dashboard(request):
     # Add logic to retrieve data for the seller dashboard
@@ -750,3 +745,65 @@ def stock_shift_dashboard(request):
 
 def unauthorized(request):
     return render(request, 'unauthorized.html')
+
+
+# FOR TEMPLATES
+
+def sellers_list(request):
+    sellers = Seller.objects.all().order_by('-created_at')
+    num_sellers = sellers.count()  # Calculate the number of sellers
+    return render(request, 'sellers_list.html', {'sellers': sellers, 'num_sellers': num_sellers})
+
+def buyers_list(request):
+    buyers = Buyer.objects.all()
+    num_buyers = buyers.count()  # Calculate the number of buyers
+    return render(request, 'buyers_list.html', {'buyers': buyers, 'num_buyers': num_buyers})
+
+def collateral_managers_list(request):
+    collateral_managers = CollateralManager.objects.all()
+    num_collateral_managers = collateral_managers.count()  # Calculate the number of collateral managers
+    return render(request, 'collateral_managers_list.html', {'collateral_managers': collateral_managers, 'num_collateral_managers': num_collateral_managers})
+
+def seller_details(request, seller_id):
+    seller = get_object_or_404(Seller, id=seller_id)
+    return render(request, 'sellers_profile.html', {'seller': seller})
+
+def collateral_manager_details(request, collateral_manager_id):
+    collateral_manager = get_object_or_404(CollateralManager, id=collateral_manager_id)
+    return render(request, 'collateral_managers_profile.html', {'collateral_manager': collateral_manager})
+
+def buyer_details(request, buyer_id):
+    buyer = get_object_or_404(Buyer, id=buyer_id)
+    return render(request, 'buyers_profile.html', {'buyer': buyer})
+
+from .forms import CollateralManagerForm
+from logistics.models import ControlCenter, CollateralManager
+
+def control_centers_dashboard(request):
+    if request.user.role != 'bank' and not request.user.is_superuser:
+        return redirect('unauthorized')
+        
+    control_centers = ControlCenter.objects.all()
+    collateral_managers = CollateralManager.objects.all()  # Retrieve all collateral managers
+    return render(request, 'control_centers.html', {'control_centers': control_centers, 'collateral_managers': collateral_managers})
+
+def assign_collateral_manager(request):
+    control_centers = ControlCenter.objects.all()
+    collateral_managers = CollateralManager.objects.all()
+    
+    if request.method == 'POST':
+        center_id = request.POST.get('center_id')
+        manager_id = request.POST.get('collateral_manager')
+        
+        center = get_object_or_404(ControlCenter, id=center_id)
+        collateral_manager = get_object_or_404(CollateralManager, id=manager_id)
+        
+        center.assigned_collateral_agent = collateral_manager
+        center.save()
+        
+        return redirect('control_centers_dashboard')
+    
+    else:
+        form = CollateralManagerForm()
+        
+    return render(request, 'assign_collateral_manager.html', {'control_centers': control_centers, 'collateral_managers': collateral_managers, 'form': form})

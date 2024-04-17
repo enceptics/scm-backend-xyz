@@ -7,7 +7,6 @@
 
 {% block content %}
     <div class="container">
-        {% if request.user.role == 'bank' or request.user.is_superuser %}
             <div class="row mt-n4 mb-3" style="font-size: 15px; background-color: #001b40; color: white;">
                 <ul class="nav nav-tabs " id="myTab" role="tablist">
                     <li class="nav-item">
@@ -34,7 +33,6 @@
                     </div>
                 </div>
             </div>
-
             <h4>All Letters of Credit</h4>
             {% if letters %}
                 <div class="table-responsive">

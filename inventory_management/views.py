@@ -244,6 +244,12 @@ class BreederTotalSingleSellerViewSet(viewsets.ViewSet):
 from django.shortcuts import render
 
 def inventory_information(request):
+    if request.user.role != 'seller' and not request.user.is_superuser:
+        return redirect('unauthorized')
+
+    if request.user.role != 'seller' and not request.user.is_superuser:
+        return redirect('unauthorized')
+
     # Fetch all control centers
     control_centers = ControlCenter.objects.all().order_by('-created_at')
 
@@ -307,3 +313,30 @@ def inventory_information(request):
 
     }
     return render(request, 'inventory_information.html', context)
+
+from django.shortcuts import redirect
+
+
+def bank_inventory_information(request, center_id):
+    # Fetch control center
+    control_center = ControlCenter.objects.get(pk=center_id)
+
+    # Fetch all breeds associated with the control center
+    breeds_info = {}
+    breeds = BreaderTrade.objects.filter(control_center=control_center).values_list('breed', flat=True).distinct().order_by('-created_at')
+    for breed in breeds:
+        total_supplied = BreaderTrade.objects.filter(control_center=control_center, breed=breed).aggregate(total_supplied=Sum('breeds_supplied'))['total_supplied'] or 0
+        total_weight = BreaderTrade.objects.filter(control_center=control_center, breed=breed).aggregate(total_weight=Sum('goat_weight'))['total_weight'] or 0
+        total_slaughtered = SlaughterhouseRecord.objects.filter(control_center=control_center, breed=breed).aggregate(total_slaughtered=Sum('quantity'))['total_slaughtered'] or 0
+        net_breed_supply = total_supplied - total_slaughtered
+        breeds_info[breed] = {
+            'total_supplied': total_supplied,
+            'total_weight': total_weight,
+            'total_slaughtered': total_slaughtered,
+            'total_remaining': max(net_breed_supply, 0)
+        }
+
+    context = {
+        'inventory_info': {control_center: breeds_info},
+    }
+    return render(request, 'bank_inventory_info.html', context)

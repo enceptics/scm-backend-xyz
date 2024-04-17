@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} Sellers Profile {% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center">
+    <h4 class='mb-4' style='color: #777;'>{{ collateral_manager.name.first_name }} {{collateral_manager.name.last_name }}'s profile</h4>
+    <a href="{% url 'collateral_managers_list'%}" class="text-decoration-none text-secondary">
+        <span class="ml-auto"><i class="fas fa-arrow-left"></i> Back</span>
+    </a>
+</div>
+
+<div class='main-container'>
+
+    <div class='container'>
+        <hr />
+        <div class='row'>
+            <div class='col-md-4'>
+                <!-- Include the seller's image if available -->
+                {% if collateral_manager.name.profile_picture %}
+                    <img src='{{ seller.seller.profile_picture.url }}' class='img img-rounded' alt="Profile" style='width: 100%; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);' />
+                {% else %}
+                    <img src='{% static "img/profile_pic.svg" %}' class='img img-rounded' alt="Profile" style='width: 100%; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);' />
+                {% endif %}
+            </div>
+            <div class='col-md-8'>
+                <div style='background: ; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);'>
+                    <table class='table' style='border-collapse: collapse; width: 100%; border: 1px solid #ddd; border-radius: 5px;'>
+                        <tbody>
+                            <tr>
+                                <td style='padding: 10px; text-align: left; border-bottom: 1px solid #ddd; width: 30%;'>Username:</td>
+                                <td style='padding: 10px; text-align: left; border-bottom: 1px solid #ddd;'>{{collateral_manager.name.username }}</td>
+                            </tr>
+                            <tr>
+                                <td style='padding: 10px; text-align: left; border-bottom: 1px solid #ddd; width: 30%;'>Country:</td>
+                                <td style='padding: 10px; text-align: left; border-bottom: 1px solid #ddd;'>{{ collateral_manager.name.country }}</td>
+                            </tr>
+                            <tr>
+                                <td style='padding: 10px; text-align: left; border-bottom: 1px solid #ddd; width: 30%;'>Location:</td>
+                                <td style='padding: 10px; text-align: left; border-bottom: 1px solid #ddd;'>{{ collateral_manager.name.location }}</td>
+                            </tr>
+                            <tr>
+                                <td style='padding: 10px; text-align: left; border-bottom: 1px solid #ddd; width: 30%;'>Phone number:</td>
+                                <td style='padding: 10px; text-align: left; border-bottom: 1px solid #ddd;'>{{ collateral_manager.name.phone_number }}</td>
+                            </tr>
+                            <tr>
+                                <td style='padding: 10px; text-align: left; border-bottom: 1px solid #ddd; width: 30%;'>Email address:</td>
+                                <td style='padding: 10px; text-align: left; border-bottom: 1px solid #ddd;'>{{ collateral_manager.name.email }}</td>
+                            </tr> 
+                            <tr>
+                                <td style='padding: 10px; text-align: left; border-bottom: 1px solid #ddd; width: 30%;'>ID number:</td>
+                                <td style='padding: 10px; text-align: left; border-bottom: 1px solid #ddd;'>{{ collateral_manager.name.id_number }}</td>
+                            </tr> 
+                       </tbody>
+                    </table>
+                </div>
+                <!-- Include control centers if available -->
+                {% if controlCenters %}
+                <div class="mt-4">
+                    <h4 class="mb-3">Control Centers:</h4>
+                    <ol class='d-flex'>
+                        {% for center in controlCenters %}
+                        <li class='mx-3' style='list-style-type: square; text-transform: capitalize;'>{{ center.name }}</li>
+                        {% endfor %}
+                    </ol>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -4,7 +4,7 @@ from django import forms
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 from .models import CustomUser 
-
+from logistics.models import CollateralManager
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
@@ -104,3 +104,6 @@ class CollateralManagerRegistrationForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
         model = CustomUser
         fields = ['username', 'password1', 'password2', 'first_name', 'last_name', 'email', 'phone_number', 'address', 'id_number', 'county', 'country', 'bank_branch']
+
+class CollateralManagerForm(forms.Form):
+    collateral_manager = forms.ModelChoiceField(queryset=CollateralManager.objects.all(), empty_label="Select a Collateral Manager")
