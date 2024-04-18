@@ -689,7 +689,12 @@ def login_view(request):
                 elif user.role == CustomUser.SLAUGHTERHOUSE_MANAGER:
                     return redirect('/slaughterhouse_manager_dashboard/')  # Redirect slaughterhouse managers to slaughterhouse manager dashboard
                 elif user.role == CustomUser.COLLATERAL_MANAGER:
-                    return redirect('/collateral_manager_dashboard/')
+                    try:
+                        collateral_manager = CollateralManager.objects.get(name=user)
+                        return redirect('collateral_manager_dashboard', collateral_manager_id=collateral_manager.id)
+                    except CollateralManager.DoesNotExist:
+                        # Handle the case where the user is not associated with a collateral manager
+                        return redirect('/')  # Redirect to a generic dashboard
                 else:
                     # Handle other roles or scenarios
                     return redirect('/')  # Redirect to a generic dashboard
@@ -787,7 +792,40 @@ def control_centers_dashboard(request):
     collateral_managers = CollateralManager.objects.all()  # Retrieve all collateral managers
     return render(request, 'control_centers.html', {'control_centers': control_centers, 'collateral_managers': collateral_managers})
 
-def assign_collateral_manager(request):
+from django.http import Http404
+from django.db.models import Sum
+from slaughter_house.models import SlaughterhouseRecord
+
+def collateral_manager_dashboard(request, collateral_manager_id):
+    # Fetch control centers associated with the collateral manager
+    control_centers = ControlCenter.objects.filter(assigned_collateral_agent__id=collateral_manager_id)
+
+    # Prepare inventory information for each control center
+    inventory_info = {}
+    for center in control_centers:
+        breeds_info = {}
+        breeds = BreaderTrade.objects.filter(control_center=center).values_list('breed', flat=True).distinct().order_by('-created_at')
+        for breed in breeds:
+            total_supplied = BreaderTrade.objects.filter(control_center=center, breed=breed).aggregate(total_supplied=Sum('breeds_supplied'))['total_supplied'] or 0
+            total_weight = BreaderTrade.objects.filter(control_center=center, breed=breed).aggregate(total_weight=Sum('goat_weight'))['total_weight'] or 0
+            total_slaughtered = SlaughterhouseRecord.objects.filter(control_center=center, breed=breed).aggregate(total_slaughtered=Sum('quantity'))['total_slaughtered'] or 0
+            net_breed_supply = total_supplied - total_slaughtered
+            breeds_info[breed] = {
+                'total_supplied': total_supplied,
+                'total_weight': total_weight,
+                'total_slaughtered': total_slaughtered,
+                'total_remaining': max(net_breed_supply, 0)
+            }
+        inventory_info[center] = {
+            'name': center.name,
+            'seller_name': center.get_full_name(),
+            'agent_name': center.get_agent_full_name(),
+            'breeds_info': breeds_info
+        }
+
+    return render(request, 'collateral_manager_dashboard.html', {'inventory_info': inventory_info})
+    
+def assign_collateral_manager_success(request):
     control_centers = ControlCenter.objects.all()
     collateral_managers = CollateralManager.objects.all()
     
@@ -801,7 +839,7 @@ def assign_collateral_manager(request):
         center.assigned_collateral_agent = collateral_manager
         center.save()
         
-        return redirect('control_centers_dashboard')
+        return redirect('assign_collateral_manager_success')
     
     else:
         form = CollateralManagerForm()

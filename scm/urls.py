@@ -330,6 +330,7 @@ urlpatterns = [
     path('dashboard/stock-shift/', views.stock_shift_dashboard, name='stock_shift_dashboard'),
     path('dashboard/bank/', views.bank_dashboard, name='bank_dashboard'),
     path('dashboard/control-centers/', views.control_centers_dashboard, name='control_centers_dashboard'),
+    path('dashboard/collateral-manager/<int:collateral_manager_id>/', views.collateral_manager_dashboard, name='collateral_manager_dashboard'),
     path('dashboard/export-management/', views.export_management_dashboard, name='export_management'),
 
     # Transaction urls
@@ -351,7 +352,6 @@ urlpatterns = [
     path('seller_lcs/', lc_views.seller_letter_of_credit_list, name='seller_letter_of_credit_list'),
     path('buyer_lcs/', lc_views.buyer_letter_of_credit_list, name='buyer_letter_of_credit_list'),
     path('lc_creation_success/', lc_views.lc_creation_success, name='lc_creation_success'),
-
     path('letters/<int:pk>/',lc_views.letter_of_credit_detail, name='letter_of_credit_detail'),
     path('letters/create/', lc_views.letter_of_credit_create, name='letter_of_credit_create'), # Add this line
     path('update_letter_of_credit_status/<int:pk>/', lc_views.update_letter_of_credit_status, name='update_letter_of_credit_status'),
@@ -371,7 +371,7 @@ urlpatterns = [
     path('details/collateral_manager/<int:collateral_manager_id>/', views.collateral_manager_details, name='collateral_manager_details'),
     path('list/buyers/<int:buyer_id>/', custom_reg_views.buyer_details, name='buyer_details'),
 
-    path('assign_collateral_manager/', views.assign_collateral_manager, name='assign_collateral_manager'),
+    path('assign_collateral_manager_success/', views.assign_collateral_manager_success, name='assign_collateral_manager_success'),
 
 ]
 

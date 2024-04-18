@@ -78,7 +78,7 @@
                     <td>{{ center.get_agent_full_name }}</td>
                     <td>
                         <!-- Form to assign collateral manager -->
-                        <form method="post" action="{% url 'assign_collateral_manager' %}" class="input-group">
+                        <form method="post" action="{% url 'assign_collateral_manager_success' %}" class="input-group">
                             {% csrf_token %}
                             <input type="hidden" name="center_id" value="{{ center.id }}">
                             <select name="collateral_manager" class="form-control form-control-sm" required>

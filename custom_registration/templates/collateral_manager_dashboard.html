@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} Inventory Information {% endblock %}
+
+{% block content %}
+<div class="row mt-n4 mb-3 rounded" style="font-size: 15px; background-color: #001b40; color: white;">
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+    </ul>
+    <div class="">
+        <a class="nav-link" id="quotation-tab" style="color: #d9d9d9; text-decoration: none;">Hello, {{request.user.username}}</a>
+    </div>
+</div>
+<span class="mr-2 clickable-icon" style="cursor: pointer;font-size: 20px;" data-toggle="popover" title="Help" data-content=""><i class="fas fa-question-circle" id="modalParagraph"></i></span>
+
+<div class="container-fluid mt-3">
+
+    <div class="modal fade" id="customModal" tabindex="-1" role="dialog" aria-labelledby="customModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="customModalLabel">Control  center info</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p id="modalContent">Modal content goes here</p>
+                </div>
+                <div class="modal-footer">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        {% if inventory_info %}
+            {% for center, info in inventory_info.items %}
+            <div class="col-md-12">
+                <div style="background-color: #f9f9f9; border-radius: 5px; padding: 10px; margin-bottom: 20px;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 style="color: #999999;">{{ info.name }} inventory information</h5>
+                        <a href="javascript:history.back()" class="text-decoration-none text-secondary">
+                            <span class="ml-auto"><i class="fas fa-arrow-left"></i> Back</span>
+                        </a>
+                    </div>
+                    <hr>
+                    <div class="d-flex align-items-center justify-content-flex-start">
+                        <p class="mx-2"><strong>Seller:</strong> {{ info.seller_name }}</p>
+                        <span style="font-size: 50px; margin-top: -2.7rem;">.</span> 
+                        <p class="mx-2"><strong>Collateral manager:</strong> {{ info.agent_name }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-12 mb-4">
+                <div class="row">
+                    {% for breed, data in info.breeds_info.items %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h6 class="card-title"><span style="font-weight: bold;color: #666666;">{{ breed }}</span></h6>
+                            </div>
+                            <div class="card-body">
+                                <h6 class="card-subtitle mb- text-muted">Product information</h6>
+                                <hr>
+                                <div>
+                                    <p class="card-text" style="color: #666666;font-size: 15px;opacity: .6;"><strong>Total supplied:</strong> {{ data.total_supplied }}</p>
+                                </div>
+                                <div>
+                                    <p class="card-text" style="color: #666666;font-size: 15px;opacity: .6;"><strong>Total weight:</strong> {{ data.total_weight }} Kgs</p>
+                                </div>
+                                <div>
+                                    <p class="card-text" style="color: #666666;font-size: 15px;opacity: .6;"><strong>Total deducted:</strong> {{ data.total_slaughtered }}</p>
+                                </div>
+                                <div>
+                                    <p class="card-text" style="color: #666666;font-size: 15px;opacity: .6;"><strong>Net products:</strong> {{ data.total_remaining }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+        <div class="col-md-12">
+            <div class="alert alert-info" role="alert">
+                <div class="d-flex align-items-center">
+                    <div class="mr-3">
+                        <i class="fas fa-exclamation-circle fa-3x"></i> <!-- Bootstrap icon -->
+                    </div>
+                    <div>
+                        <h4 class="alert-heading">No Inventory Assigned</h4>
+                        <p class="mb-0">You have not been assigned to manage any inventory yet.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ block.super }}
+    <!-- JavaScript for customModal -->
+    <script>
+        $(document).ready(function() {
+            $('#modalParagraph').click(function() {
+                var message = "As a collateral manager, you will be responsible for overseeing inventory information for the assigned control centers for various sellers.";
+                $('#modalContent').text(message);
+                $('#customModal').modal('show');
+            });
+        });
+    </script>
+    
+{% endblock %}
