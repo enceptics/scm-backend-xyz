@@ -43,11 +43,15 @@
 
     {% if request.user.role == 'seller' or request.user.is_superuser %}
     <!-- Nav Item - Stock Shift -->
-    <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
-        <a class="nav-link" href="{% url 'stock_shift_dashboard' %}">
-            <i class="fas fa-fw fa-tachometer-alt"></i>
-            <span>Stock Shift</span></a>
-    </li>
+   <!-- Nav Item - Stock Shift -->
+<li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
+    <a class="nav-link" href="{% url 'inventory_records_list'%}">
+        <i class="fas fa-fw fa-tachometer-alt"></i>
+        <span>Stock Shift</span>
+    </a>
+</li>
+<hr class="sidebar-divider my-0">
+
     <hr class="sidebar-divider my-0">
     {% endif %}
 

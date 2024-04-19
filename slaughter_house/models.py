@@ -7,24 +7,25 @@ from django.dispatch import receiver
 from transaction.models import BreaderTrade
 from logistics.models import ControlCenter
 from django.db.models import Sum, F, Value
+from custom_registration.models import CustomUser
 
 class SlaughterhouseRecord(models.Model):
 
     SLAUGHTER_STATUS_CHOICES = [
-            ('slaughtered', 'Slaughtered'),
+            ('deducted', 'Deducted'),
     ]
 
-    breed = models.CharField(max_length=255, null=True, blank=True, default='goats')
+    breed = models.CharField(max_length=255, null=True, blank=True)
     slaughter_date = models.DateField(auto_now_add=True)
-    # part_name = models.CharField(max_length=255, choices=PART_CHOICES, default='shanks')
     quantity = models.PositiveIntegerField()
-    confirm = models.BooleanField(default=False)  # Confirm that the record is correct before saving it to
+    last_confirmation_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True)
+    confirmed_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name = 'confirmed_slaughterhouse_records')
     control_center = models.ForeignKey(ControlCenter, on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=255, choices=SLAUGHTER_STATUS_CHOICES, default='slaughtered')
-    # sale_choice = models.CharField(max_length=255, choices=SALE_CHOICES, default='export_cuts')
     weight = models.PositiveIntegerField(null=True, blank=True)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='confirmed_records', null=True, blank=True)
 
     def __str__(self):
         return f"Slaughterhouse Record - Date: {self.slaughter_date}, Quantity: {self.quantity}"
@@ -32,18 +33,14 @@ class SlaughterhouseRecord(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         if self.control_center:
-            # Calculate the total slaughtered quantity
-            total_slaughtered = SlaughterhouseRecord.objects.filter(control_center=self.control_center).aggregate(total=Sum('quantity'))['total']
-            total_slaughtered = total_slaughtered if total_slaughtered is not None else 0
-            
-            # Calculate the total breeds supplied from active BreaderTrade instances
-            active_breeder_trades = BreaderTrade.objects.filter(control_center=self.control_center)
-            total_breeds_supplied = active_breeder_trades.aggregate(total=Sum('breeds_supplied'))['total']
-            total_breeds_supplied = total_breeds_supplied if total_breeds_supplied is not None else 0
-            
-            # Exclude the breeds that have been slaughtered
-            net_breed_supply = total_breeds_supplied - total_slaughtered
-            self.control_center.net_breed_supply = net_breed_supply
-            self.control_center.save()
+            # Deduct the slaughtered quantity from the net breed supply
+            control_center = ControlCenter.objects.get(pk=self.control_center.pk)
+            control_center.net_breed_supply -= self.quantity
+            control_center.save()
+
+class Confirmation(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    record = models.ForeignKey(SlaughterhouseRecord, on_delete=models.CASCADE)
+
 
             

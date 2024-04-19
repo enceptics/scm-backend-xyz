@@ -373,6 +373,11 @@ urlpatterns = [
 
     path('assign_collateral_manager_success/', views.assign_collateral_manager_success, name='assign_collateral_manager_success'),
 
+    path('inventory-records-list/', slaugher_house_views.inventory_records_list, name='inventory_records_list'),
+    path('confirm_inventory_item_removal/<int:record_id>/', slaugher_house_views.confirm_slaughterhouse_record, name='inventory_record_confirm'),
+    path('item_confirmation_success/', slaugher_house_views.item_confirmation_success_view, name='item_confirmation_success'),
+    path('item_confirmation_error/', slaugher_house_views.item_confirmation_error_view, name='item_confirmation_error'),
+
 ]
 
 # Only add this when we are in debug mode.

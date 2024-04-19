@@ -141,3 +141,64 @@ def supply_vs_demand_statistics(request):
     except Exception as e:
         # Handle exceptions appropriately
         return render(request, 'error.html', {'error_message': str(e)})
+
+
+# Templates 
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect, get_object_or_404
+from .models import SlaughterhouseRecord
+
+@login_required
+def inventory_records_list(request):
+    allowed_roles = ['seller', 'slaughterhouse_manager']
+
+    if request.user.role not in allowed_roles and not request.user.is_superuser:
+        return redirect('unauthorized')
+       
+    records = SlaughterhouseRecord.objects.all().order_by('-created_at')
+    context = {'records': records}
+    return render(request, 'stock_shift.html', context)
+
+
+from django.contrib import messages
+
+@login_required
+def confirm_slaughterhouse_record(request, record_id):
+    allowed_roles = ['seller', 'slaughterhouse_manager']
+
+    if request.user.role not in allowed_roles and not request.user.is_superuser:
+        return redirect('unauthorized')
+       
+    # Get the slaughterhouse record
+    record = get_object_or_404(SlaughterhouseRecord, pk=record_id)
+
+    # Check if the current user has already confirmed either last_confirmation_by or confirmed_by
+    if request.user == record.last_confirmation_by or request.user == record.confirmed_by:
+        # If the user has already confirmed one of them, show error message
+        messages.error(request, "You have already confirmed part of this item.")
+        return redirect('inventory_records_list')
+
+    # If the user hasn't confirmed anything yet, proceed with confirmation
+    if not record.last_confirmation_by:
+        record.last_confirmation_by = request.user
+    elif not record.confirmed_by:
+        record.confirmed_by = request.user
+
+    # Save the record
+    record.save()
+
+    # Add confirmation successful message
+    messages.success(request, "You have successfully partly confirmed the removal of this item from the inventory.")
+
+    # Redirect to the inventory records list
+    return redirect('inventory_records_list')
+
+
+@login_required
+def item_confirmation_success_view(request):
+    return render(request, 'item_confirmation_success.html')
+
+@login_required
+def item_confirmation_error_view(request):
+    return render(request, 'item_confirmation_error.html')
+

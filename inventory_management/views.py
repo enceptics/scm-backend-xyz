@@ -247,72 +247,51 @@ def inventory_information(request):
     if request.user.role != 'seller' and not request.user.is_superuser:
         return redirect('unauthorized')
 
-    if request.user.role != 'seller' and not request.user.is_superuser:
-        return redirect('unauthorized')
-
     # Fetch all control centers
-    control_centers = ControlCenter.objects.all().order_by('-created_at')
+    control_centers = ControlCenter.objects.all()
 
-    # Initialize total net breed supply
-    total_net_breed_supply = 0
-
-    # Iterate over each control center
-    for center in control_centers:
-        # Fetch all unique breeds associated with the control center
-        breeds = BreaderTrade.objects.filter(control_center=center).values_list('breed', flat=True).distinct()
-
-        # Iterate over each breed
-        for breed in breeds:
-            # Calculate total supplied for the breed
-            total_supplied = BreaderTrade.objects.filter(control_center=center, breed=breed).aggregate(total_supplied=Sum('breeds_supplied'))['total_supplied'] or 0
-
-            # Ensure that total supplied is not negative
-            total_supplied = max(total_supplied, 0)
-
-            # Add total supplied to the total net breed supply
-            total_net_breed_supply += total_supplied
-
-    # Dictionary to store inventory information organized by control center and breed
+    # Initialize dictionary to store breeds information
     inventory_info = {}
 
-    for center in control_centers:
-        inventory_info[center.name] = {}
+    # Initialize variable to store cumulative total remaining
+    cumulative_total_remaining = 0
 
-        # Fetch all unique breeds associated with the control center
-        breeds = BreaderTrade.objects.filter(control_center=center).values_list('breed', flat=True).distinct()
-
+    # Iterate over each control center
+    for control_center in control_centers:
+        breeds_info = {}
+        
+        # Fetch all breeds associated with the control center
+        breeds = BreaderTrade.objects.filter(control_center=control_center).values_list('breed', flat=True).distinct().order_by('-created_at')
+        
         # Iterate over each breed
         for breed in breeds:
-            # Initialize inventory info for the breed if it doesn't exist
-            if breed not in inventory_info[center.name]:
-                inventory_info[center.name][breed] = {
-                    'total_supplied': 0,
-                    'total_slaughtered': 0,
-                    'total_remaining': 0
-                }
-
-            # Calculate total supplied and total slaughtered for the breed
-            total_supplied = BreaderTrade.objects.filter(control_center=center, breed=breed).aggregate(total=Sum('breeds_supplied'))['total'] or 0
-            total_slaughtered = SlaughterhouseRecord.objects.filter(control_center=center, breed=breed).aggregate(total=Sum('quantity'))['total'] or 0
+            # Calculate total supplied, total weight, total slaughtered, and net breed supply
+            total_supplied = BreaderTrade.objects.filter(control_center=control_center, breed=breed).aggregate(total_supplied=Sum('breeds_supplied'))['total_supplied'] or 0
+            total_weight = BreaderTrade.objects.filter(control_center=control_center, breed=breed).aggregate(total_weight=Sum('goat_weight'))['total_weight'] or 0
+            total_slaughtered = SlaughterhouseRecord.objects.filter(control_center=control_center, breed=breed).aggregate(total_slaughtered=Sum('quantity'))['total_slaughtered'] or 0
+            net_breed_supply = total_supplied - total_slaughtered
             
-            # Ensure that total supplied is not negative
-            total_supplied = max(total_supplied, 0)
+            # Add breed information to the dictionary
+            breeds_info[breed] = {
+                'total_supplied': total_supplied,
+                'total_weight': total_weight,
+                'total_slaughtered': total_slaughtered,
+                'total_remaining': max(net_breed_supply, 0)
+            }
 
-            # Calculate total remaining for the breed
-            net_supply = center.net_breed_supply
-            total_remaining = max(net_supply - total_slaughtered, 0)
+            # Increment cumulative total remaining
+            cumulative_total_remaining += max(net_breed_supply, 0)
 
-            # Update inventory info for the breed
-            inventory_info[center.name][breed]['total_supplied'] += total_supplied
-            inventory_info[center.name][breed]['total_slaughtered'] += total_slaughtered
-            inventory_info[center.name][breed]['total_remaining'] = total_remaining
+        # Add control center information to the main dictionary
+        inventory_info[control_center] = breeds_info
 
     context = {
         'inventory_info': inventory_info,
-        'totalNetBreedSupply': total_net_breed_supply,
-
-    }
+        'cumulative_total_remaining': cumulative_total_remaining  # Add this to the context
+    } 
     return render(request, 'inventory_information.html', context)
+
+
 
 from django.shortcuts import redirect
 

@@ -8,17 +8,12 @@
   <div class="">
       <a class="nav-link" id="quotation-tab" style="color: #d9d9d9; text-decoration: none;">Hello, {{request.user.username}}</a>
   </div>
-  <div class="col mt-1 text-center">
+  <div class="col mt-1 text-center d-flex justify-content-end align-items-center">
       
-      <span class="" style="margin-right: 5px; color: #999999;letter-spacing: 5px;font-size: 20px;">Bank Dashboard</span>
-  </div>
-  <div class="col d-flex justify-content-end align-items-center">
-      <a href="javascript:history.back()" class="text-decoration-none text-secondary">
-          <span class="ml-auto mx-3"><i class="fas fa-arrow-left"></i> Back</span>
-      </a>
+      <span class="" style="margin-right: 5px; color: #fff;letter-spacing: 5px;font-size: 15px;">Bank Dashboard</span>
   </div>
 </div>
-
+<hr>
 <!-- Place this code inside your Django template file -->
 {% if show %}
 <div class="modal" tabindex="-1" role="dialog" style="display: block;">
@@ -54,32 +49,32 @@
   <div class="row">
 
     <div class="col-md-4">
-      <div class="shadow p-1 mb-5 bg-body rounded">
+      <div class="shadow p-1 mb-4 bg-white rounded">
           <a style="text-decoration: none;" href="{% url 'sellers_list'%}">
               <div class="card-body">
                   <p style="color:#666666;"><i class="fas fa-user" style="font-size: 30px; color: #666666;"></i> Sellers</p>
-                  <p style="color:#666666; font-size: 20px; font-weight: bold;">{{ num_sellers }}</p> <!-- Fetch seller count dynamically -->
+                  <p style="color:#666666; font-size: 20px; font-weight: bold;">699</p> <!-- Fetch seller count dynamically -->
                 </div>
           </a>
       </div>
   </div>
   
     <div class="col-md-4">
-      <div class="shadow shadow-white p-1 mb-5 bg-body rounded">
+      <div class="shadow shadow-white p-1 bg-white rounded">
         <a style="text-decoration: none;" href="{% url 'collateral_managers_list'%}">
           <div class="card-body">
             <p style="color:#666666;"><i class="fas fa-user-shield" style="font-size: 30px; color: #666666;"></i>&nbsp; Collateral Managers</p>
-            <p style="color:#666666; font-size: 20px; font-weight: bold;">{{ num_collateral_managers }}</p> <!-- Fetch collateral manager count dynamically -->
+            <p style="color:#666666; font-size: 20px; font-weight: bold;">89880</p> <!-- Fetch collateral manager count dynamically -->
           </div>
         </a>
       </div>
     </div>
     <div class="col-md-4">
-      <div class="shadow p-1 mb-5 bg-body rounded">
+      <div class="shadow p-1  bg-white rounded">
         <a style="text-decoration: none;" href="{% url 'buyers_list'%}">
           <div class="card-body">
             <p style="color:#666666;"><i class="fas fa-shopping-bag" style="font-size: 30px; color: #666666;"></i> Buyers</p>
-            <p style="color:#666666; font-size: 20px; font-weight: bold;">{{ num_buyers }}</p> <!-- Fetch buyer count dynamically -->
+            <p style="color:#666666; font-size: 20px; font-weight: bold;">7889</p> <!-- Fetch buyer count dynamically -->
           </div>
         </a>
       </div>
@@ -88,7 +83,7 @@
 
     <div class="row">
       <div class="col-md-5">
-        <div class="shadow p-1 mb-5 bg-body runded">
+        <div class="shadow p-1 mb-5 bg-white rounded">
           <div class="card-body">
             <h5 class="card-title" style="color: #999999;">Transaction Overview</h5>
             <!-- Replace ReactApexChart with your chart library or HTML/CSS equivalent -->
@@ -100,8 +95,8 @@
       </div>
   
       <div class="col">
-        <div class="shadow p-1 mb-5 bg-body runded">
-          <div class="card-body">
+        <div class="shadow p-1 mb-5 bg-white rounded">
+          <div class="card-body ">
             <h5 class="card-title" style="color: #999999;">Today</h5>
             <!-- Replace ReactApexChart with your chart library or HTML/CSS equivalent -->
             <div class="chart-placeholder" style="height: 350px;">
@@ -114,7 +109,7 @@
   
     <div class="row">
       <div class="col">
-        <div class="shadow p-1 mb-5 bg-body runded">
+        <div class="shadow p-1 mb-5 bg-white rounded">
           <div class="card-body">
             <h5 class="card-title" style="color: #999999;">Last month</h5>
             <!-- Replace ReactApexChart with your chart library or HTML/CSS equivalent -->

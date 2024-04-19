@@ -26,11 +26,15 @@
         <h4>Quotations</h4>
 
     {% if quotations %}
-        <table class="table mt-3">
+    <div class="table-responsive">
+
+        <table  mt-3">
             <thead>
                 <tr>
                     <th>Seller</th>
                     <th>Product</th>
+                    <th>Date</th>
+
                     <th>Quantity</th>
                     <th>Unit Price</th>
                     <th>Status</th>
@@ -46,6 +50,7 @@
                     <tr>
                         <td>{{ quotation.seller }}</td>
                         <td>{{ quotation.product }}</td>
+                        <td>{{ quotation.created_at }}</td>
                         <td>{{ quotation.quantity }}</td>
                         <td>{{ quotation.unit_price }}</td>
                         <td>{{ quotation.status }}</td>
@@ -84,6 +89,8 @@
                 {% endfor %}
             </tbody>
         </table>
+    </div>
+
     {% else %}
         <div class="alert alert-warning mt-3" role="alert">
             <i class="fas fa-exclamation-circle"></i> Quotation list is empty.

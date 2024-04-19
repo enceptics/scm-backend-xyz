@@ -1,110 +1,22 @@
 {% extends "base.html" %}
+
 {% load static %}
-<!-- Page title  -->
-{% block title %}Intellima{% endblock title %}
 
-<!-- Specific Page CSS goes HERE  -->
+{% block title %}Intellima home{% endblock title %}
 
-<!-- Page Heading -->
-
-<!-- Page content  -->
 {% block content %}
-<!-- Content Row -->
+<div class="container" style="min-height:85vh;">
 
-<h3>Welcome</h3>
+  <div class="d-sm-flex align-items-center justify-content-between w-100">
+  <div class="col-md-6 mx-auto mb-4 mb-sm-0 headline">
+
+    <h1 class="my-4 font-weight-bold">Innovative platform for automated supply chains <br /> <span className=' my-4' style=" color: '#9B5DE5;">Across several portfolios</span></h1>
+    <a href="" class="btn px-5 py-3 text-white mt-3 mt-sm-0" >Get Started</a>
+  </div>
+  <div class="col-md-6 h-100 clipped" style="min-height: 500px; backgroun-image: `url(${backgroundSvg})`, backgroundPosition: 'center', backgroundSize: 'cover' }}></div>
+</div>
+
+        
+      </div>
 {% endblock content %}
 
-<!-- Specific Page JS goes HERE  -->
-{% block javascripts %}
-<script src="{% static 'static/js/chart.js' %}"></script>
-
-<script>
-    // JavaScript code for Supply vs Demand Statistics chart
-document.addEventListener("DOMContentLoaded", function() {
-    var supplyData = JSON.parse('{{ supply_data|safe }}'); // Parse supply data from backend
-    
-    var ctx = document.getElementById('supplyDemandChart').getContext('2d'); // Get canvas element
-    var myLineChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: supplyData.labels, // Use labels from supplyData
-            datasets: [{
-                label: "Supply vs Demand",
-                lineTension: 0.3,
-                backgroundColor: "rgba(78, 115, 223, 0.05)",
-                borderColor: "rgba(78, 115, 223, 1)",
-                pointRadius: 3,
-                pointBackgroundColor: "rgba(78, 115, 223, 1)",
-                pointBorderColor: "rgba(78, 115, 223, 1)",
-                pointHoverRadius: 3,
-                pointHoverBackgroundColor: "rgba(78, 115, 223, 1)",
-                pointHoverBorderColor: "rgba(78, 115, 223, 1)",
-                pointHitRadius: 10,
-                pointBorderWidth: 2,
-                data: supplyData.values, // Use values from supplyData
-            }],
-        },
-        options: {
-            scales: {
-                xAxes: [{
-                    ticks: {
-                        beginAtZero: true
-                    }
-                }],
-                yAxes: [{
-                    ticks: {
-                        beginAtZero: true
-                    }
-                }]
-            },
-            legend: {
-                display: true,
-                position: 'top'
-            }
-        }
-    });
-});
-
-</script>
-
-<script>
-// JavaScript code for Products available by category chart
-document.addEventListener("DOMContentLoaded", function() {
-    var topProductsNames = JSON.parse(document.getElementById("top_products_names").value); // Parse top products names
-    var topProductsQuantity = JSON.parse(document.getElementById("top_products_quantity").value); // Parse top products quantity
-    
-    var ctx = document.getElementById("myPieChart").getContext('2d'); // Get canvas element
-    var myPieChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: topProductsNames,
-            datasets: [{
-                data: topProductsQuantity,
-                backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc'],
-                hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf'],
-                hoverBorderColor: "rgba(234, 236, 244, 1)",
-            }],
-        },
-        options: {
-            scales: {
-                xAxes: [{
-                    ticks: {
-                        beginAtZero: true
-                    }
-                }],
-                yAxes: [{
-                    ticks: {
-                        beginAtZero: true
-                    }
-                }]
-            },
-            legend: {
-                display: true,
-                position: 'top'
-            }
-        }
-    });
-});
-
-</script>
-{% endblock javascripts %}
