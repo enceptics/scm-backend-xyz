@@ -11,3 +11,8 @@ class FinishedProductForm(forms.ModelForm):
     class Meta:
         model = SlaughterhouseRecord
         fields = '__all__'  
+
+class SlaughterhouseRecordForm(forms.ModelForm):
+    class Meta:
+        model = SlaughterhouseRecord
+        fields = '__all__'

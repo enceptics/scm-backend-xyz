@@ -202,3 +202,34 @@ def item_confirmation_success_view(request):
 def item_confirmation_error_view(request):
     return render(request, 'item_confirmation_error.html')
 
+# Templates
+from .forms import FinishedProductForm, SlaughterhouseRecordForm
+from django.contrib import messages
+from custom_registration.models import Seller
+
+@login_required
+def slaughter_house_create(request):
+    """View to create a new quotation."""
+    if request.method == 'POST':
+        form = SlaughterhouseRecordForm(request.POST)
+        if form.is_valid():
+            record = form.save(commit=False)
+            # Retrieve the seller associated with the logged-in user
+            seller = Seller.objects.get(seller=request.user)
+            record.seller = seller
+            record.save()
+            # Redirect to the success template upon successful creation
+            return redirect('record_creation_success')
+        else:
+            # If the form is not valid, display error messages
+            messages.error(request, 'Failed to create record. Please check the form.')
+    else:
+        # Initialize the form with the seller field set to the seller associated with the logged-in user
+        seller = Seller.objects.get(seller=request.user)
+        form = SlaughterhouseRecordForm(initial={'seller': seller})
+    
+    return render(request, 'slaughterhouse.html', {'form': form})
+
+def record_creation_success(request):
+    return render(request, 'slaughterhouse_record_created_successfully.html')
+

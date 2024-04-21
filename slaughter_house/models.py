@@ -9,6 +9,7 @@ from logistics.models import ControlCenter
 from django.db.models import Sum, F, Value
 from custom_registration.models import CustomUser
 from django.db import transaction
+from custom_registration.models import Seller
 
 class SlaughterhouseRecord(models.Model):
 
@@ -27,7 +28,7 @@ class SlaughterhouseRecord(models.Model):
     status = models.CharField(max_length=255, choices=SLAUGHTER_STATUS_CHOICES, default='slaughtered')
     weight = models.PositiveIntegerField(null=True, blank=True)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='confirmed_records', null=True, blank=True)
-
+    seller = models.ForeignKey(Seller, on_delete=models.CASCADE, null=True, blank=True)
     def __str__(self):
         return f"Slaughterhouse Record - Date: {self.slaughter_date}, Quantity: {self.quantity}"
 

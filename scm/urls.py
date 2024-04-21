@@ -387,6 +387,9 @@ urlpatterns = [
 
     # URL for viewing extracted data detail for a specific LetterOfCredit instance
     path('lc_document_extracted_content_detail/<int:lc_document_id>/', lc_views.lc_document_extracted_content_detail, name='lc_document_extracted_content_detail'),
+    path('slaughterhouse_create/create/', slaugher_house_views.slaughter_house_create, name='slaughter_house_create'), # Add this line
+    path('slaughterhouse_creation_success/', slaugher_house_views.record_creation_success, name='record_creation_success'),
+
 ]
 
 # Only add this when we are in debug mode.

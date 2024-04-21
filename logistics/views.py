@@ -170,7 +170,6 @@ class CollateralManagerViewSet(viewsets.ModelViewSet):
     queryset = CollateralManager.objects.all().order_by('-created_at')
     serializer_class = CollateralManagerSerializer
 
-
 # Templates
 from .forms import PackageInfoForm, LogisticsStatusForm
 
@@ -201,3 +200,5 @@ def logistics_status_create(request):
 def logistics_status_list(request):
     logistics_statuses = LogisticsStatus.objects.all()
     return render(request, 'logistics_status_list.html', {'logistics_statuses': logistics_statuses})
+
+    
