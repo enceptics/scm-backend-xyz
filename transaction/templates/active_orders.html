@@ -1,0 +1,29 @@
+<!-- document_detail.html -->
+{% extends 'base.html' %}
+{% block title %} Letter of Credit Document Detail {% endblock title %}
+
+{% block content %}
+<h2>Letter of Credit Document Details</h2>
+<h3>{{ lc_document.title }}</h3>
+
+<ul>
+  <li><strong>Buyer Name:</strong> {{ extracted_data.buyer_name }}</li>
+  <li><strong>Buyer Email:</strong> {{ extracted_data.buyer_email }}</li>
+  <li><strong>Buyer Address:</strong> {{ extracted_data.buyer_address }}</li>
+  <li><strong>Buyer Country:</strong> {{ extracted_data.buyer_country }}</li>
+</ul>
+
+<ul>
+  <li><strong>Seller Name:</strong> {{ extracted_data.seller_name }}</li>
+  <li><strong>Seller Email:</strong> {{ extracted_data.seller_email }}</li>
+  <li><strong>Seller Address:</strong> {{ extracted_data.seller_address }}</li>
+  <li><strong>Seller Country:</strong> {{ extracted_data.seller_country }}</li>
+</ul>
+
+<ul>
+  <li><strong>Product:</strong> {{ extracted_data.product }}</li>
+  <li><strong>Unit Price:</strong> {{ extracted_data.unit_price }}</li>
+  <li><strong>Created On:</strong> {{ extracted_data.created_on }}</li>
+</ul>
+
+{% endblock %}

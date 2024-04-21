@@ -439,7 +439,11 @@ def confirm_quotation(request, quotation_id):
     else:
         messages.error(request, 'Quotation is already confirmed.')
 
-    return redirect('buyer_quotation_list')
+    return redirect('quotation_confirmed')
+
+def quotation_confirmed(request):
+    """Success template for quotation confirmation."""
+    return render(request, 'confirm_quotation.html')
 
 @login_required
 def reject_quotation(request, quotation_id):
@@ -450,9 +454,14 @@ def reject_quotation(request, quotation_id):
         quotation.explanation = explanation  # Save the explanation to the quotation
         quotation.rejected = True  # Set the rejected field to True
         quotation.save()  # Save the changes to the database
-        return redirect('buyer_quotation_list')  # Redirect to the quotation list page
+        messages.success(request, 'Quotation rejected successfully.')
+        return redirect('reject_quotation')  # Redirect to the quotation list page
     else:
         return render(request, 'reject_quotation.html', {'quotation': quotation})
+
+def reject_quotation(request):
+    """Success template for quotation confirmation."""
+    return render(request, 'reject_quotation.html')
 
 from django.contrib import messages
 
@@ -506,8 +515,14 @@ def delete_quotation(request, quotation_id):
 def letter_of_credit_create(request):
     if request.user.role != 'bank' and not request.user.is_superuser:
         return redirect('unauthorized')
+    
     if request.method == 'POST':
         form = LetterOfCreditForm(request.POST, request.FILES)
+        
+        # Handling validation error for non-PDF documents
+        if 'lc_document' in request.FILES and not request.FILES['lc_document'].name.endswith('.pdf'):
+            form.add_error('lc_document', 'Only PDF documents are allowed.')
+            
         if form.is_valid():
             form.save()
             # Redirect to a success URL or a specific view
@@ -515,6 +530,7 @@ def letter_of_credit_create(request):
         # If the form is not valid, re-render the form with validation errors
     else:
         form = LetterOfCreditForm()
+    
     return render(request, 'letter_of_credit_create.html', {'form': form})
 
 def lc_creation_success(request):
@@ -533,6 +549,8 @@ def all_letter_of_credit_list(request):
 
 @login_required
 def seller_letter_of_credit_list(request):
+    if request.user.role != 'seller' and not request.user.is_superuser:
+        return redirect('unauthorized')
     try:
         seller = Seller.objects.get(seller=request.user)
     except Seller.DoesNotExist:
@@ -592,3 +610,74 @@ def update_letter_of_credit_status(request, pk):
 def letter_of_credit_detail(request, pk):
     letter_of_credit = get_object_or_404(LetterOfCredit, pk=pk)
     return render(request, 'letter_of_credit_detail.html', {'letter_of_credit': letter_of_credit})
+
+import re
+import PyPDF2
+# Extract Pdf content
+import re
+from PyPDF2 import PdfReader
+
+@login_required
+def extracted_data_list(request):
+    allowed_roles = ['superuser', 'seller', 'breeder']
+    if not request.user.is_superuser and request.user.role not in allowed_roles:
+        return redirect('unauthorized')
+    
+    approved_lc_documents = LetterOfCredit.objects.filter(status='approved').order_by('-issue_date')
+    extracted_data_list = []
+    for lc_document in approved_lc_documents:
+        extracted_data = extract_lc_data(lc_document.lc_document.path)
+        extracted_data_list.append(extracted_data)
+    return render(request, 'document_viewer/document_detail.html', {'extracted_data_list': extracted_data_list})
+
+def lc_document_extracted_content_detail(request, lc_document_id):
+    lc_document = LetterOfCredit.objects.get(pk=lc_document_id)
+    extracted_data = extract_lc_data(lc_document.lc_document.path)
+    return render(request, 'document_viewer/active_orders.html', {'lc_document': lc_document, 'extracted_data': extracted_data})
+
+def extract_lc_data(pdf_path):
+    extracted_data = {
+        'buyer_name': 'Unknown',
+        'buyer_email': 'Unknown',
+        'buyer_address': 'Unknown',
+        'buyer_country': 'Unknown',
+        'seller_name': 'Unknown',
+        'seller_email': 'Unknown',
+        'seller_address': 'Unknown',
+        'seller_country': 'Unknown',
+        'product': 'Unknown',
+        'unit_price': 'Unknown',
+        'created_on': 'Unknown',
+        'quantity': 'Unknown',  # Add quantity field
+    }
+
+    with open(pdf_path, 'rb') as file:
+        reader = PdfReader(file)
+        for page_num in range(len(reader.pages)):
+            text = reader.pages[page_num].extract_text()
+
+            # Extracting buyer's information
+            buyer_match = re.search(r'Full Name:\s*(.*?)\s*Email:\s*(.*?)\s*Address:\s*(.*?)\s*Country:\s*(.*?)', text, re.DOTALL)
+            if buyer_match:
+                extracted_data['buyer_name'] = buyer_match.group(1).strip()
+                extracted_data['buyer_email'] = buyer_match.group(2).strip()
+                extracted_data['buyer_address'] = buyer_match.group(3).strip()
+                extracted_data['buyer_country'] = buyer_match.group(4).strip()
+
+            # Extracting seller's information
+            seller_match = re.search(r'Full Name:\s*(.*?)\s*Email:\s*(.*?)\s*Address:\s*(.*?)\s*Country:\s*(.*?)', text, re.DOTALL)
+            if seller_match:
+                extracted_data['seller_name'] = seller_match.group(1).strip()
+                extracted_data['seller_email'] = seller_match.group(2).strip()
+                extracted_data['seller_address'] = seller_match.group(3).strip()
+                extracted_data['seller_country'] = seller_match.group(4).strip()
+
+            # Extracting product information
+            product_match = re.search(r'Product:\s*(.*?)\s*Unit Price:\s*(.*?)\s*Created on:\s*(.*?)\s*Delivered by:\s*(.*?)\s*No:\s*(.*?)\s*Message:', text, re.DOTALL)
+            if product_match:
+                extracted_data['product'] = product_match.group(1).strip()
+                extracted_data['unit_price'] = product_match.group(2).strip()
+                extracted_data['created_on'] = product_match.group(3).strip()
+                extracted_data['quantity'] = product_match.group(4).strip()
+
+    return extracted_data

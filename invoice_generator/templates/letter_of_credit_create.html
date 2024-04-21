@@ -81,6 +81,12 @@
     <h5>Create Letter of Credit</h5>
     <hr>
     <div class="col-md-8">
+    {% if form.non_field_errors %}
+  <div class="alert alert-danger" role="alert">
+    {{ form.non_field_errors }}
+  </div>
+{% endif %}
+
     <form class="mb-4 " method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}

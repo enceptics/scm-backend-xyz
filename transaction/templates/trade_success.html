@@ -1,23 +1,21 @@
+<!-- quotation_created.html -->
 {% extends 'base.html' %}
-
 {% block title %}
-    Success
+    Form submitted successfully
 {% endblock %}
-
 {% block content %}
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-6">
-                <div class="card shadow mb-4">
-                    <div class="card-body">
-                        <h2 class="text-center text-success mb-4">Success!</h2>
-                        <p class="text-center">Form submission successful.</p>
-                        <div class="text-center">
-                            <a href="{% url 'home' %}" class="btn btn-primary">Go to Home</a>
-                        </div>
-                    </div>
-                </div>
+<div class="container">
+
+        <div class="icon-container">
+            <span class="icon"><i class="fas fa-check-circle" style="font-size: 30px; color: #5C6AC4;"></i></span>
+            <div class="message-container">
+                <h2 class="message-title" style="color: #666666;">Form Submitted Successfully!</h2>
+                <div></div> Click <a href="{% url 'create_breader_trade' %}"><span class="" style="color: #001b42;">Here </span></a>  to submit another
+                <p></p>
+                <p><a href="{% url 'breeder_dashboard' %}">Go back dashboard</a></p>
+
             </div>
-        </div>
     </div>
+    
+</div>
 {% endblock %}

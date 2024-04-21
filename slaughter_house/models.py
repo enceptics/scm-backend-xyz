@@ -8,6 +8,7 @@ from transaction.models import BreaderTrade
 from logistics.models import ControlCenter
 from django.db.models import Sum, F, Value
 from custom_registration.models import CustomUser
+from django.db import transaction
 
 class SlaughterhouseRecord(models.Model):
 
@@ -31,12 +32,16 @@ class SlaughterhouseRecord(models.Model):
         return f"Slaughterhouse Record - Date: {self.slaughter_date}, Quantity: {self.quantity}"
 
     def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        if self.control_center:
-            # Deduct the slaughtered quantity from the net breed supply
-            control_center = ControlCenter.objects.get(pk=self.control_center.pk)
-            control_center.net_breed_supply -= self.quantity
-            control_center.save()
+        with transaction.atomic():
+            super().save(*args, **kwargs)
+            
+            if self.control_center:
+                # Calculate the net breed supply after deducting the slaughtered quantity
+                net_breed_supply = self.control_center.net_breed_supply - self.quantity
+                
+                # Ensure net breed supply doesn't become negative
+                self.control_center.net_breed_supply = max(net_breed_supply, 0)
+                self.control_center.save()
 
 class Confirmation(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)

@@ -346,6 +346,9 @@ urlpatterns = [
     path('buyer/quotations/', quotation_views.buyer_quotation_list, name='buyer_quotation_list'),
     path('buyer/quotations/confirm/<int:quotation_id>/', quotation_views.confirm_quotation, name='confirm_quotation'),
     path('buyer/quotations/reject/<int:quotation_id>/', quotation_views.reject_quotation, name='reject_quotation'),
+    path('buyer/quotations/success', quotation_views.quotation_created, name='quotation_created'),
+    path('buyer/quotations/quotation-confirmed/', quotation_views.quotation_confirmed, name='quotation_confirmed'),
+    path('buyer/quotations/quotation-rejected/', quotation_views.reject_quotation, name='reject_quotation'),
 
     # LC
     path('all_lcs/', lc_views.all_letter_of_credit_list, name='all_letter_of_credit_list'),
@@ -359,7 +362,6 @@ urlpatterns = [
     # Inventory
     path('inventory/control-center/', inventory_views.inventory_information, name='inventory_information'),
     path('bank/inventory/control-center/<int:center_id>', inventory_views.bank_inventory_information, name='bank_inventory_information'),
-
     path('supply_demand/', slaugher_house_views.supply_vs_demand_statistics, name='supply_demand_statistics'),
 
     # Sellers, buyers, cmanagers
@@ -377,7 +379,14 @@ urlpatterns = [
     path('confirm_inventory_item_removal/<int:record_id>/', slaugher_house_views.confirm_slaughterhouse_record, name='inventory_record_confirm'),
     path('item_confirmation_success/', slaugher_house_views.item_confirmation_success_view, name='item_confirmation_success'),
     path('item_confirmation_error/', slaugher_house_views.item_confirmation_error_view, name='item_confirmation_error'),
+    path('create-control_center/', inventory_views.controlcenter_create, name='controlcenter_create'),
 
+    # LC Documents extracted details
+    # URL for listing extracted data
+    path('extracted_data_list/', lc_views.extracted_data_list, name='extracted_data_list'),
+
+    # URL for viewing extracted data detail for a specific LetterOfCredit instance
+    path('lc_document_extracted_content_detail/<int:lc_document_id>/', lc_views.lc_document_extracted_content_detail, name='lc_document_extracted_content_detail'),
 ]
 
 # Only add this when we are in debug mode.

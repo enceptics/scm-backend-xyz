@@ -8,6 +8,7 @@ from django.utils import timezone
 from datetime import timedelta
 # from transaction.models import Breader
 from custom_registration.models import Seller
+import PyPDF2
 
 # ---------------Seller Purchase order--------------------------------------------
 
@@ -303,6 +304,24 @@ class LetterOfCredit(models.Model):
     lc_document = models.FileField(upload_to='lc_documents/', null=True, blank=True)
     quotatation = models.ForeignKey(Quotation, on_delete=models.CASCADE, null=True, blank=True)
     rejection_reason = models.TextField(blank=True, null=True)
+
+    text_content = models.TextField(blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.lc_document:
+            self.extract_text_content()
+
+    def extract_text_content(self):
+        with open(self.lc_document.path, 'rb') as file:
+            reader = PyPDF2.PdfReader(file)
+            text = ''
+            for page_num in range(len(reader.pages)):
+                text += reader.pages[page_num].extract_text()
+            self.text_content = text
+            self.save()
+
+
 
     def get_buyer_full_name(self):
         if self.buyer:

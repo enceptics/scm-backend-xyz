@@ -243,6 +243,8 @@ class BreederTotalSingleSellerViewSet(viewsets.ViewSet):
 # Templates
 from django.shortcuts import render
 
+from django.db.models import Sum, F, Value, Count, IntegerField, Case, When
+
 def inventory_information(request):
     if request.user.role != 'seller' and not request.user.is_superuser:
         return redirect('unauthorized')
@@ -269,8 +271,12 @@ def inventory_information(request):
             total_supplied = BreaderTrade.objects.filter(control_center=control_center, breed=breed).aggregate(total_supplied=Sum('breeds_supplied'))['total_supplied'] or 0
             total_weight = BreaderTrade.objects.filter(control_center=control_center, breed=breed).aggregate(total_weight=Sum('goat_weight'))['total_weight'] or 0
             total_slaughtered = SlaughterhouseRecord.objects.filter(control_center=control_center, breed=breed).aggregate(total_slaughtered=Sum('quantity'))['total_slaughtered'] or 0
-            net_breed_supply = total_supplied - total_slaughtered
             
+            # Check if both confirmed_by and last_confirmation_by fields are filled
+            slaughter_records = SlaughterhouseRecord.objects.filter(control_center=control_center, breed=breed)
+            confirmed_records_count = slaughter_records.filter(confirmed_by__isnull=False, last_confirmation_by__isnull=False).count()
+            net_breed_supply = total_supplied - total_slaughtered if confirmed_records_count > 0 else total_supplied
+
             # Add breed information to the dictionary
             breeds_info[breed] = {
                 'total_supplied': total_supplied,
@@ -319,3 +325,18 @@ def bank_inventory_information(request, center_id):
         'inventory_info': {control_center: breeds_info},
     }
     return render(request, 'bank_inventory_info.html', context)
+
+# control center
+# views.py
+from django.shortcuts import render, redirect
+from .forms import ControlCenterForm
+
+def controlcenter_create(request):
+    if request.method == 'POST':
+        form = ControlCenterForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('inventory_information')
+    else:
+        form = ControlCenterForm()
+    return render(request, 'create_control_center.html', {'form': form})
