@@ -75,6 +75,16 @@
     <hr class="sidebar-divider my-0">
     {% endif %}
 
+    {% if request.user.role == 'seller' or request.user.rolr == 'export_manager' or request.user.is_superuser %}
+    <!-- Nav Item - Bank -->
+    <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
+        <a class="nav-link" href="{% url 'export_management' %}">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Export Management</span></a>
+    </li>
+    <hr class="sidebar-divider my-0">
+    {% endif %}
+
     {% if request.user.role == 'bank' or request.user.is_superuser %}
     <!-- Nav Item - Control Centers -->
     <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
@@ -95,6 +105,7 @@
     </li>
     
 <hr class="sidebar-divider my-0">
+
 
     {% endif %}
 

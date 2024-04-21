@@ -169,3 +169,35 @@ class ControlCenterViewSet(viewsets.ModelViewSet):
 class CollateralManagerViewSet(viewsets.ModelViewSet):
     queryset = CollateralManager.objects.all().order_by('-created_at')
     serializer_class = CollateralManagerSerializer
+
+
+# Templates
+from .forms import PackageInfoForm, LogisticsStatusForm
+
+def package_info_create(request):
+    if request.method == 'POST':
+        form = PackageInfoForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('package_info_list')
+    else:
+        form = PackageInfoForm()
+    return render(request, 'package_info_create.html', {'form': form})
+
+def package_info_list(request):
+    package_infos = PackageInfo.objects.all()
+    return render(request, 'package_info_list.html', {'package_infos': package_infos})
+
+def logistics_status_create(request):
+    if request.method == 'POST':
+        form = LogisticsStatusForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('logistics_status_list')
+    else:
+        form = LogisticsStatusForm()
+    return render(request, 'logistics_status_create.html', {'form': form})
+
+def logistics_status_list(request):
+    logistics_statuses = LogisticsStatus.objects.all()
+    return render(request, 'logistics_status_list.html', {'logistics_statuses': logistics_statuses})

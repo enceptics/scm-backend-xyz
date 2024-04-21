@@ -5,18 +5,74 @@
 {% block title %}Intellima home{% endblock title %}
 
 {% block content %}
-<div class="container" style="min-height:85vh;">
 
-  <div class="d-sm-flex align-items-center justify-content-between w-100">
-  <div class="col-md-6 mx-auto mb-4 mb-sm-0 headline">
+<style>
+  .hero-section {
+    position: relative;
+    height: 85vh; /* Adjust the height as needed */
+    /* Remove background-image property */
+    /* background-image: url('static/img/hero3.jpg'); */
+    /* Add background-color instead */
+    background-color: #001b42; /* Blue color */
+    background-size: cover;
+    background-position: center;
+  }
 
-    <h1 class="my-4 font-weight-bold">Innovative platform for automated supply chains <br /> <span className=' my-4' style=" color: '#9B5DE5;">Across several portfolios</span></h1>
-    <a href="" class="btn px-5 py-3 text-white mt-3 mt-sm-0" >Get Started</a>
+  .hero-image {
+    position: absolute;
+    top: 0;
+    right: 2rem; /* Margin-right of 2rem */
+    width: 50%; /* Adjust the width as needed */
+    height: 400px; /* Adjust the height as needed */
+    background-image: url('static/img/hero3.jpg'); /* Path to your image */
+    background-size: cover;
+    background-position: center;
+    z-index: 1;
+    border-radius: 50%; /* Makes the image circular */
+    margin-right: 2rem; /* Margin-right of 2rem */
+  }
+
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #001b42; /* Blue color with 0.8 opacity */
+    opacity: 0.8;
+    z-index: 2;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 3;
+    color: white;
+    padding: 20px;
+  }
+
+  .hero-content h1 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+  }
+
+  .hero-content .btn {
+    background-color: white;
+    color: blue;
+    font-weight: bold;
+  }
+</style>
+
+<div class="hero-section">
+  <div class="hero-image"></div> <!-- This div contains the image occupying the right side -->
+  <div class="overlay"></div>
+  <div class="container fluid">
+    <div class="row  ">
+      <div class="col-md-6 hero-content">
+        <h1 class="my-4">Innovative platform for automated supply chains <br /> <span class="my-4">Across several portfolios</span></h1>
+        <a href="#" class="btn px-5 py-3 text-blue mt-3 mt-sm-0">Get Started</a>
+      </div>
+    </div>
   </div>
-  <div class="col-md-6 h-100 clipped" style="min-height: 500px; backgroun-image: `url(${backgroundSvg})`, backgroundPosition: 'center', backgroundSize: 'cover' }}></div>
 </div>
 
-        
-      </div>
 {% endblock content %}
-
