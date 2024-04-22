@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="row mt-n4 mb-3 rounded" style="font-size: 15px; background-color: #001b40; color: white;">
+    <div class="">
+        <a class="nav-link" id="quotation-tab" style="color: #d9d9d9; text-decoration: none;text-transform: capitalize;">Hello, {{ request.user.username }}</a>
+    </div>
+    <div class="col mt-1 text-center d-flex justify-content-end align-items-center">
+        <span class="" style="margin-right: 5px; color: #fff; letter-spacing: 2px; font-size: 15px;">Export Management</span>
+    </div>
+</div>
+
+<hr style="border: 5px solid #f5f5f5; border-radius: 30px;">
+
+<div class="card mb-4 mt-3" style="width: 100%; margin: auto; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); border-radius: 10px;">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+            <h6 class="card-title" style="color: #999999;">List of shipments & related bill of lading documents</h6>
+            <!-- Button to trigger the modal -->
+            <button type="button" class="btn btn-sm mb-2" data-toggle="modal" data-target="#createShipmentModal" style="background-color: #001b40;color: #f8f9fa;font-size: small;">Create Shipment</button>
+        </div>
+        <!-- Your progress bar code -->
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr style="background-color: #f8f9fa; color: #666666;">
+                        <th style="color: #666666; font-size: 16px;">Current Status</th>
+                        <th style="color: #666666; font-size: 16px;">Buyer</th>
+                        <th style="color: #666666; font-size: 16px;">Seller</th>
+                        <th style="color: #666666; font-size: 16px;">Logistics Company</th>
+                        <th style="color: #666666; font-size: 16px;">Shipping Mode</th>
+                        <th style="color: #666666; font-size: 16px;">Package Info</th>
+                        <!-- Add more columns if needed -->
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Render shipment information using Django template syntax -->
+                    {% for logistics_status in logistics_statuses %}
+                    <tr>
+                        <td>{{ logistics_status.status }}</td>
+                        <td>{{ logistics_status.buyer }}</td>
+                        <td>{{ logistics_status.seller }}</td>
+                        <td>{{ logistics_status.logistics_company }}</td>
+                        <td>{{ logistics_status.shipping_mode }}</td>
+                        <td>
+                            <!-- Iterate through related package info -->
+                            {% for package_info in logistics_status.package_info.all %}
+                            <p>{{ package_info.package_name }} - {{ package_info.package_description }}</p>
+                            <!-- Add more package info as needed -->
+                            {% endfor %}
+                        </td>
+                        <!-- Add more columns if needed -->
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <!-- Render pagination using Django template syntax -->
+        <nav aria-label="Pagination">
+            <ul class="pagination">
+                {% for page in pages %}
+                <li class="page-item {% if currentPage == page %}active{% endif %}">
+                    <a class="page-link" href="#" >{{ page }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </nav>
+    </div>
+</div>
+
+{% endblock %}

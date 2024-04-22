@@ -233,3 +233,29 @@ def slaughter_house_create(request):
 def record_creation_success(request):
     return render(request, 'slaughterhouse_record_created_successfully.html')
 
+# Templates
+from inventory_management.forms import InventoryBreedSalesForm
+from inventory_management.models import InventoryBreedSales
+
+@login_required
+def create_inventory_breed_sale(request):
+    if request.method == 'POST':
+        form = InventoryBreedSalesForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('list_exports')  # Redirect to the list of exports view after successful creation
+    else:
+        form = InventoryBreedSalesForm()
+    return render(request, 'create_inventory_breed_sale.html', {'form': form})
+
+@login_required
+def list_exports(request):
+    exports = InventoryBreedSales.objects.filter(sale_type='export').order_by('-created_at')
+    print('local sales', exports)  # Print query results for debugging
+    return render(request, 'list_exports.html', {'exports': exports})
+
+@login_required
+def list_local_sale_cuts(request):
+    local_sales = InventoryBreedSales.objects.filter(sale_type='local_sale').order_by('-created_at')  
+    print('local sales', local_sales)  # Print query results for debugging
+    return render(request, 'list_local_sale_cuts.html', {'local_sales': local_sales})

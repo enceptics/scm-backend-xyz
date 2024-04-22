@@ -15,4 +15,4 @@ class FinishedProductForm(forms.ModelForm):
 class SlaughterhouseRecordForm(forms.ModelForm):
     class Meta:
         model = SlaughterhouseRecord
-        fields = '__all__'
+        fields = ['breed', 'control_center', 'weight', 'quantity']

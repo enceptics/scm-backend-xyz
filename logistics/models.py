@@ -118,13 +118,14 @@ class LogisticsStatus(models.Model):
     # time_of_delivery = models.DateField(null=True, blank=True)
     shipping_mode = models.CharField(max_length=255, null=True, blank=True)
     logistics_company = models.CharField(max_length=255, null=True, blank=True)
+    bill_of_lading=models.FileField(upload_to='bill_of_landings', null=True, blank=True)
     associated_control_center = models.ForeignKey(ControlCenter, on_delete=models.CASCADE, null=True, blank=True)
-    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE)
+    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, null=True, blank=True)
     status = models.CharField(max_length=255, choices=STATUS_CHOICES, default="Dispatched")
     package_info = models.ForeignKey(PackageInfo, on_delete=models.CASCADE, blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     is_status_updated = models.BooleanField(default=False)
-
+    
     def get_seller_full_name(self):
         try:
             return f'{self.seller.seller.first_name} {self.seller.seller.last_name}'

@@ -9,4 +9,4 @@ class PackageInfoForm(forms.ModelForm):
 class LogisticsStatusForm(forms.ModelForm):
     class Meta:
         model = LogisticsStatus
-        fields = '__all__'
+        fields = ['buyer', 'seller', 'shipping_mode', 'logistics_company', 'associated_control_center', 'bill_of_lading']

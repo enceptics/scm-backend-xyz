@@ -187,18 +187,39 @@ def package_info_list(request):
     package_infos = PackageInfo.objects.all()
     return render(request, 'package_info_list.html', {'package_infos': package_infos})
 
-def logistics_status_create(request):
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from .forms import LogisticsStatusForm
+from .models import LogisticsStatus
+
+@login_required
+def create_logistics_status(request):
     if request.method == 'POST':
-        form = LogisticsStatusForm(request.POST)
+        form = LogisticsStatusForm(request.POST, request.FILES)  # Include request.FILES for file uploads
         if form.is_valid():
             form.save()
             return redirect('logistics_status_list')
     else:
         form = LogisticsStatusForm()
-    return render(request, 'logistics_status_create.html', {'form': form})
-
-def logistics_status_list(request):
-    logistics_statuses = LogisticsStatus.objects.all()
-    return render(request, 'logistics_status_list.html', {'logistics_statuses': logistics_statuses})
-
+    return render(request, 'create_logistics.html', {'form': form})
     
+@login_required
+def logistics_status_list(request):
+    logistics_statuses = LogisticsStatus.objects.all().order_by('-timestamp')
+    return render(request, 'logistics_list.html', {'logistics_statuses': logistics_statuses})
+
+@login_required
+def create_logistics_package(request):
+    if request.method == 'POST':
+        form = LogisticsStatusForm(request.POST, request.FILES)  # Include request.FILES for file uploads
+        if form.is_valid():
+            form.save()
+            return redirect('logistics_status_list')
+    else:
+        form = LogisticsStatusForm()
+    return render(request, 'create_logistics.html', {'form': form})
+    
+@login_required
+def list_logistics_package(request):
+    logistics_statuses = LogisticsStatus.objects.all().order_by('-timestamp')
+    return render(request, 'logistics_list.html', {'logistics_statuses': logistics_statuses})

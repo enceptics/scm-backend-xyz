@@ -9,11 +9,7 @@
 <style>
   .hero-section {
     position: relative;
-    height: 85vh; /* Adjust the height as needed */
-    /* Remove background-image property */
-    /* background-image: url('static/img/hero3.jpg'); */
-    /* Add background-color instead */
-    background-color: #001b42; /* Blue color */
+    height: 85vh;
     background-size: cover;
     background-position: center;
   }
@@ -21,15 +17,16 @@
   .hero-image {
     position: absolute;
     top: 0;
-    right: 2rem; /* Margin-right of 2rem */
-    width: 50%; /* Adjust the width as needed */
-    height: 400px; /* Adjust the height as needed */
-    background-image: url('static/img/hero3.jpg'); /* Path to your image */
+    right: 2rem; 
+    width: 400px; 
+    height: 400px; 
+    background-image: url('static/img/hero3.jpg'); 
     background-size: cover;
+    opacity: 0.5;
     background-position: center;
     z-index: 1;
-    border-radius: 50%; /* Makes the image circular */
-    margin-right: 2rem; /* Margin-right of 2rem */
+    border-radius: 50%; 
+    margin-right: 2rem;
   }
 
   .overlay {
@@ -38,8 +35,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: #001b42; /* Blue color with 0.8 opacity */
-    opacity: 0.8;
+    opacity: 0.2;
     z-index: 2;
   }
 
@@ -60,17 +56,34 @@
     color: blue;
     font-weight: bold;
   }
+
+  .clipped {
+  clip-path: polygon(50% 0, 100% 0, 100% 100%, 0% 100%);
+}
+@media screen and (max-width: 650px){
+  .headline {
+    left: 20px;
+  } 
+  .clipped {
+    clip-path: none;
+    /* max-height: 300px !important; */
+  }
+}
+
 </style>
 
 <div class="hero-section">
-  <div class="hero-image"></div> <!-- This div contains the image occupying the right side -->
+  <div class="hero-image my-5"></div> 
+
   <div class="overlay"></div>
   <div class="container fluid">
     <div class="row  ">
-      <div class="col-md-6 hero-content">
-        <h1 class="my-4">Innovative platform for automated supply chains <br /> <span class="my-4">Across several portfolios</span></h1>
-        <a href="#" class="btn px-5 py-3 text-blue mt-3 mt-sm-0">Get Started</a>
+      <div class="col-md-7 hero-content mt-3">
+        <h1 class="my-5 " style="color: black;font-weight: bold;">Innovative platform for automated supply  chains <br /> <span class="my-4" style="color: blue;">Across several portfolios</span></h1>
+        <a href="{%url 'login'%}" class="btn px-5 py-3 text-blue mt-3 mt-sm-0">Get Started</a>
       </div>
+      <!-- <div class="col-md-6 h-100 clipped" style="min-height: 500px;background-image: url('static/img/hero_img.svg');background-position: center;background-size: cover;"></div> -->
+
     </div>
   </div>
 </div>

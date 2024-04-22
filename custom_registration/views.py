@@ -732,7 +732,7 @@ def bank_dashboard(request):
     return render(request, 'bank_dashboard.html')
 
 def export_management_dashboard(request):
-    if request.user.role != 'export_management' and not request.user.is_superuser:
+    if request.user.role != 'seller' and not request.user.is_superuser:
         return redirect('unauthorized')
     return render(request, 'export_management.html')
 

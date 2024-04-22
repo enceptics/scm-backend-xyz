@@ -9,7 +9,7 @@ from rest_framework.routers import DefaultRouter
 # from accounts.views import Profile, ProfileViewset
 # from accounts import views
 from transaction import views as trade_views  # Import views as trade_views
-
+from logistics import views as logistics_views
 from transaction.views import (
     AbattoirPaymentToBreaderViewSet,
     BreaderViewSet,
@@ -382,13 +382,23 @@ urlpatterns = [
     path('create-control_center/', inventory_views.controlcenter_create, name='controlcenter_create'),
 
     # LC Documents extracted details
+
     # URL for listing extracted data
     path('extracted_data_list/', lc_views.extracted_data_list, name='extracted_data_list'),
 
     # URL for viewing extracted data detail for a specific LetterOfCredit instance
     path('lc_document_extracted_content_detail/<int:lc_document_id>/', lc_views.lc_document_extracted_content_detail, name='lc_document_extracted_content_detail'),
-    path('slaughterhouse_create/create/', slaugher_house_views.slaughter_house_create, name='slaughter_house_create'), # Add this line
+    path('slaughterhouse_create/', slaugher_house_views.slaughter_house_create, name='slaughter_house_create'), # Add this line
     path('slaughterhouse_creation_success/', slaugher_house_views.record_creation_success, name='record_creation_success'),
+
+    # Record forms
+    path('create_finished_products/', slaugher_house_views.create_inventory_breed_sale, name='create_inventory_breed_sale'),
+    path('list_exports/', slaugher_house_views.list_exports, name='list_exports'),
+    path('list_local_sale_cuts/', slaugher_house_views.list_local_sale_cuts, name='list_local_sale_cuts'),
+
+    # Create logistics status
+    path('create_logistics/', logistics_views.create_logistics_status, name='create_logistics_status'),
+    path('list_logistics_status/', logistics_views.logistics_status_list, name='logistics_status_list'),
 
 ]
 

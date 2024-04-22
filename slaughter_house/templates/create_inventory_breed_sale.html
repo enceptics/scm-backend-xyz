@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Create Inventory Breed Sale{% endblock %}
+
+{% block content %}
+  <h2>Create Inventory Breed Sale</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Submit</button>
+  </form>
+{% endblock %}
