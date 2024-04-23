@@ -56,6 +56,26 @@ class InventoryBreedSales(models.Model):
     seller = models.ForeignKey(Seller, on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True)
+
+    def save(self, *args, **kwargs):
+        with transaction.atomic():
+            try:
+                breed_cut = BreedCut.objects.get(breed=self.breed, part_name=self.part_name, sale_type=self.sale_type)
+                breed_cut.quantity -= self.quantity
+                breed_cut.save()
+                # Update status based on whether the quantity has been deducted
+                self.status = 'sold'
+            except ObjectDoesNotExist:
+                logger.warning(f"BreedCut not found for id={self.breed}, part_name={self.part_name}, sale_type={self.sale_type}")
+                # Handle the case where the corresponding BreedCut is not found
+                # Assuming that status should be 'in_the_warehouse' if not sold
+                self.status = 'in_the_warehouse'
+
+        super().save(*args, **kwargs)
+
+class Meta:
+    
+    unique_together = ['breed', 'part_name', 'sale_type', 'sale_date']
     
     def __str__(self):
         return f"{self.breed} - {self.part_name} - {self.get_sale_type_display()}"
