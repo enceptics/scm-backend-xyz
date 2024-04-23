@@ -574,10 +574,13 @@ def register_buyer(request):
             user = form.save(commit=False)
             user.role = CustomUser.BUYER
             user.save()
+            buyer = Buyer.objects.create(buyer=user)  # Assign the user to the seller_id field
             return redirect('login')
     else:
         form = BuyerRegistrationForm()
     return render(request, 'auth/buyer_registration.html', {'form': form})
+
+# from transaction.models import Breeder
 
 def register_breeder(request):
     if request.method == 'POST':
@@ -586,6 +589,8 @@ def register_breeder(request):
             user = form.save(commit=False)
             user.role = CustomUser.BREEDER
             user.save()
+            # Create a new Seller instance and associate the user with it
+            # breeder = Breeder.objects.create(breeder=user)  # Assign the user to the seller_id field
             return redirect('login')
     else:
         form = BreederRegistrationForm()
@@ -598,6 +603,9 @@ def register_seller(request):
             user = form.save(commit=False)
             user.role = CustomUser.SELLER
             user.save()
+
+            # Create a new Seller instance and associate the user with it
+            seller = Seller.objects.create(seller=user)  # Assign the user to the seller_id field
             return redirect('login')
     else:
         form = SellerRegistrationForm()
@@ -622,6 +630,8 @@ def register_collateral_manager(request):
             user = form.save(commit=False)
             user.role = CustomUser.COLLATERAL_MANAGER
             user.save()
+                        # Create a new Seller instance and associate the user with it
+            name = CollateralManager.objects.create(name=user)  # Assign the user to the seller_id field
             return redirect('login')
     else:
         form = CollateralManagerRegistrationForm()
@@ -845,3 +855,24 @@ def assign_collateral_manager_success(request):
         form = CollateralManagerForm()
         
     return render(request, 'assign_collateral_manager.html', {'control_centers': control_centers, 'collateral_managers': collateral_managers, 'form': form})
+
+# USER PROFILE 
+from django.contrib.auth.decorators import login_required
+from .models import UserProfile
+from .forms import ProfileForm
+
+@login_required
+def view_profile(request):
+    profile = UserProfile.objects.get_or_create(user=request.user)[0]
+    return render(request, 'profile/view_profile.html', {'profile': profile})
+
+def edit_profile_picture(request, user_id):
+    profile = get_object_or_404(UserProfile, user_id=user_id)
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            return redirect('view_profile')  # Redirect to the view profile page
+    else:
+        form = ProfileForm(instance=profile)
+    return render(request, 'profile/edit_profile.html', {'form': form})

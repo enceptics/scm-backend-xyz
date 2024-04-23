@@ -399,6 +399,16 @@ urlpatterns = [
     # Create logistics status
     path('create_logistics/', logistics_views.create_logistics_status, name='create_logistics_status'),
     path('list_logistics_status/', logistics_views.logistics_status_list, name='logistics_status_list'),
+    path('bank_list_bill_of_lading/', logistics_views.bank_list_bill_of_lading, name='bank_list_bill_of_lading'),
+    path('seller_list_bill_of_lading/', logistics_views.seller_list_bill_of_lading, name='seller_list_bill_of_lading'),
+    path('download_bill_of_lading/<int:pk>/', logistics_views.download_bill_of_lading, name='download_bill_of_lading'),
+    path('seller_download_bill_of_lading/<int:pk>/', logistics_views.seller_download_bill_of_lading, name='seller_download_bill_of_lading'),
+
+    path('create_multiple_models_for_logistics/', logistics_views.create_multiple_models_for_logistics, name='create_multiple_models_for_logistics'),
+
+    # User profile
+    path('view-profile/', custom_reg_views.view_profile, name='view_profile'),
+    path('edit-profile/<int:user_id>/', custom_reg_views.edit_profile_picture, name='edit_profile_picture'),
 
 ]
 

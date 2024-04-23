@@ -218,8 +218,164 @@ def create_logistics_package(request):
     else:
         form = LogisticsStatusForm()
     return render(request, 'create_logistics.html', {'form': form})
+
+from django.shortcuts import render, redirect
+from invoice_generator.forms import InvoiceForm
+from inventory_management.models import InventoryBreedSales
+from django.forms import formset_factory
+
+@login_required
+def create_multiple_models_for_logistics(request):
+    LogisticsStatusFormSet = formset_factory(LogisticsStatusForm, extra=1)
+    PackageInfoFormSet = formset_factory(PackageInfoForm, extra=1)
+    InvoiceFormSet = formset_factory(InvoiceForm, extra=1)
+
+    if request.method == 'POST':
+        logistics_formset = LogisticsStatusFormSet(request.POST, request.FILES, prefix='logistics')
+        package_formset = PackageInfoFormSet(request.POST, prefix='package')
+        invoice_formset = InvoiceFormSet(request.POST, prefix='invoice')
+
+        if logistics_formset.is_valid() and package_formset.is_valid() and invoice_formset.is_valid():
+            for form in logistics_formset:
+                logistics_instance = form.save(commit=False)
+                package_form = package_formset[logistics_formset.forms.index(form)]
+                invoice_form = invoice_formset[logistics_formset.forms.index(form)]
+
+                package_instance = package_form.save()
+                invoice_instance = invoice_form.save()
+
+                logistics_instance.package_info = package_instance
+                logistics_instance.invoice = invoice_instance
+                logistics_instance.save()
+
+            return render(request, 'logistics_creation_success.html')
+
+    else:
+        logistics_formset = LogisticsStatusFormSet(prefix='logistics')
+        package_formset = PackageInfoFormSet(prefix='package')
+        invoice_formset = InvoiceFormSet(prefix='invoice')
+
+    return render(request, 'combined_logistics_creation.html', {'logistics_formset': logistics_formset,
+                                                                'package_formset': package_formset,
+                                                                'invoice_formset': invoice_formset})
+
     
 @login_required
 def list_logistics_package(request):
     logistics_statuses = LogisticsStatus.objects.all().order_by('-timestamp')
     return render(request, 'logistics_list.html', {'logistics_statuses': logistics_statuses})
+
+# Bank Bil of lading
+
+@login_required
+def bank_list_bill_of_lading(request):
+    if request.user.role != 'bank' and not request.user.is_superuser:
+        return redirect('unauthorized')
+        
+    bols = LogisticsStatus.objects.all().order_by('-timestamp')
+    return render(request, 'bill_of_lading.html', {'bols': bols})
+
+@login_required
+def seller_list_bill_of_lading(request):
+    if request.user.role != 'seller' and not request.user.is_superuser:
+        return redirect('unauthorized')
+        
+    bols = LogisticsStatus.objects.all().order_by('-timestamp')
+    return render(request, 'bill_of_lading.html', {'bols': bols})
+
+
+@login_required
+def seller_list_bill_of_lading(request):
+    if request.user.role != 'seller' and not request.user.is_superuser:
+        return redirect('unauthorized')
+        
+    bols = LogisticsStatus.objects.all().order_by('-timestamp')
+    return render(request, 'bill_of_lading.html', {'bols': bols})
+
+from django.http import HttpResponse
+from django.http import FileResponse
+
+@login_required
+def seller_view_bill_of_lading(request, pk):
+    # Ensure the user has permission to download the bill of lading
+    if request.user.role != 'seller' and not request.user.is_superuser:
+        return redirect('unauthorized')
+    
+    # Retrieve the LogisticsStatus instance
+    logistics_status = get_object_or_404(LogisticsStatus, pk=pk)
+    
+    # Check if the bill of lading file exists
+    if not logistics_status.bill_of_lading:
+        return HttpResponse("Bill of lading file not found.", status=404)
+    
+    # Serve the bill of lading file for download
+    file_path = logistics_status.bill_of_lading.path
+    with open(file_path, 'rb') as file:
+        response = HttpResponse(file.read(), content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{logistics_status.bill_of_lading.name}"'
+        return response
+
+@login_required
+def download_bill_of_lading(request, pk):
+    # Ensure the user has permission to view the bill of lading
+    if request.user.role != 'bank' and not request.user.is_superuser:
+        return redirect('unauthorized')
+    
+    # Retrieve the LogisticsStatus instance
+    logistics_status = get_object_or_404(LogisticsStatus, pk=pk)
+    
+    # Check if the bill of lading file exists
+    if not logistics_status.bill_of_lading:
+        return HttpResponse("Bill of lading file not found.", status=404)
+    
+    # Serve the bill of lading file for viewing
+    file_path = logistics_status.bill_of_lading.path
+    try:
+        return FileResponse(open(file_path, 'rb'), content_type='application/pdf')
+    except FileNotFoundError:
+        return HttpResponse("Bill of lading file not found.", status=404)
+
+# seller
+@login_required
+def seller_download_bill_of_lading(request, pk):
+    # Retrieve the LogisticsStatus instance associated with the current user
+    logistics_status = get_object_or_404(LogisticsStatus, pk=pk, seller=request.user)
+    
+    # Check if the bill of lading file exists
+    if not logistics_status.bill_of_lading:
+        return HttpResponse("Bill of lading file not found.", status=404)
+    
+    # Serve the bill of lading file for viewing
+    file_path = logistics_status.bill_of_lading.path
+    try:
+        return FileResponse(open(file_path, 'rb'), content_type='application/pdf')
+    except FileNotFoundError:
+        return HttpResponse("Bill of lading file not found.", status=404)
+
+
+# # Read BOL
+
+# @login_required
+# def bank_download_bill_of_lading(request, pk):
+#     # Ensure the user has permission to download the bill of lading
+#     if request.user.role != 'bank' and not request.user.is_superuser:
+#         return redirect('unauthorized')
+    
+#     # Retrieve the LogisticsStatus instance
+#     logistics_status = get_object_or_404(LogisticsStatus, pk=pk)
+    
+#     # Check if the bill of lading file exists
+#     if not logistics_status.bill_of_lading:
+#         return HttpResponse("Bill of lading file not found.", status=404)
+    
+#     # Serve the bill of lading file for download
+#     file_path = logistics_status.bill_of_lading.path
+#     with open(file_path, 'rb') as file:
+#         response = HttpResponse(file.read(), content_type='application/pdf')
+#         response['Content-Disposition'] = f'attachment; filename="{logistics_status.bill_of_lading.name}"'
+#         return response
+
+
+
+
+

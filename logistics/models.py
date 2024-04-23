@@ -104,6 +104,9 @@ class PackageInfo(models.Model):
     def __str__(self):
         return self.package_name
 
+from django.urls import reverse
+
+
 class LogisticsStatus(models.Model):
     STATUS_CHOICES = [
         ('ordered', 'Ordered'),
@@ -125,6 +128,11 @@ class LogisticsStatus(models.Model):
     package_info = models.ForeignKey(PackageInfo, on_delete=models.CASCADE, blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     is_status_updated = models.BooleanField(default=False)
+
+    def get_bill_of_lading_url(self):
+        if self.bill_of_lading:
+            return reverse('download_bill_of_lading', kwargs={'pk': self.pk})
+        return ''
     
     def get_seller_full_name(self):
         try:
@@ -157,5 +165,7 @@ class LogisticsStatus(models.Model):
 
 
     def __str__(self):
-        return f'{self.status} - {self.invoice}'
-
+        if self.invoice:
+            return f'{self.status} - Invoice #{self.invoice.invoice_number}'
+        else:
+            return f'{self.status} - No Invoice'

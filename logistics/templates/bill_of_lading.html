@@ -2,11 +2,23 @@
 {% load static %}
 
 {% block content %}
+<div class="row mt-n4 mb-3" style="font-size: 15px; background-color: #001b40; color: white;">
+  <ul class="nav nav-tabs" id="myTab" role="tablist">
+    <li class="nav-item">
+      <a class="nav-link" id="quotation-tab" style="color: #d9d9d9; text-decoration: none;">
+        <i class="fas fa-user" style="color: #fff;"></i> &nbsp; &ncap; Hello, {{request.user.username}}
+      </a>
+    </li>
+  </ul>
+  <span class="ml-auto mx-2 mt-2" style="letter-spacing: 3px;"><i class="fas fa-file-alt"></i> Bill of lading</span>
+</div>
 
+<h5 class="mb-4"><i class="fas fa-file-alt" style="color: #001b42;"></i>&nbsp; Bill of ladings</h5>
+<hr style="border: 5px solid #f5f5f5; border-radius: 30px;">
 <div class="card mb-4 mt-3" style="width: 100%; margin: auto; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); border-radius: 10px;">
     <div class="card-body">
       <div class="d-flex justify-content-between align-items-center">
-        <h5 class="card-title" style="color: #999999;">List of shipments & related bill of lading documents</h5>
+        <h6 class="card-title" style="color: #999999;">List of shipments & related bill of lading documents</h6>
       </div>
       <!-- Your progress bar code -->
       <div class="table-responsive">
@@ -14,24 +26,26 @@
           <thead>
             <tr style="background-color: #f8f9fa; color: #666666;">
               <th style="color: #666666; font-size: 16px;">Bill of Lading</th>
-              <th style="color: #666666; font-size: 12px;">Current Status</th>
-              <th style="color: #666666; font-size: 12px;">Buyer</th>
-              <th style="color: #666666; font-size: 12px;">Seller</th>
-              <th style="color: #666666; font-size: 12px;">Logistics Company</th>
-              <th style="color: #666666; font-size: 12px;">Shipping Mode</th>
-              <!-- <th style="color: #666666; font-size: 12px;">Time of Delivery</th> -->
+              <th style="color: #666666; font-size: 14px;">Current Status</th>
+              <th style="color: #666666; font-size: 14px;">Buyer</th>
+              <th style="color: #666666; font-size: 14px;">Seller</th>
+              <th style="color: #666666; font-size: 14px;">Logistics Company</th>
+              <th style="color: #666666; font-size: 14px;">Shipping Mode</th>
+              <th style="color: #666666; font-size: 14px;">Date</th>
             </tr>
           </thead>
           <tbody>
             <!-- Render logistics status using Django template syntax -->
-            {% for item in currentItems %}
+            {% for item in bols %}
             <tr>
-              <td>{{ item.bill_of_lading }}</td>
+              <td><a href="{{ item.get_bill_of_lading_url }}">View B/L</a></td>
               <td>{{ item.status }}</td>
               <td>{{ item.buyer }}</td>
               <td>{{ item.seller }}</td>
               <td>{{ item.logistics_company }}</td>
               <td>{{ item.shipping_mode }}</td>
+              <td>{{ item.timestamp }}</td>
+
               <!-- Add more columns if needed -->
             </tr>
             {% endfor %}

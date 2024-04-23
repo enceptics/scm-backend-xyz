@@ -18,10 +18,12 @@
 <div class="card mb-4 mt-3" style="width: 100%; margin: auto; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); border-radius: 10px;">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h6 class="card-title" style="color: #999999;"></h6>
-        <a class="nav-link" href="{% url 'create_logistics_status'%}">
+        <a class="nav-link" href="{% url 'create_multiple_models_for_logistics'%}">
 
-        <button type="button" class="btn btn-sm" data-toggle="modal" data-target="#createShipmentModal" style="background-color: #001b40;color: #f8f9fa;font-size: small;">Create Shipment</button>
-        </a>
+          <button type="button" class="btn btn-sm" data-toggle="modal" data-target="#createShipmentModal" style="background-color: #001b40; color: #f8f9fa; font-size: small;">
+            <i class="fas fa-plus mr-1"></i> Create New Shipment
+        </button>
+                </a>
     </div>
     
   <div class="table-responsive">
@@ -32,32 +34,173 @@
           <th>Buyer</th>
           <th>Seller</th>
           <th>Shipping Mode</th>
-          <!-- <th>Logistics Company</th> -->
           <th>Control Center</th>
           <th>B/lading</th>
+          <th>Invoice</th>
+          <th>Package info</th>
+
           <th>Date</th>
         </tr>
       </thead>
       <tbody>
         {% for logistics_status in logistics_statuses %}
         <tr>
-          <td>{{ logistics_status.status }}</td>
-          <td>{{ logistics_status.buyer }}</td>
-          <td>{{ logistics_status.seller }}</td>
-          <td>{{ logistics_status.shipping_mode }}</td>
-          <!-- <td>{{ logistics_status.logistics_company }}</td> -->
-          <td>{{ logistics_status.associated_control_center }}</td>
-          <td style="font-size: 14px;">
-            {% if logistics_status.bill_of_lading %}
-              <a href="{{ logistics_status.bill_of_lading.url }}" target="_blank">View document</a>
-            {% else %}
-              N/A
-            {% endif %}
-          </td> 
-          <td>{{ logistics_status.timestamp }}</td>
+            <td>{{ logistics_status.status }}</td>
+            <td>{{ logistics_status.buyer }}</td>
+            <td>{{ logistics_status.seller }}</td>
+            <td>{{ logistics_status.shipping_mode }}</td>
+            <td>{{ logistics_status.associated_control_center }}</td>
+            <td style="font-size: 14px;">
+              {% if logistics_status.bill_of_lading %}
+                <a href="{{ logistics_status.bill_of_lading.url }}" target="_blank">View document</a>
+              {% else %}
+                N/A
+              {% endif %}
+            </td> 
+            <td style="font-size: 14px;">
+                {% if logistics_status.invoice %}
+                    <a href="#" data-toggle="modal" data-target="#invoiceModal{{ logistics_status.id }}">View Invoice</a>
+                    <!-- Invoice Modal -->
+                    <div class="modal fade" id="invoiceModal{{ logistics_status.id }}" tabindex="-1" role="dialog" aria-labelledby="invoiceModalLabel{{ logistics_status.id }}" aria-hidden="true">
+                      <div class="modal-dialog modal-lg" role="document">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <div class="d-flex justify-content-between w-100">
+                              <div>
+                                <h6 class="modal-title mb-0" id="invoiceModalLabel{{ logistics_status.id }}" style="font-weight: bold;color: #001b42;">Invoice Number: {{ logistics_status.invoice.invoice_number }}</h6>
+                              </div>
+                              <div>
+                                <p class="text-right mb-0">Date: {{ logistics_status.invoice.invoice_date }}</p>
+                              </div>
+                            </div>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                              <span aria-hidden="true">&times;</span>
+                            </button>
+                          </div>
+                          
+                          <div class="modal-body">
+                            <div class="card">
+                              <div class="card-header">
+                                Buyer & Seller Details
+                              </div>
+                              <div class="card-body">
+                                <div class="row">
+                                  <hr>
+
+                                  <div class="col-md-6" style="color: #333333;">
+                                    <h3 style="color: #202342;font-family: Arial, Helvetica, sans-serif;font-size: 20px;">Bill to:</h3>
+                                    <span style="color: #666666;"><strong>Name:</strong> {{ logistics_status.invoice.buyer.buyer.first_name }} {{ logistics_status.invoice.buyer.buyer.last_name }}</span><br>
+                                    <span style="color: #666666;"><strong>Email:</strong> {{ logistics_status.invoice.buyer.buyer.email }}</span><br>
+                                    <span style="color: #666666;"><strong>Address:</strong> {{ logistics_status.invoice.buyer.buyer.address }}</span><br>
+                                    <span style="color: #666666;"><strong>Country:</strong> {{ logistics_status.invoice.buyer.buyer.country }}</span><br>
+
+                                    <!-- Add more buyer details as needed -->
+                                  </div>
+                                
+                                 
+                                  <div class="col-md-6">
+                                    <h3 style="color: #202342;font-family: Arial, Helvetica, sans-serif;font-size: 20px;">Seller details:</h3>
+                                    <span style="color: #666666;"><strong>Name:</strong> {{ logistics_status.invoice.seller.seller.first_name }} {{ logistics_status.invoice.buyer.buyer.last_name }}</span><br>
+                                    <span style="color: #666666;"><strong>Email:</strong> {{ logistics_status.invoice.seller.seller.email }}</span><br>
+                                    <span style="color: #666666;"><strong>Address:</strong> {{ logistics_status.invoice.seller.seller.address }}</span><br>
+                                    <span style="color: #666666;"><strong>Country:</strong> {{ logistics_status.invoice.seller.seller.county }}</span><br>
+
+                                  </div>
+                                  
+                                </div>
+                              </div>
+                            </div>
+                            <div class="col-md-3">
+                              <h3 style="color: #202342;font-family: Arial, Helvetica, sans-serif;font-size: 20px;">Ship to:</h3>
+                              <p>Same as bill to</p>
+                            </div>
+                           
+                            <div class="card mt-3">
+                              <div class="card-header">
+                                Product Details
+                              </div>
+                              <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Title</th>
+                                                <th>Description</th>
+                                                <th>Quantity</th>
+                                                <th>Unit Price</th>
+                                                <th>Total Price</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td style="font-weight: bold;">{{ logistics_status.invoice.breed }}</td>
+                                                <td style="font-weight: bold;">{{ logistics_status.invoice.part_name }}</td>
+                                                <td style="font-weight: bold;">{{ logistics_status.invoice.quantity }}</td>
+                                                <td style="font-weight: bold;"> $ {{ logistics_status.invoice.unit_price }}</td>
+                                                <td style="font-weight: bold;"> $ {{ logistics_status.invoice.total_price }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            </div>
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-sm " style="background-color: #001b42;color: wheat;" data-dismiss="modal">Close</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+            <td style="font-size: 14px;">
+                {% if logistics_status.package_info %}
+                    <a href="#" data-toggle="modal" data-target="#packageModal{{ logistics_status.id }}">View Package Info</a>
+                    <!-- Package Info Modal -->
+                    <div class="modal fade" id="packageModal{{ logistics_status.id }}" tabindex="-1" role="dialog" aria-labelledby="packageModalLabel{{ logistics_status.id }}" aria-hidden="true">
+                      <div class="modal-dialog" role="document">
+                          <div class="modal-content">
+                              <div class="modal-header">
+                                  <h5 class="modal-title" id="packageModalLabel{{ logistics_status.id }}">Package Info</h5>
+                                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                      <span aria-hidden="true">&times;</span>
+                                  </button>
+                              </div>
+                              <div class="modal-body">
+                                  <div class="card">
+                                      <div class="card-header">
+                                          <strong>Package Information</strong>
+                                      </div>
+                                      <div class="card-body">
+                                          <p><strong>Package Name:</strong> {{ logistics_status.package_info.package_name }}</p>
+                                          <p><strong>Description:</strong> {{ logistics_status.package_info.package_description }}</p>
+                                          <p><strong>Package Charge:</strong> {{ logistics_status.package_info.package_charge }}</p>
+                                          <p><strong>Weight:</strong> {{ logistics_status.package_info.weight }}</p>
+                                          <p><strong>Height:</strong> {{ logistics_status.package_info.height }}</p>
+                                          <p><strong>Length:</strong> {{ logistics_status.package_info.length }}</p>
+                                      </div>
+                                  </div>
+                              </div>
+                              <div class="modal-footer">
+                                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+                  
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+            <td>{{ logistics_status.timestamp }}</td>
         </tr>
         {% endfor %}
-      </tbody>
+    </tbody>
+    
     </table>
   </div>
 </div>

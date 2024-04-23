@@ -7,7 +7,7 @@ from .models import InventoryBreedSales
 class InventoryBreedSalesForm(forms.ModelForm):
     class Meta:
         model = InventoryBreedSales
-        fields = '__all__'  # Include all fields in the form
+        fields = ['breed', 'part_name', 'sale_type', 'quantity', 'weight', 'seller']
 
 class ControlCenterForm(forms.ModelForm):
     class Meta:

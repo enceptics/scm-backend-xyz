@@ -321,8 +321,6 @@ class LetterOfCredit(models.Model):
             self.text_content = text
             self.save()
 
-
-
     def get_buyer_full_name(self):
         if self.buyer:
             return f'{self.buyer.buyer.first_name} {self.buyer.buyer.last_name} '
@@ -340,7 +338,6 @@ class DocumentToSeller(models.Model):
     seller = models.ForeignKey(Seller, on_delete=models.CASCADE)
     message = models.CharField(max_length=255, null=True, blank=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
-
 
 class Invoice(models.Model):
     breed = models.CharField(max_length=255)

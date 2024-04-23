@@ -1,11 +1,45 @@
 {% extends "base.html" %}
-{% block title %}Create Inventory Breed Sale{% endblock %}
+{% block title %}Record finished products form{% endblock %}
 
 {% block content %}
-  <h2>Create Inventory Breed Sale</h2>
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Submit</button>
-  </form>
+<div class="row mt-n4 mb-3" style="font-size: 15px; background-color: #001b40; color: white;">
+  <ul class="nav nav-tabs justify-content-center" id="myTab" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link" id="quotation-tab" style="color: #d9d9d9; text-decoration: none;">
+          <i class="fas fa-user" style="color: #fff;"></i> &nbsp; &ncap; Hello, {{request.user.username}}
+        </a>
+      </li>
+  
+    </ul>
+    <li class="nav-item ml-auto" style="list-style: none;">
+      <a href="{% url 'slaughter_house_create' %}" class="nav-link" id="quotation-tab" style="color: #d9d9d9; text-decoration: none;">
+        <i class="fas fa-file" style="color: #fff;"></i> &nbsp; Go to inventory records form
+      </a>
+    </li>
+  <span class="ml-auto mx-2 mt-2" style="letter-spacing: 3px;"><i class="fas fa-warehouse mr-2" style="color: #fff;"></i>Inventory record form</span>
+</div>
+<p class="mb-4 text-muted">
+  <i class="fas fa-warehouse mr-2" style="color: #001b42;"></i>
+  This form will add items to the warehouse 
+</p>
+
+<hr style="border: 5px solid #f5f5f5; border-radius: 30px;">
+  <div class="container">
+    <div class="row justify-content-cente">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="text-center">Record finished products</h5>
+          </div>
+          <div class="card-body">
+            <form method="post">
+              {% csrf_token %}
+              {{ form.as_p }}
+              <button type="submit" class="btn btn-primary btn-block">Submit</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock %}

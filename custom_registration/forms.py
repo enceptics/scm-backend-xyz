@@ -3,7 +3,7 @@
 from django import forms
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
-from .models import CustomUser 
+from .models import CustomUser, UserProfile
 from logistics.models import CollateralManager
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth.tokens import default_token_generator
@@ -107,3 +107,8 @@ class CollateralManagerRegistrationForm(UserCreationForm):
 
 class CollateralManagerForm(forms.Form):
     collateral_manager = forms.ModelChoiceField(queryset=CollateralManager.objects.all(), empty_label="Select a Collateral Manager")
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = UserProfile
+        fields = ['profile_picture']  # Add other fields from UserProfile model as needed

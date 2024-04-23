@@ -1,6 +1,6 @@
 # forms.py
 from django import forms
-from .models import Quotation, LetterOfCredit
+from .models import Quotation, LetterOfCredit, Invoice
 
 class QuotationForm(forms.ModelForm):
     class Meta:
@@ -21,4 +21,9 @@ class LetterOfCreditForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Customize form fields here if needed
+
+class InvoiceForm(forms.ModelForm):
+    class Meta:
+        model = Invoice
+        fields = '__all__'
 
