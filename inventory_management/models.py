@@ -41,8 +41,10 @@ class InventoryBreed(models.Model):
     def __str__(self):
         return f"InventoryBreed - Breed: {self.breed}, Total Breed Supply: {self.total_breed_supply}"
 
-class InventoryBreedSales(models.Model):
+from django.db.models import Sum
+from django.db.models import F
 
+class InventoryBreedSales(models.Model):
     SALE_CHOICES = [
         ('export', 'Export'),
         ('local_sale_cut', 'Local Sale Cut'),
@@ -56,29 +58,33 @@ class InventoryBreedSales(models.Model):
     seller = models.ForeignKey(Seller, on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True)
-
-    def save(self, *args, **kwargs):
-        with transaction.atomic():
-            try:
-                breed_cut = BreedCut.objects.get(breed=self.breed, part_name=self.part_name, sale_type=self.sale_type)
-                breed_cut.quantity -= self.quantity
-                breed_cut.save()
-                # Update status based on whether the quantity has been deducted
-                self.status = 'sold'
-            except ObjectDoesNotExist:
-                logger.warning(f"BreedCut not found for id={self.breed}, part_name={self.part_name}, sale_type={self.sale_type}")
-                # Handle the case where the corresponding BreedCut is not found
-                # Assuming that status should be 'in_the_warehouse' if not sold
-                self.status = 'in_the_warehouse'
-
-        super().save(*args, **kwargs)
-
-class Meta:
     
-    unique_together = ['breed', 'part_name', 'sale_type', 'sale_date']
+    def save(self, *args, **kwargs):
+        # Check if it's a new instance
+        if not self.pk:
+            # If it's a new instance, just save it
+            super().save(*args, **kwargs)
+        else:
+            # Otherwise, update the existing instance
+            # Check if there are existing records with the same breed, part name, and sale type
+            existing_record = InventoryBreedSales.objects.filter(
+                breed=self.breed,
+                part_name=self.part_name,
+                sale_type=self.sale_type
+            ).first()
+            
+            # If there is an existing record, update its quantity by adding the new quantity
+            if existing_record:
+                existing_record.quantity = F('quantity') + self.quantity
+                existing_record.save()
+            else:
+                # If no existing record found, save the new instance
+                super().save(*args, **kwargs)
+
+    
     
     def __str__(self):
-        return f"{self.breed} - {self.part_name} - {self.get_sale_type_display()}"
+        return f"{self.breed} - {self.part_name} - {self.quantity} - {self.get_sale_type_display()}"
 
  
 

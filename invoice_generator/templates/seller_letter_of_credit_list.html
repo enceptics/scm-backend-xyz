@@ -39,6 +39,7 @@
                                         {% csrf_token %}
                                         <input type="hidden" name="status" value="approved">
                                         <button class="btn btn-sm btn-success" type="submit">Approve</button>
+                                        <textarea name="collection_market" placeholder="Market to collect from" style="flex-grow: 1; margin-left: 10px; height: 50px;font-size: 13px;" required></textarea>
                                     </form>
                                     <form method="POST" action="{% url 'update_letter_of_credit_status' letter.id %}">
                                         {% csrf_token %}

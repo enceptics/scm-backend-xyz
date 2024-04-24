@@ -236,6 +236,7 @@ def record_creation_success(request):
 # Templates
 from inventory_management.forms import InventoryBreedSalesForm
 from inventory_management.models import InventoryBreedSales
+from django.db.models import Count
 
 @login_required
 def create_inventory_breed_sale(request):
@@ -248,14 +249,18 @@ def create_inventory_breed_sale(request):
         form = InventoryBreedSalesForm()
     return render(request, 'create_inventory_breed_sale.html', {'form': form})
 
+
+from django.db.models import Sum
+
 @login_required
 def list_exports(request):
-    exports = InventoryBreedSales.objects.filter(sale_type='export').order_by('-created_at')
-    print('local sales', exports)  # Print query results for debugging
-    return render(request, 'list_exports.html', {'exports': exports})
+    # Group by breed and part name and annotate with total quantity
+    breed_part_exports = InventoryBreedSales.objects.filter(sale_type='export').values('breed', 'part_name').annotate(total_quantity=Sum('quantity'))
+    return render(request, 'list_exports.html', {'breed_part_exports': breed_part_exports})
 
 @login_required
 def list_local_sale_cuts(request):
-    local_sales = InventoryBreedSales.objects.filter(sale_type='local_sale').order_by('-created_at')  
-    print('local sales', local_sales)  # Print query results for debugging
-    return render(request, 'list_local_sale_cuts.html', {'local_sales': local_sales})
+    # Group by breed and part name and annotate with total quantity
+    breed_part_local_sales = InventoryBreedSales.objects.filter(sale_type='local_sale_cut').values('breed', 'part_name').annotate(total_quantity=Sum('quantity'))
+    return render(request, 'list_local_sale_cuts.html', {'breed_part_local_sales': breed_part_local_sales})
+

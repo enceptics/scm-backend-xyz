@@ -341,5 +341,4 @@ def controlcenter_create(request):
         form = ControlCenterForm()
     return render(request, 'create_control_center.html', {'form': form})
 
-# Add inventory breed sales
 
