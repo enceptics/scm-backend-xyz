@@ -1,4 +1,4 @@
-<!-- Updated list_exports.html -->
+<!-- Updated list_local_sale_cuts.html -->
 
 {% extends "base.html" %}
 {% block title %}List of Exports{% endblock %}
@@ -12,7 +12,7 @@
       </a>
     </li>
   </ul>
-  <span class="ml-auto mx-2 mt-2" style="letter-spacing: 3px;"><i class="fas fa-warehouse" style="color: #ffffff;"></i> The Warehouse</span>
+  <span class="ml-auto mx-2 mt-2" style="letter-spacing: 3px;"><i class="fas fa-warehouse" style="color: #ffffff;"></i> Export items</span>
 </div>
 {% if breed_part_exports %}
   <h5 class="mb-4"><i class="fas fa-truck" style="color: #001b42;"></i> &nbsp; Finished products available for Exports</h5>
@@ -25,17 +25,32 @@
           <div class="card-header" style="background-color: #f8f9fa;">
             <div class="row">
               <div class="col">
-                <p class="card-title mb-0" style="color: #001b40;"><i class="fas fa-box mr-2" style="color: #ffd700;"></i>{{ export.breed }}</p>
+                <p class="card-title mb-0" style="color: #001b40;font-weight: bold;"><i class="fas fa-box mr-2" style="color: #ffd700;"></i>{{ export.breed }}</p>
+              </div>
+              <div class="col text-right">
+                <p class="card-text" style="color: #001b40;"><span style="font-weight: 300;font-size: 14px;">Last updated: <br></span><span style="color: #666666;font-weight: 500;font-size: 11px;">{{ export.last_updated }}</span></p>
               </div>
             </div>
           </div>
           <div class="card-body">
-            <p class="card-text" style="color: #001b40;"><i class="fas fa-cube mr-2" style="color: #001b42;"></i> Parts: <span style="color: #001b40;font-weight: bold;font-size: 22px;text-align: center;"> {{ export.part_name }}</span></p>
+            <p class="card-text" style="color: #001b40;"><i class="fas fa-cube mr-2" style="color: #001b42;"></i>Parts:  <span style="color: #001b40;font-weight: bold;font-size: 18px;text-align: center;"> {{ export.part_name }}</span></p>
+            <p class="card-text ml-auto" style="color: #001b40;"><i class="fas fa-arrow-alt-circle-up mr-2" style="color: #001b42;"></i>Sale type:  
+              <span style="color: #001b40;font-weight: bold;font-size: 18px;text-align: center;">Export</span>
+            </p>
           </div>
+          
           <div class="card-footer bg-transparent">
-            <p class="card-text" style="color: #001b40;"><i class="fas fa-tags mr-2" style="color: #001b42;font-weight: bold;"></i><span style="font-weight: bold;">Quantity: </span> <span style="color: #001b40;font-weight: bold;font-size: 22px;text-align: center;">{{ export.total_quantity }}</span> </p>
+            <div class="row">
+              <div class="col-6">
+                <p class="card-text" style="color: #001b40;"><i class="fas fa-tags mr-2" style="color: #001b42;font-weight: bold;"></i><span style="font-weight: bold;">Quantity: <br> </span><span style="color: #001b40;font-weight: bold;font-size: 22px;text-align: center;">{{ export.total_quantity }} items</span></p>
+              </div>
+              <div class="col-6">
+                <p class="card-text" style="color: #001b40;"><i class="fas fa-balance-scale mr-2" style="color: #001b42;font-weight: bold;"></i><span style="font-weight: bold;">Weight: <br> </span><span style="color: #001b40;font-weight: bold;font-size: 18px;text-align: center;">{{ export.total_weight }} kg</span></p>
+              </div>
+            </div>
           </div>
         </div>
+        
       </div>
     </div>
     {% endfor %}
@@ -43,7 +58,7 @@
 {% else %}
   <div class="text-center my-5">
     <i class="fas fa-exclamation-circle fa-5x text-muted"></i>
-    <p class="mt-3">No exports available.</p>
+    <p class="mt-3">No local sale cuts available.</p>
   </div>
 {% endif %}
 

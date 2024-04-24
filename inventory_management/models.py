@@ -41,8 +41,9 @@ class InventoryBreed(models.Model):
     def __str__(self):
         return f"InventoryBreed - Breed: {self.breed}, Total Breed Supply: {self.total_breed_supply}"
 
-from django.db.models import Sum
+from django.db import models
 from django.db.models import F
+from django.utils import timezone
 
 class InventoryBreedSales(models.Model):
     SALE_CHOICES = [
@@ -54,39 +55,11 @@ class InventoryBreedSales(models.Model):
     part_name = models.CharField(max_length=255, blank=True, null=True)
     sale_type = models.CharField(max_length=255, choices=SALE_CHOICES)
     quantity = models.PositiveIntegerField()
-    weight = models.CharField(max_length=255, null=True, blank=True)
+    weight = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     seller = models.ForeignKey(Seller, on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)  # Automatically updated when saving the instance
     created_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True)
-    
-    def save(self, *args, **kwargs):
-        # Check if it's a new instance
-        if not self.pk:
-            # If it's a new instance, just save it
-            super().save(*args, **kwargs)
-        else:
-            # Otherwise, update the existing instance
-            # Check if there are existing records with the same breed, part name, and sale type
-            existing_record = InventoryBreedSales.objects.filter(
-                breed=self.breed,
-                part_name=self.part_name,
-                sale_type=self.sale_type
-            ).first()
-            
-            # If there is an existing record, update its quantity by adding the new quantity
-            if existing_record:
-                existing_record.quantity = F('quantity') + self.quantity
-                existing_record.save()
-            else:
-                # If no existing record found, save the new instance
-                super().save(*args, **kwargs)
 
-    
-    
     def __str__(self):
         return f"{self.breed} - {self.part_name} - {self.quantity} - {self.get_sale_type_display()}"
-
- 
-
-    
-

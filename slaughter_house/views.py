@@ -243,24 +243,39 @@ def create_inventory_breed_sale(request):
     if request.method == 'POST':
         form = InventoryBreedSalesForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect('list_exports')  # Redirect to the list of exports view after successful creation
+            instance = form.save(commit=False)  # Save form data without committing to database yet
+            instance.created_by = request.user  # Assign the current user as the creator
+            instance.save()  # Now save the instance with the updated fields
+            
+            # Check the sale type and redirect accordingly
+            if instance.sale_type == 'export':
+                return redirect('list_exports')
+            elif instance.sale_type == 'local_sale_cut':
+                return redirect('list_local_sale_cuts')
     else:
         form = InventoryBreedSalesForm()
     return render(request, 'create_inventory_breed_sale.html', {'form': form})
 
-
 from django.db.models import Sum
+
+from django.db.models import Max
 
 @login_required
 def list_exports(request):
-    # Group by breed and part name and annotate with total quantity
-    breed_part_exports = InventoryBreedSales.objects.filter(sale_type='export').values('breed', 'part_name').annotate(total_quantity=Sum('quantity'))
+    # Group by breed and part name and annotate with total quantity, total weight, and last updated date
+    breed_part_exports = InventoryBreedSales.objects.filter(sale_type='export').values('breed', 'part_name').annotate(
+        total_quantity=Sum('quantity'),
+        total_weight=Sum('weight'),
+        last_updated=Max('updated_at')  # Assuming you have an updated_at field in your model
+    ) # Add distinct() and adjust order_by as needed
     return render(request, 'list_exports.html', {'breed_part_exports': breed_part_exports})
-
+    
 @login_required
 def list_local_sale_cuts(request):
-    # Group by breed and part name and annotate with total quantity
-    breed_part_local_sales = InventoryBreedSales.objects.filter(sale_type='local_sale_cut').values('breed', 'part_name').annotate(total_quantity=Sum('quantity'))
+    # Group by breed and part name and annotate with total quantity, total weight, and last updated date
+    breed_part_local_sales = InventoryBreedSales.objects.filter(sale_type='local_sale_cut').values('breed', 'part_name').annotate(
+        total_quantity=Sum('quantity'),
+        total_weight=Sum('weight'),
+        last_updated=Max('updated_at')  # Assuming you have an updated_at field in your model
+    )
     return render(request, 'list_local_sale_cuts.html', {'breed_part_local_sales': breed_part_local_sales})
-

@@ -224,6 +224,8 @@ from invoice_generator.forms import InvoiceForm
 from inventory_management.models import InventoryBreedSales
 from django.forms import formset_factory
 
+from django.db.models import F
+
 @login_required
 def create_multiple_models_for_logistics(request):
     LogisticsStatusFormSet = formset_factory(LogisticsStatusForm, extra=1)
@@ -248,6 +250,23 @@ def create_multiple_models_for_logistics(request):
                 logistics_instance.invoice = invoice_instance
                 logistics_instance.save()
 
+                # Deduct from InventoryBreedSales
+                breed = invoice_instance.breed
+                part_name = invoice_instance.part_name
+                quantity = invoice_instance.quantity
+                weight = invoice_instance.weight
+
+                inventory_sales = InventoryBreedSales.objects.filter(
+                    breed=breed,
+                    part_name=part_name
+                )
+                for inventory_sale in inventory_sales:
+                    if inventory_sale.quantity >= quantity:
+                        inventory_sale.quantity = F('quantity') - quantity
+                        inventory_sale.weight = F('weight') - weight
+                        inventory_sale.save(update_fields=['quantity', 'weight'])
+                        break  # Exit the loop once deducted from one inventory sale
+
             return render(request, 'logistics_creation_success.html')
 
     else:
@@ -258,6 +277,8 @@ def create_multiple_models_for_logistics(request):
     return render(request, 'combined_logistics_creation.html', {'logistics_formset': logistics_formset,
                                                                 'package_formset': package_formset,
                                                                 'invoice_formset': invoice_formset})
+
+
 
     
 @login_required

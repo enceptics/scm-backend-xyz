@@ -12,7 +12,7 @@
       </a>
     </li>
   </ul>
-  <span class="ml-auto mx-2 mt-2" style="letter-spacing: 3px;"><i class="fas fa-warehouse" style="color: #ffffff;"></i> The Warehouse</span>
+  <span class="ml-auto mx-2 mt-2" style="letter-spacing: 3px;"><i class="fas fa-warehouse" style="color: #ffffff;"></i> Local sales items</span>
 </div>
 {% if breed_part_local_sales %}
   <h5 class="mb-4"><i class="fas fa-truck" style="color: #001b42;"></i>&nbsp; Finished products available for Local Sales</h5>
@@ -28,24 +28,24 @@
                 <p class="card-title mb-0" style="color: #001b40;"><i class="fas fa-box mr-2" style="color: #ffd700;"></i>{{ sale.breed }}</p>
               </div>
               <div class="col text-right">
-                <p class="card-text" style="color: #001b40;"><span style="font-weight: 300;">Last updated: </span><span style="color: #001b40;font-weight: bold;font-size: 22px;text-align: center;">{{ sale.created_at }}</span></p>
+                <p class="card-text" style="color: #001b40;"><span style="font-weight: 300;">Last updated: <br></span><span style="color: #666666;font-weight: 500;font-size: 11px;">{{ sale.last_updated }}</span></p>
               </div>
             </div>
           </div>
           <div class="card-body">
             <p class="card-text" style="color: #001b40;"><i class="fas fa-cube mr-2" style="color: #001b42;"></i>Parts:  <span style="color: #001b40;font-weight: bold;font-size: 18px;text-align: center;"> {{ sale.part_name }}</span></p>
             <p class="card-text ml-auto" style="color: #001b40;"><i class="fas fa-arrow-alt-circle-up mr-2" style="color: #001b42;"></i>Sale type:  
-              <span style="color: #001b40;font-weight: bold;font-size: 18px;text-align: center;">Export</span>
+              <span style="color: #001b40;font-weight: bold;font-size: 16px;text-align: center;">Local sale</span>
             </p>
           </div>
           
           <div class="card-footer bg-transparent">
             <div class="row">
               <div class="col-6">
-                <p class="card-text" style="color: #001b40;"><i class="fas fa-tags mr-2" style="color: #001b42;font-weight: bold;"></i><span style="font-weight: bold;">Quantity: </span><span style="color: #001b40;font-weight: bold;font-size: 22px;text-align: center;">{{ sale.total_quantity }}</span></p>
+                <p class="card-text" style="color: #001b40;"><i class="fas fa-tags mr-2" style="color: #001b42;font-weight: bold;"></i><span style="font-weight: bold;">Quantity: <br> </span><span style="color: #001b40;font-weight: bold;font-size: 22px;text-align: center;">{{ sale.total_quantity }} items</span></p>
               </div>
               <div class="col-6">
-                <p class="card-text" style="color: #001b40;"><i class="fas fa-balance-scale mr-2" style="color: #001b42;font-weight: bold;"></i><span style="font-weight: bold;">Weight: </span><span style="color: #001b40;font-weight: bold;font-size: 22px;text-align: center;">{{ sale.weight }}</span></p>
+                <p class="card-text" style="color: #001b40;"><i class="fas fa-balance-scale mr-2" style="color: #001b42;font-weight: bold;"></i><span style="font-weight: bold;">Weight: <br> </span><span style="color: #001b40;font-weight: bold;font-size: 18px;text-align: center;">{{ sale.total_weight }} kg</span></p>
               </div>
             </div>
           </div>
