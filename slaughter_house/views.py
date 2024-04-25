@@ -279,3 +279,45 @@ def list_local_sale_cuts(request):
         last_updated=Max('updated_at')  # Assuming you have an updated_at field in your model
     )
     return render(request, 'list_local_sale_cuts.html', {'breed_part_local_sales': breed_part_local_sales})
+
+# Weiht loss 
+from django.db.models import Sum
+from django.shortcuts import render
+
+from django.shortcuts import render
+from inventory_management.models import InventoryBreedSales
+
+@login_required
+def weight_comparison_view(request):
+    comparison_results = []
+
+    breader_trades = BreaderTrade.objects.all()
+    inventory_sales = InventoryBreedSales.objects.all()
+
+    for trade in breader_trades:
+        reference = trade.reference
+        breed = trade.breed
+        trade_weight = trade.goat_weight
+        total_cut_weight = 0  # Calculate total cut weight for this trade (You need to implement this logic)
+        weight_loss_percentage = 0  # Calculate weight loss percentage (You need to implement this logic)
+        classification = "Normal"  # Determine classification based on weight loss percentage (You need to implement this logic)
+
+        comparison_results.append((reference, breed, trade_weight, total_cut_weight, weight_loss_percentage, classification))
+
+    for sale in inventory_sales:
+        reference = sale.reference
+        breed = sale.breed
+        sale_weight = sale.weight
+        quantity = sale.quantity
+        weight_loss_percentage = 0  # Calculate weight loss percentage (You need to implement this logic)
+        classification = "Normal"  # Determine classification based on weight loss percentage (You need to implement this logic)
+
+        comparison_results.append((reference, breed, sale_weight, quantity, weight_loss_percentage, classification))
+
+    context = {
+        'comparison_results': comparison_results,
+        # Other context variables as needed
+    }
+
+    return render(request, 'weight_comparison.html', context)
+

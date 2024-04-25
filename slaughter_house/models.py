@@ -29,6 +29,8 @@ class SlaughterhouseRecord(models.Model):
     weight = models.PositiveIntegerField(null=True, blank=True)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='confirmed_records', null=True, blank=True)
     seller = models.ForeignKey(Seller, on_delete=models.CASCADE, null=True, blank=True)
+
+
     def __str__(self):
         return f"Slaughterhouse Record - Date: {self.slaughter_date}, Quantity: {self.quantity}"
 

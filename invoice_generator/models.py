@@ -307,20 +307,6 @@ class LetterOfCredit(models.Model):
     collection_market = models.CharField(max_length=100, blank=True, null=True)
     text_content = models.TextField(blank=True, null=True)
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        if self.lc_document:
-            self.extract_text_content()
-
-    def extract_text_content(self):
-        with open(self.lc_document.path, 'rb') as file:
-            reader = PyPDF2.PdfReader(file)
-            text = ''
-            for page_num in range(len(reader.pages)):
-                text += reader.pages[page_num].extract_text()
-            self.text_content = text
-            self.save()
-
     def get_buyer_full_name(self):
         if self.buyer:
             return f'{self.buyer.buyer.first_name} {self.buyer.buyer.last_name} '

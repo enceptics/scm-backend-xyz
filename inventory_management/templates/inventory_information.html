@@ -55,24 +55,24 @@
                     <thead class="text-white" style="background-color: #001b42">
                         <tr>
                             <th>#</th>
-                            <th>Tag number</th>
+                            <th>Reference</th>
                             <th>Breed</th>
-                            <th>Trade Weight</th>
-                            <th>Total Cut Weight</th>
+                            <th>Weight</th>
+                            <th>Quantity</th>
                             <th>% Weight Loss</th>
                             <th>Classification</th>
                         </tr>
                     </thead>
                     <tbody class='text-secondary'>
-                        {% for item in currentCompareWeight %}
+                        {% for item in comparison_results %}
                         <tr>
                             <td>{{ forloop.counter }}</td>
-                            <td class='tag-number' onclick="handleReferenceClick('{{ item.reference }}')">{{ item.reference }}</td>
-                            <td>{{ item.breed }}</td>
-                            <td>{{ item.trade_weight }} Kg</td>
-                            <td>{{ item.total_cut_weight }}</td>
-                            <td>{{ item.weight_loss_percentage }}</td>
-                            <td>{{ item.classification }}</td>
+                            <td class='tag-number' onclick="handleReferenceClick('{{ item.0 }}')">{{ item.0 }}</td>
+                            <td>{{ item.1 }}</td>
+                            <td>{{ item.2 }} Kg</td>
+                            <td>{{ item.3 }}</td>
+                            <td>{{ item.4 }}</td>
+                            <td>{{ item.5 }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -84,6 +84,8 @@
                 </div>
             </div>
         </div>
+    </div>
+</div>
     </div>
 </div>
 <h2></h2>

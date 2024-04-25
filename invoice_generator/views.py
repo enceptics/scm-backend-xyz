@@ -465,17 +465,28 @@ def reject_quotation(request):
 
 from django.contrib import messages
 
+from django.core.files.storage import FileSystemStorage
+import os
+
 @login_required
 def create_quotation(request):
     """View to create a new quotation."""
     if request.method == 'POST':
-        form = QuotationForm(request.POST)
+        form = QuotationForm(request.POST, request.FILES)
         if form.is_valid():
             quotation = form.save(commit=False)
-            # Retrieve the seller associated with the logged-in user
-            seller = Seller.objects.get(seller=request.user)
-            quotation.seller = seller
+            quotation.seller = Seller.objects.get(seller=request.user)
             quotation.save()
+
+            # Save the uploaded PDF file to a specific directory
+            pdf_file = request.FILES.get('pdf_file')
+            if pdf_file:
+                # Construct the file path where the PDF file will be saved
+                file_path = os.path.join(settings.MEDIA_ROOT, 'pdf_quotations', f'quotation_{quotation.id}.pdf')
+                # Save the file to the file system
+                fs = FileSystemStorage()
+                fs.save(file_path, pdf_file)
+
             # Redirect to the success template upon successful creation
             return redirect('quotation_created')
         else:
@@ -580,19 +591,28 @@ from django.http import JsonResponse
 def update_letter_of_credit_status(request, pk):
     if request.method == 'POST':
         new_status = request.POST.get('status')
-        rejection_reason = request.POST.get('reason')  # Correctly get rejection reason from POST data
+        rejection_reason = request.POST.get('reason')  # get rejection reason from POST data
+        collection_market = request.POST.get('collection_market')  # Get the collection market from POST data
+
         if new_status:
             try:
                 # Retrieve the LetterOfCredit object using the provided pk
                 letter_of_credit = get_object_or_404(LetterOfCredit, pk=pk)
+                
                 # Update the status
                 letter_of_credit.status = new_status
+                
                 # If status is rejected, save the rejection reason
                 if new_status == 'rejected':
                     letter_of_credit.rejection_reason = rejection_reason
+                elif new_status == 'approved':
+                    letter_of_credit.collection_market = collection_market  # Save the collection market
+
                 letter_of_credit.save()
+                
                 # Pass the letter_of_credit object to the context
                 context = {'letter': letter_of_credit}
+                
                 # Render success HTML template with the context
                 return render(request, 'lc_success.html', context)
             except LetterOfCredit.DoesNotExist:
@@ -604,18 +624,125 @@ def update_letter_of_credit_status(request, pk):
     else:
         # If the request method is not POST, return an error response
         return HttpResponse('Only POST requests are allowed', status=405)
-
-
         
 def letter_of_credit_detail(request, pk):
     letter_of_credit = get_object_or_404(LetterOfCredit, pk=pk)
     return render(request, 'letter_of_credit_detail.html', {'letter_of_credit': letter_of_credit})
 
+# Extract Pdf content
+
 import re
 import PyPDF2
-# Extract Pdf content
-import re
 from PyPDF2 import PdfReader
+from .forms import LetterOfCreditForm
+from .models import LetterOfCredit
+import PyPDF2
+
+@login_required
+def letter_of_credit_create(request):
+    if request.user.role != 'bank' and not request.user.is_superuser:
+        return redirect('unauthorized')
+    
+    if request.method == 'POST':
+        form = LetterOfCreditForm(request.POST, request.FILES)
+        
+        # Handling validation error for non-PDF documents
+        if 'lc_document' in request.FILES and not request.FILES['lc_document'].name.endswith('.pdf'):
+            form.add_error('lc_document', 'Only PDF documents are allowed.')
+            
+        if form.is_valid():
+            form.save()
+            # Redirect to a success URL or a specific view
+            return redirect('lc_creation_success')  # Assuming 'lc_successfully_created' is a URL pattern name
+    else:
+        form = LetterOfCreditForm()
+    
+    return render(request, 'letter_of_credit_create.html', {'form': form})
+
+def lc_creation_success(request):
+    return render(request, 'lc_successfully_created.html')
+    
+@login_required
+def all_letter_of_credit_list(request):
+    if request.user.role != 'bank' and not request.user.is_superuser:
+        return redirect('unauthorized')
+
+    letters_of_credit = LetterOfCredit.objects.all().order_by('-issue_date')
+    context = {
+        'letters_of_credit': letters_of_credit,
+    }
+    return render(request, 'all_letter_of_credit_list.html', context)
+
+@login_required
+def seller_letter_of_credit_list(request):
+    if request.user.role != 'seller' and not request.user.is_superuser:
+        return redirect('unauthorized')
+    try:
+        seller = Seller.objects.get(seller=request.user)
+    except Seller.DoesNotExist:
+        seller = None
+
+    if seller:
+        letters = LetterOfCredit.objects.filter(seller=seller).order_by('-issue_date')
+        return render(request, 'seller_letter_of_credit_list.html', {'letters': letters})
+    else:
+        return render(request, 'error.html', {'message': 'You are not authorized to view this page.'})
+
+@login_required
+def buyer_letter_of_credit_list(request):
+    try:
+        buyer = Buyer.objects.get(buyer=request.user)
+    except Buyer.DoesNotExist:
+        buyer = None
+
+    if buyer:
+        letters = LetterOfCredit.objects.filter(buyer=buyer).order_by('-issue_date')
+        return render(request, 'buyer_letter_of_credit_list.html', {'letters': letters})
+    else:
+        return render(request, 'error.html', {'message': 'You are not authorized to view this page.'})
+
+@login_required
+def update_letter_of_credit_status(request, pk):
+    if request.method == 'POST':
+        new_status = request.POST.get('status')
+        rejection_reason = request.POST.get('reason')  # get rejection reason from POST data
+        collection_market = request.POST.get('collection_market')  # Get the collection market from POST data
+
+        if new_status:
+            try:
+                # Retrieve the LetterOfCredit object using the provided pk
+                letter_of_credit = get_object_or_404(LetterOfCredit, pk=pk)
+                
+                # Update the status
+                letter_of_credit.status = new_status
+                
+                # If status is rejected, save the rejection reason
+                if new_status == 'rejected':
+                    letter_of_credit.rejection_reason = rejection_reason
+                elif new_status == 'approved':
+                    letter_of_credit.collection_market = collection_market  # Save the collection market
+
+                letter_of_credit.save()
+                
+                # Pass the letter_of_credit object to the context
+                context = {'letter': letter_of_credit}
+                
+                # Render success HTML template with the context
+                return render(request, 'lc_success.html', context)
+            except LetterOfCredit.DoesNotExist:
+                # If the LetterOfCredit object does not exist, render an error HTML template
+                return render(request, 'lc_error.html')
+        else:
+            # If the 'status' field is missing in the POST data, return an error response
+            return HttpResponse('Missing status field in POST data', status=400)
+    else:
+        # If the request method is not POST, return an error response
+        return HttpResponse('Only POST requests are allowed', status=405)
+        
+@login_required
+def letter_of_credit_detail(request, pk):
+    letter_of_credit = get_object_or_404(LetterOfCredit, pk=pk)
+    return render(request, 'letter_of_credit_detail.html', {'letter_of_credit': letter_of_credit})
 
 @login_required
 def extracted_data_list(request):
@@ -652,7 +779,7 @@ def extract_lc_data(pdf_path):
     }
 
     with open(pdf_path, 'rb') as file:
-        reader = PdfReader(file)
+        reader = PyPDF2.PdfReader(file)
         for page_num in range(len(reader.pages)):
             text = reader.pages[page_num].extract_text()
 

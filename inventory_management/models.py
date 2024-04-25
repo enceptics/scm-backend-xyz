@@ -57,6 +57,7 @@ class InventoryBreedSales(models.Model):
     quantity = models.PositiveIntegerField()
     weight = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     seller = models.ForeignKey(Seller, on_delete=models.CASCADE, null=True, blank=True)
+    reference = models.CharField(max_length=20, null=True, blank=True)  # Add reference field
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)  # Automatically updated when saving the instance
     created_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True)
