@@ -11,7 +11,7 @@
 {% block content %}
 <!-- Content Row -->
 
-<div class="row mt-n4 mb-3" style="font-size: 15px; background-color: #001b40; color: white;">
+<div class="row mt-n3 mb-3" style="font-size: 15px; background-color: #001b40; color: white;">
     <ul class="nav nav-tabs " id="myTab" role="tablist">
         <li class="nav-item">
             <a class="nav-link active" id="home-tab" data-toggle="tab" href="#dashboard" role="tab" aria-controls="dashboard" aria-selected="true"">Dashboard</a>
@@ -37,10 +37,30 @@
     </div>
 </div>
 
-<div class="col-auto mb-3 mt-" style="position: relative;">
-    
-    <h5 class="mb-0 font-weight-bold text-dark" style="margin-left: 10px;"> <i class='fas dw-archive text-primary' style='font-size: 20px;'></i> Seller dashboard</h5>
+<div class="row mb-3" style="font-size: 15px; color: white;">
+    <div class="col-auto mb-3 mt-" style="position: relative;">
+        <h5 class="mb-0 font-weight-bold text-dark" style="margin-left: 10px;"> <i class='fas fa-tachometer-alt'></i> Seller Dashboard</h5>
+    </div>
+
+    <div class="col-auto ml-auto  mt-" style="position: relative;">
+        <div class="d-flex">
+            <div class="col-auto  mt-" style="position: relative;">
+                <a href="{% url 'breeder_register' %}" style="color: #d9d9d9; text-decoration: none;">
+
+                <button class="btn btn-sm bg-light" style="margin-left: 5px;"> <i class='fas fa-user-plus'></i> Register Breeder</button>
+                </a>
+            </div>
+            
+            <div class="col-auto  mt-" style="position: relative;">
+                <a  href="{% url 'buyer_register' %}" style="color: #d9d9d9; text-decoration: none;">
+
+                <button class="btn btn-sm bg-light" style="margin-left: 5px;"> <i class='fas fa-user-plus'></i> Register Buyer</button>
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
+
 <div class="row">
     <!-- Earnings (Monthly) Card  -->
     

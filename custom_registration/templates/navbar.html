@@ -27,16 +27,17 @@
                     {% else %}
                     <div class="d-flex"> <!-- Add flexbox container -->
                         
-                        <a class="nav-link" href="{% url 'login' %}">
-                            <button class="btn-secondary btn-sm  text-dark" style="background: white; border: 1px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); border-radius: 5px;">
-                            <i class="fa fa-sign-in-alt"></i> Log In
-                            </button>
-                        </a>
+<!--                        
                         <a class="nav-link" href="{% url 'register' %}">
-                            <!-- <button class=" btn-outline-secondary btn-sm text-white" style="background: #28a745; border: 1px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); border-radius: 5px;">
+                            <button class=" btn-outline-secondary btn-sm text-white" style="background: #28a745; border: 1px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); border-radius: 5px;">
                             <i class="fa fa-user-plus"></i> Sign Up
-                            </button> -->
-                        </a>
+                            </button>
+                        </a> -->
+                        <a class="nav-link" href="{% url 'login' %}">
+                            <button class=" btn-outline-secondary btn-sm text-white px-3" style="background: #28a745; border: 1px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); border-radius: 5px;font-weight: 500;letter-spacing: 2px;">
+                                <i class="fa fa-sign-in-alt"></i>  Login
+                            </button>
+                        </a>    
                     </div>
                     {% endif %}
                     <div class="dropdown-menu dropdown-menu-right dropdown-menu-icon-list"

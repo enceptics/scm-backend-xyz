@@ -58,17 +58,34 @@
   }
 
   .clipped {
-  clip-path: polygon(50% 0, 100% 0, 100% 100%, 0% 100%);
-}
-@media screen and (max-width: 650px){
-  .headline {
-    left: 20px;
-  } 
-  .clipped {
-    clip-path: none;
-    /* max-height: 300px !important; */
+    clip-path: polygon(50% 0, 100% 0, 100% 100%, 0% 100%);
   }
-}
+
+  /* Media queries for different devices */
+
+  @media only screen and (max-width: 991px) {
+    /* Adjustments for medium devices (tablets) */
+    .hero-content h1 {
+      font-size: 2rem;
+    }
+  }
+
+  @media only screen and (max-width: 767px) {
+    /* Adjustments for small devices (phones) */
+    .hero-content h1 {
+      font-size: 1.8rem;
+    }
+  }
+
+  @media only screen and (max-width: 575px) {
+    /* Adjustments for extra small devices (smaller phones) */
+    .hero-image {
+      display: none; /* Hide the hero image on extra small devices */
+    }
+    .hero-content h1 {
+      font-size: 1.5rem;
+    }
+  }
 
 </style>
 

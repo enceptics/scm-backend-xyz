@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quotation notifiction</title>
+    <title>Quotation Approved</title>
 
     <style>
         body {
@@ -15,7 +15,10 @@
         }
 
         h1 {
-            color: #3498db;
+            color: #001b42;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
         }
 
         p {
@@ -23,20 +26,20 @@
             line-height: 1.6;
             margin: 10px 0;
         }
-
-        .success-message {
-            background-color: #2ecc71;
-            color: #fff;
-            padding: 10px;
-            border-radius: 5px;
-        }
     </style>
 </head>
 <body>
-    <h1>Quotation approved</h1>
+    <h1>Quotation Approved!</h1>
     <p>Dear {{ seller_name }},</p>
-    <p>{{ buyer_name }} has approved your quotation.</p>
-    <p>We have notified them to send LC to the bank.</p>
-    <p>Please keep an eye out for the next steps. Thank you for your attention.</p>
+    <p>Your quotation has been approved.</p>
+    <p>We have notified {{ buyer_name }} to proceed to communicate with the bank to send letter of credit.</p>
+    <p>Please keep an eye out for the next updates.</p>
+
+    <p style="font-size: 13px;">Please don't reply to this email. If you have any questions, contact the seller directly.</p>
+
+    <hr>
+    <p>Regards,</p>
+    <p>The Intellima Team</p>
+    <p>Thank you for your attention.</p>
 </body>
 </html>

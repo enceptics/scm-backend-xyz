@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quotation Rejected</title>
+    <title>Letter of Credit Approved!</title>
 
     <style>
         body {
@@ -26,28 +26,16 @@
             line-height: 1.6;
             margin: 10px 0;
         }
-
-        .reason-container {
-            background-color: #001b42;
-            color: #fff;
-            padding: 10px;
-            border-radius: 5px;
-            margin-top: 10px;
-        }
     </style>
 </head>
 <body>
-    <h1>Quotation Rejected</h1>
+    <h4>Letter of Credit Approved!</h4>
     <p>Dear {{ seller_name }},</p>
-    <p>Your quotation has been rejected.</p>
-    <p>Please review the rejection reason provided below:</p>
-    <div class="reason-container">
-        <strong>Reason for Rejection:</strong>
-        <br>
-        {{ explanation }}
-    </div>
+    <p>{{ buyer_name }} has approved your Letter of Credit.</p>
+    <p>We have notified them to proceed with the necessary steps.</p>
+    <p>Please keep an eye out for the next updates.</p>
 
-    <p style="font-size: 13px;">Please don't reply to this email. If you have any questions, contact the buyer directly.</p>
+    <p style="font-size: 13px;">Please don't reply to this email. If you have any questions, contact the seller directly.</p>
 
     <hr>
     <p>Regards,</p>
