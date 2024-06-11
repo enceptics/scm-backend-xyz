@@ -40,7 +40,6 @@ from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from transaction.models import Breader
 from .models import InventoryManager
-
 # Templates
 from django.shortcuts import render
 
@@ -928,12 +927,12 @@ def sellers_list(request):
     return render(request, 'sellers_list.html', {'sellers': sellers, 'num_sellers': num_sellers})
 
 def breeders_list(request):
-    breeders = Breeder.objects.all().order_by('-created_at')
+    breeders = Breader.objects.all().order_by('-id')
     num_breeders = breeders.count()  # Calculate the number of sellers
-    return render(request, 'breeders_list.html', {'breeders': sellers, 'num_breeders': num_breeders})
+    return render(request, 'breeders_list.html', {'breeders': breeders, 'num_breeders': num_breeders})
 
-def breeders_details(request, seller_id):
-    breeder = get_object_or_404(Breeder, id=breeder_id)
+def breeders_details(request, breeder_id):
+    breeder = get_object_or_404(Breader, id=breeder_id)
     return render(request, 'breders_profile.html', {'breeder': breeder})
 
 def buyers_list(request):
