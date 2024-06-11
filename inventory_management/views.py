@@ -246,36 +246,33 @@ from django.shortcuts import render
 from django.db.models import Sum, F, Value, Count, IntegerField, Case, When
 
 def inventory_information(request):
+    # Check if the user is a seller or superuser
     if request.user.role != 'seller' and not request.user.is_superuser:
         return redirect('unauthorized')
 
-    # Fetch all control centers
-    control_centers = ControlCenter.objects.all()
-
-    # Initialize dictionary to store breeds information
+    # Fetch control centers associated with the current seller
+    control_centers = ControlCenter.objects.filter(seller=request.user)
+    
+    # Initialize dictionary to store inventory information
     inventory_info = {}
-
-    # Initialize variable to store cumulative total remaining
     cumulative_total_remaining = 0
 
-    # Iterate over each control center
+    # Iterate over control centers associated with the seller
     for control_center in control_centers:
         breeds_info = {}
         
-        # Fetch all breeds associated with the control center
+        # Fetch breeds associated with the control center
         breeds = BreaderTrade.objects.filter(control_center=control_center).values_list('breed', flat=True).distinct().order_by('-created_at')
         
-        # Iterate over each breed
         for breed in breeds:
-            # Calculate total supplied, total weight, total slaughtered, and net breed supply
+            # Calculate breed-related metrics
             total_supplied = BreaderTrade.objects.filter(control_center=control_center, breed=breed).aggregate(total_supplied=Sum('breeds_supplied'))['total_supplied'] or 0
             total_weight = BreaderTrade.objects.filter(control_center=control_center, breed=breed).aggregate(total_weight=Sum('goat_weight'))['total_weight'] or 0
             total_slaughtered = SlaughterhouseRecord.objects.filter(control_center=control_center, breed=breed).aggregate(total_slaughtered=Sum('quantity'))['total_slaughtered'] or 0
             
-            # Check if both confirmed_by and last_confirmation_by fields are filled
             slaughter_records = SlaughterhouseRecord.objects.filter(control_center=control_center, breed=breed)
             confirmed_records_count = slaughter_records.filter(confirmed_by__isnull=False, last_confirmation_by__isnull=False).count()
-            net_breed_supply = total_supplied - total_slaughtered if confirmed_records_count > 0 else total_supplied
+            net_breed_supply = total_supplied - total_slaughtered
 
             # Add breed information to the dictionary
             breeds_info[breed] = {
@@ -293,7 +290,7 @@ def inventory_information(request):
 
     context = {
         'inventory_info': inventory_info,
-        'cumulative_total_remaining': cumulative_total_remaining  # Add this to the context
+        'cumulative_total_remaining': cumulative_total_remaining
     } 
     return render(request, 'inventory_information.html', context)
 
@@ -330,15 +327,23 @@ def bank_inventory_information(request, center_id):
 # views.py
 from django.shortcuts import render, redirect
 from .forms import ControlCenterForm
+from django.contrib.auth.decorators import login_required
 
+@login_required
 def controlcenter_create(request):
     if request.method == 'POST':
         form = ControlCenterForm(request.POST)
         if form.is_valid():
-            form.save()
+            # Get the form instance without saving it yet
+            control_center = form.save(commit=False)
+            
+            # Assign the current user (seller) as the seller of the control center
+            control_center.seller = request.user
+            
+            # Save the control center with the assigned seller
+            control_center.save()
+            
             return redirect('inventory_information')
     else:
         form = ControlCenterForm()
     return render(request, 'create_control_center.html', {'form': form})
-
-

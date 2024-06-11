@@ -214,7 +214,7 @@ class Quotation(models.Model):
         quotation_id = self.id
         # Construct the URL to the PDF file based on your project's file structure
         # Replace 'path_to_pdf_directory' with the actual path to your PDF directory
-        pdf_file_path = f'/static/pdf_quotations/quotation_{quotation_id}.pdf'
+        pdf_file_path = f'/media/pdf_quotations/quotation_{quotation_id}.pdf'
         return pdf_file_path
 
     def get_buyer_full_name(self):

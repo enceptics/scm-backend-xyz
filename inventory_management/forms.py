@@ -12,4 +12,4 @@ class InventoryBreedSalesForm(forms.ModelForm):
 class ControlCenterForm(forms.ModelForm):
     class Meta:
         model = ControlCenter
-        fields = ['name', 'location', 'address', 'contact']  # Add other fields as needed
+        fields = ['name', 'location', 'address', 'contact'] 

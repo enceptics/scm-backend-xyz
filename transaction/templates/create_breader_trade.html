@@ -1,82 +1,74 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<style>
+    /* Add this CSS to your stylesheet or <style> tag in HTML */
+
+.container {
+    margin: auto;
+    width: 60%;
+}
+
+.header {
+    background-color: #001b42;
+    color: #fff;
+    padding: 20px;
+    text-align: center;
+}
+
+.breader-trade-form {
+    margin-top: 20px;
+}
+
+.form-container {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.form-container label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-container input[type="text"],
+.form-container input[type="number"],
+.form-container select {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.submit-btn {
+    background-color: #001b42;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.submit-btn:hover {
+    background-color: #003366;
+}
+
+</style>
     <div class="container-fluid">
-        <h4 class="mt-n3">Supply products</h4>
-        <div class="card shadow mb-4 p-3">
-
-        <form method="post">
-            {% csrf_token %}
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group d-none">
-                        <label for="id_breeder">Breeder</label>
-                        <select class="form-control" id="id_breeder" name="breeder" style="display: none;">
-                            <!-- You can remove the options if the user can only select themselves -->
-                            <option value="{{ request.user.pk }}" selected>{{ request.user }}</option>
-                        </select>
-                        <input type="text" class="form-control" value="{{ request.user }}" readonly>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="id_seller">Seller</label>
-                        {{ form.seller }}
-                        <div class="invalid-feedback">
-                            {{ form.seller.errors }}
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="id_control_center">Control Center</label>
-                        {{ form.control_center }}
-                        <div class="invalid-feedback">
-                            {{ form.control_center.errors }}
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="id_breed">Breed</label>
-                        {{ form.breed }}
-                        <div class="invalid-feedback">
-                            {{ form.breed.errors }}
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="id_breeds_supplied">Breeds Supplied</label>
-                        {{ form.breeds_supplied }}
-                        <div class="invalid-feedback">
-                            {{ form.breeds_supplied.errors }}
-                        </div>
-                    </div>
-                    <!-- Add more fields in this column -->
-                </div>
-                <div class="col-md-6">
-                   
-                    <div class="form-group">
-                        <label for="id_goat_weight">Weight</label>
-                        {{ form.goat_weight }}
-                        <div class="invalid-feedback">
-                            {{ form.goat_weight.errors }}
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="id_vaccinated">Vaccinated</label>
-                        {{ form.vaccinated }}
-                        <div class="invalid-feedback">
-                            {{ form.vaccinated.errors }}
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="id_price">Price</label>
-                        {{ form.price }}
-                        <div class="invalid-feedback">
-                            {{ form.price.errors }}
-                        </div>
-                    </div>
-                    <!-- Add more fields in this column -->
-                </div>
+        
+        <div class="form-container mb-3 col-md-6">
+            <div class="header">
+                <h4>Breed supply Form</h4>
             </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
+            <form method="post" class="breader-trade-form" >
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="submit-btn">Submit</button>
+            </form>
+        </div>
     </div>
-    </div>
-
 {% endblock %}

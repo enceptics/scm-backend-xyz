@@ -368,15 +368,18 @@ from django.contrib.auth.decorators import login_required
 @login_required
 def create_breader_trade(request):
     if request.method == 'POST':
-        form = BreaderTradeForm(request.POST, user=request.user)
+        form = BreaderTradeForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect('success_url')  # Redirect to success URL
+            # Set the logged-in user as the breeder
+            breader_trade = form.save(commit=False)
+            breader_trade.breeder = request.user  # Assign the logged-in user as the breeder
+            breader_trade.save()
+            return redirect('success_url')  # Redirect to a success page after form submission
     else:
-        form = BreaderTradeForm(user=request.user)
+        form = BreaderTradeForm()
     return render(request, 'create_breader_trade.html', {'form': form})
 
-def success_view(request):
+def success_url(request):
     return render(request, 'trade_success.html')
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -401,10 +404,12 @@ def supply_history(request):
     # Pass the paginated supplies to the template
     return render(request, 'supply_history.html', {'supplies': supplies})
 
+@login_required
 def seller_breeder_trade(request):
-    # Retrieve breeder trades for the current seller
+    # Retrieve breeder trades for the current seller's control center
     current_seller = request.user
-    breeder_trades = BreaderTrade.objects.filter(seller=current_seller)
+    control_center = current_seller.controlcenter_set.first()
+    breeder_trades = BreaderTrade.objects.filter(control_center=control_center)
 
     # Paginate the breeder trades
     paginator = Paginator(breeder_trades, 5)  # Show 5 items per page
@@ -420,8 +425,11 @@ def seller_breeder_trade(request):
 
     # Pass the paginated breeder trades to the template
     return render(request, 'seller_supply_history.html', {'breeder_trades': breeder_trades})
-
+    
 # Supply vs demand
+from django.http import JsonResponse
+
+from django.shortcuts import render
 from django.http import JsonResponse
 
 def supply_vs_demand_statistics(request):
@@ -429,18 +437,28 @@ def supply_vs_demand_statistics(request):
     breeder_trades = BreaderTrade.objects.all()
     slaughter_records = SlaughterhouseRecord.objects.all()
 
-    # Perform calculations to determine supply vs demand
-    total_breeder_trades = sum(trade.breeds_supplied for trade in breeder_trades)
-    total_slaughter_records = sum(record.quantity for record in slaughter_records)
+    # Calculate supply data for each breed
+    breed_supply_data = {}
+    for trade in breeder_trades:
+        breed = trade.breed
+        breed_supply_data[breed] = breed_supply_data.get(breed, 0) + trade.breeds_supplied
+
+    # Calculate slaughtered data for each breed
+    breed_slaughter_data = {}
+    for record in slaughter_records:
+        breed = record.breed
+        breed_slaughter_data[breed] = breed_slaughter_data.get(breed, 0) + record.quantity
 
     # Format the data as JSON
     supply_data = {
-        'labels': ['Total Breeder Trades', 'Total Slaughter Records'],
-        'values': [total_breeder_trades, total_slaughter_records],
+        'breeds': list(breed_supply_data.keys()),
+        'supply_values': list(breed_supply_data.values()),
+        'slaughter_values': [breed_slaughter_data.get(breed, 0) for breed in breed_supply_data.keys()]
     }
 
-    # Return the JSON response
-    return JsonResponse({'supply_data': supply_data})
+    # Pass the supply data to the template
+    return render(request, 'seller_dashboard.html', {'supply_data': supply_data})
+
 
 def breed_supply_vs_demand_statistics(request):
     # Query BreaderTrade and SlaughterhouseRecord models to fetch data

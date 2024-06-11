@@ -25,69 +25,189 @@ class SlaughterhouseRecordViewSet(viewsets.ModelViewSet):
     queryset = SlaughterhouseRecord.objects.all().order_by('-updated_at')
     serializer_class = SlaughterhouseRecordSerializer
 
-@csrf_exempt
-def compare_weight_loss(request):
-    if request.method == 'GET':
-        # Retrieve all BreaderTrade records
-        breader_trades = BreaderTrade.objects.all()
+# @csrf_exempt
+# def compare_weight_loss(request):
+#     if request.method == 'GET':
+#         # Retrieve all BreaderTrade records
+#         breader_trades = BreaderTrade.objects.all()
         
-        # Perform comparison logic
-        comparison_results = []
+#         # Perform comparison logic
+#         comparison_results = []
 
-        for trade in breader_trades:
-            breed = trade.breed
-            trade_weight = trade.goat_weight
-            total_cut_weight = 0
+#         for trade in breader_trades:
+#             # Extract relevant trade information
+#             breed = trade.breed
+#             trade_weight = trade.goat_weight
+#             total_cut_weight = 0
             
-            # Calculate the total weight cut for the breed
-            breed_cuts = BreedCut.objects.filter(breed=breed)
-            for cut in breed_cuts:
-                total_cut_weight += cut.quantity * cut.weight
+#             # Calculate the total weight cut for the breed
+#             breed_cuts = BreedCut.objects.filter(breed=breed)
+#             for cut in breed_cuts:
+#                 total_cut_weight += cut.quantity * cut.weight
 
-            # Get the associated control center for the trade
-            control_center = trade.control_center
+#             # Get the associated control center for the trade
+#             control_center = trade.control_center
 
-            # Calculate breeds supplied
-            breeds_supplied = trade.breeds_supplied
+#             # Calculate breeds supplied
+#             breeds_supplied = trade.breeds_supplied
             
-            # Subtract slaughtered quantity from the total breed supply in the control center
-            if control_center:
-                slaughtered_quantity = control_center.slaughterhouserecord_set.filter(breed=breed).aggregate(total_slaughtered=Sum('quantity'))['total_slaughtered']
-                if slaughtered_quantity is not None:
-                    # Ensure breeds_supplied does not become negative
-                    breeds_supplied = max(0, breeds_supplied - slaughtered_quantity)
+#             # Subtract slaughtered quantity from the total breed supply in the control center
+#             if control_center:
+#                 slaughtered_quantity = control_center.slaughterhouserecord_set.filter(breed=breed).aggregate(total_slaughtered=Sum('quantity'))['total_slaughtered']
+#                 if slaughtered_quantity is not None:
+#                     # Ensure breeds_supplied does not become negative
+#                     breeds_supplied = max(0, breeds_supplied - slaughtered_quantity)
             
-            # Calculate the weight loss percentage
-            if trade_weight > 0:  # Check if trade_weight is not 0 to avoid division by zero
-                weight_loss_percentage = ((trade_weight - total_cut_weight) / trade_weight) * 100
-            else:
-                weight_loss_percentage = 0
+#             # Calculate the weight loss percentage
+#             if trade_weight > 0:  # Check if trade_weight is not 0 to avoid division by zero
+#                 weight_loss_percentage = ((trade_weight - total_cut_weight) / trade_weight) * 100
+#             else:
+#                 weight_loss_percentage = 0
 
-            # Classify weight loss
-            if weight_loss_percentage < 5:
-                classification = 'Normal'
-            elif weight_loss_percentage < 10:
-                classification = 'A little more'
-            else:
-                classification = 'Too much'
+#             # Classify weight loss
+#             if weight_loss_percentage < 5:
+#                 classification = 'Normal'
+#             elif weight_loss_percentage < 10:
+#                 classification = 'A little more'
+#             else:
+#                 classification = 'Too much'
 
-            # Create comparison result object
-            comparison_result = {
-                'id': trade.id,
-                'reference': trade.reference,
-                'breed': breed,
-                'trade_weight': trade_weight,
-                'total_cut_weight': total_cut_weight,
-                'breeds_supplied': breeds_supplied,
-                'weight_loss_percentage': weight_loss_percentage,
-                'classification': classification
+#             # Create comparison result object
+#             comparison_result = {
+#                 'id': trade.id,
+#                 'reference': trade.reference,
+#                 'breed': breed,
+#                 'trade_weight': trade_weight,
+#                 'total_cut_weight': total_cut_weight,
+#                 'breeds_supplied': breeds_supplied,
+#                 'weight_loss_percentage': weight_loss_percentage,
+#                 'classification': classification
+#             }
+
+#             comparison_results.append(comparison_result)
+
+#         return render(request, 'inventory_information.html', {'comparison_results': comparison_results})
+#     else:
+#         return JsonResponse({'error': 'Only GET requests are supported for this endpoint'}, status=405)
+
+from django.core.paginator import Paginator
+
+@csrf_exempt
+def inventory_information(request):
+    # Check if the user is a seller or superuser
+    if request.user.role != 'seller' and not request.user.is_superuser:
+        return redirect('unauthorized')
+
+    # Fetch control centers associated with the current seller
+    control_centers = ControlCenter.objects.filter(seller=request.user)
+    
+    # Initialize dictionary to store inventory information
+    inventory_info = {}
+    cumulative_total_remaining = 0
+
+    # Iterate over control centers associated with the seller
+    for control_center in control_centers:
+        breeds_info = {}
+        
+        # Fetch breeds associated with the control center
+        breeds = BreaderTrade.objects.filter(control_center=control_center).values_list('breed', flat=True).distinct().order_by('-created_at')
+        
+        for breed in breeds:
+            # Calculate breed-related metrics
+            total_supplied = BreaderTrade.objects.filter(control_center=control_center, breed=breed).aggregate(total_supplied=Sum('breeds_supplied'))['total_supplied'] or 0
+            total_weight = BreaderTrade.objects.filter(control_center=control_center, breed=breed).aggregate(total_weight=Sum('goat_weight'))['total_weight'] or 0
+            total_slaughtered = SlaughterhouseRecord.objects.filter(control_center=control_center, breed=breed).aggregate(total_slaughtered=Sum('quantity'))['total_slaughtered'] or 0
+            
+            slaughter_records = SlaughterhouseRecord.objects.filter(control_center=control_center, breed=breed)
+            confirmed_records_count = slaughter_records.filter(confirmed_by__isnull=False, last_confirmation_by__isnull=False).count()
+            net_breed_supply = total_supplied - total_slaughtered
+
+            # Add breed information to the dictionary
+            breeds_info[breed] = {
+                'total_supplied': total_supplied,
+                'total_weight': total_weight,
+                'total_slaughtered': total_slaughtered,
+                'total_remaining': max(net_breed_supply, 0)
             }
 
-            comparison_results.append(comparison_result)
+            # Increment cumulative total remaining
+            cumulative_total_remaining += max(net_breed_supply, 0)
 
-        return JsonResponse(comparison_results, safe=False)
-    else:
-        return JsonResponse({'error': 'Only GET requests are supported for this endpoint'}, status=405)
+        # Add control center information to the main dictionary
+        inventory_info[control_center] = breeds_info
+
+    # Retrieve all BreaderTrade records
+    breader_trades = BreaderTrade.objects.all()
+    
+    # Perform comparison logic
+    comparison_results = []
+
+    for trade in breader_trades:
+        # Extract relevant trade information
+        breed = trade.breed
+        trade_weight = trade.goat_weight
+        total_cut_weight = 0
+        
+        # Calculate the total weight cut for the breed
+        breed_cuts = BreedCut.objects.filter(breed=breed)
+        for cut in breed_cuts:
+            total_cut_weight += cut.quantity * cut.weight
+
+        # Get the associated control center for the trade
+        control_center = trade.control_center
+
+        # Calculate breeds supplied
+        breeds_supplied = trade.breeds_supplied
+        
+        # Subtract slaughtered quantity from the total breed supply in the control center
+        if control_center:
+            slaughtered_quantity = control_center.slaughterhouserecord_set.filter(breed=breed).aggregate(total_slaughtered=Sum('quantity'))['total_slaughtered']
+            if slaughtered_quantity is not None:
+                # Ensure breeds_supplied does not become negative
+                breeds_supplied = max(0, breeds_supplied - slaughtered_quantity)
+        
+        # Calculate the weight loss percentage
+        if trade_weight > 0:  # Check if trade_weight is not 0 to avoid division by zero
+            weight_loss_percentage = ((trade_weight - total_cut_weight) / trade_weight) * 100
+        else:
+            weight_loss_percentage = 0
+
+        # Classify weight loss
+        if weight_loss_percentage < 5:
+            classification = 'Normal'
+        elif weight_loss_percentage < 10:
+            classification = 'A little more'
+        else:
+            classification = 'Too much'
+
+        # Create comparison result object
+        comparison_result = {
+            'id': trade.id,
+            'reference': trade.reference,
+            'breed': breed,
+            'trade_weight': trade_weight,
+            'total_cut_weight': total_cut_weight,
+            'breeds_supplied': breeds_supplied,
+            'weight_loss_percentage': weight_loss_percentage,
+            'classification': classification
+        }
+
+        comparison_results.append(comparison_result)
+
+    # Paginate comparison results
+    paginator = Paginator(comparison_results, 3)  # Show 4 comparison results per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'inventory_info': inventory_info,
+        'cumulative_total_remaining': cumulative_total_remaining,
+        'comparison_results': page_obj  # Pass the paginated results to the template
+    }
+
+    return render(request, 'inventory_information.html', context)
+
+
         
 
 class SupplyVsDemandStatisticsViewSet(viewsets.ViewSet):
@@ -116,27 +236,48 @@ class SupplyVsDemandStatisticsViewSet(viewsets.ViewSet):
         except Exception as e:
             return Response({'error': str(e)}, status=500)
 
+from django.shortcuts import render
+from django.db.models import Sum
+from collections import defaultdict
+
 def supply_vs_demand_statistics(request):
     try:
-        # Get total bred quantities per breed for all sellers
-        bred_quantities = BreaderTrade.objects.values('breed').annotate(total_bred=Sum('breeds_supplied'))
+        # Retrieve the logged-in seller
+        seller = request.user
 
-        # No need to calculate slaughtered quantities as per your requirement
+        # Get the control center associated with the seller
+        control_center = seller.controlcenter_set.first()
+
+        # Filter BreaderTrade objects by the control center of the seller
+        bred_quantities = BreaderTrade.objects.filter(control_center=control_center).values('breed').annotate(total_bred=Sum('breeds_supplied'))
+
+        # Aggregate quantities for each breed from BreaderTrade records
+        breed_totals = defaultdict(int)
+        for bred_quantity in bred_quantities:
+            breed = bred_quantity['breed']
+            total_bred = bred_quantity['total_bred']
+            breed_totals[breed] += total_bred
         
+        # Fetch demand data from SlaughterhouseRecord
+        slaughterhouse_records = SlaughterhouseRecord.objects.filter(control_center=control_center)
+        demand_data = defaultdict(int)
+        for record in slaughterhouse_records:
+            breed = record.breed
+            quantity = record.quantity
+            demand_data[breed] += quantity
+
         # Prepare supply vs demand data
         supply_vs_demand_data = [
             {
-                'breed': bred_quantity['breed'],
-                'total_bred': bred_quantity['total_bred'],
-                'total_slaughtered': 0,  # Set slaughtered quantity to 0
+                'breed': breed,
+                'total_bred': breed_totals.get(breed, 0),
+                'total_slaughtered': demand_data.get(breed, 0),
             }
-            for bred_quantity in bred_quantities
+            for breed in set(breed_totals.keys()) | set(demand_data.keys())  # Combine keys from both dictionaries
         ]
 
-        print(supply_vs_demand_data)  # Add this line for debugging
-
         # Render the template with the data
-        return render(request, 'supply_demand_statistics.html', {'supply_vs_demand_data': supply_vs_demand_data})
+        return render(request, 'seller_dashboard.html', {'supply_vs_demand_data': supply_vs_demand_data})
 
     except Exception as e:
         # Handle exceptions appropriately
@@ -150,7 +291,7 @@ from .models import SlaughterhouseRecord
 
 @login_required
 def inventory_records_list(request):
-    allowed_roles = ['seller', 'slaughterhouse_manager']
+    allowed_roles = ['seller', 'slaughterhouse_manager', 'collateral_manager', 'inventory_manager']
 
     if request.user.role not in allowed_roles and not request.user.is_superuser:
         return redirect('unauthorized')
@@ -164,13 +305,13 @@ from django.contrib import messages
 
 @login_required
 def confirm_slaughterhouse_record(request, record_id):
-    allowed_roles = ['seller', 'slaughterhouse_manager']
+    allowed_roles = ['seller', 'inventory_manager', 'collateral_manager']
 
     if request.user.role not in allowed_roles and not request.user.is_superuser:
         return redirect('unauthorized')
-       
+
     # Get the slaughterhouse record
-    record = get_object_or_404(SlaughterhouseRecord, pk=record_id)
+    record = get_object_or_404(SlaughterhouseRecord.objects.order_by('-created_at'), pk=record_id)
 
     # Check if the current user has already confirmed either last_confirmation_by or confirmed_by
     if request.user == record.last_confirmation_by or request.user == record.confirmed_by:
@@ -194,6 +335,7 @@ def confirm_slaughterhouse_record(request, record_id):
     return redirect('inventory_records_list')
 
 
+
 @login_required
 def item_confirmation_success_view(request):
     return render(request, 'item_confirmation_success.html')
@@ -207,6 +349,8 @@ from .forms import FinishedProductForm, SlaughterhouseRecordForm
 from django.contrib import messages
 from custom_registration.models import Seller
 
+from django.contrib.auth.decorators import login_required
+
 @login_required
 def slaughter_house_create(request):
     """View to create a new quotation."""
@@ -214,9 +358,9 @@ def slaughter_house_create(request):
         form = SlaughterhouseRecordForm(request.POST)
         if form.is_valid():
             record = form.save(commit=False)
-            # Retrieve the seller associated with the logged-in user
-            seller = Seller.objects.get(seller=request.user)
-            record.seller = seller
+            # Retrieve the user associated with the logged-in user
+            user = request.user
+            record.user = user
             record.save()
             # Redirect to the success template upon successful creation
             return redirect('record_creation_success')
@@ -224,11 +368,12 @@ def slaughter_house_create(request):
             # If the form is not valid, display error messages
             messages.error(request, 'Failed to create record. Please check the form.')
     else:
-        # Initialize the form with the seller field set to the seller associated with the logged-in user
-        seller = Seller.objects.get(seller=request.user)
-        form = SlaughterhouseRecordForm(initial={'seller': seller})
+        # Initialize the form with the user field set to the user associated with the logged-in user
+        user = request.user
+        form = SlaughterhouseRecordForm(initial={'user': user})
     
     return render(request, 'slaughterhouse.html', {'form': form})
+
 
 def record_creation_success(request):
     return render(request, 'slaughterhouse_record_created_successfully.html')
@@ -286,38 +431,52 @@ from django.shortcuts import render
 
 from django.shortcuts import render
 from inventory_management.models import InventoryBreedSales
+from inventory_management.models import BreedCut
+
+from decimal import Decimal
+
+from django.http import JsonResponse
+
+from django.shortcuts import render
+from decimal import Decimal
+from django.core.paginator import Paginator
 
 @login_required
 def weight_comparison_view(request):
     comparison_results = []
 
     breader_trades = BreaderTrade.objects.all()
-    inventory_sales = InventoryBreedSales.objects.all()
 
     for trade in breader_trades:
         reference = trade.reference
         breed = trade.breed
         trade_weight = trade.goat_weight
-        total_cut_weight = 0  # Calculate total cut weight for this trade (You need to implement this logic)
-        weight_loss_percentage = 0  # Calculate weight loss percentage (You need to implement this logic)
-        classification = "Normal"  # Determine classification based on weight loss percentage (You need to implement this logic)
+        total_cut_weight = Decimal(0)  # Initialize total cut weight
 
-        comparison_results.append((reference, breed, trade_weight, total_cut_weight, weight_loss_percentage, classification))
+        breed_cuts = InventoryBreedSales.objects.filter(reference=reference, breed=breed)
+        for breed_cut in breed_cuts:
+            # Convert breed_cut.weight and breed_cut.quantity to Decimal
+            weight = Decimal(breed_cut.weight)
+            quantity = Decimal(breed_cut.quantity)
+            total_cut_weight += weight * quantity
 
-    for sale in inventory_sales:
-        reference = sale.reference
-        breed = sale.breed
-        sale_weight = sale.weight
-        quantity = sale.quantity
-        weight_loss_percentage = 0  # Calculate weight loss percentage (You need to implement this logic)
-        classification = "Normal"  # Determine classification based on weight loss percentage (You need to implement this logic)
+        weight_loss_percentage = 0
+        if trade_weight:
+            weight_loss_percentage = ((total_cut_weight - trade_weight) / trade_weight) * 100
 
-        comparison_results.append((reference, breed, sale_weight, quantity, weight_loss_percentage, classification))
+        classification = "Normal"
+        if weight_loss_percentage > 5:
+            classification = "Above Average"
+        elif weight_loss_percentage < -5:
+            classification = "Below Average"
 
-    context = {
-        'comparison_results': comparison_results,
-        # Other context variables as needed
-    }
+        comparison_results.append({
+            'reference': reference,
+            'breed': breed,
+            'trade_weight': trade_weight,
+            'total_cut_weight': total_cut_weight,
+            'weight_loss_percentage': weight_loss_percentage,
+            'classification': classification
+        })
 
-    return render(request, 'weight_comparison.html', context)
-
+    return render(request, 'inventory_information.html', {'comparison_results': comparison_results})

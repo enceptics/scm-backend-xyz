@@ -49,7 +49,7 @@ from invoice_generator.views import (
     DocumentToSellerViewSet,
     BuyerAllViewSet
 )
-from slaughter_house.views import SupplyVsDemandStatisticsViewSet, compare_weight_loss
+from slaughter_house.views import SupplyVsDemandStatisticsViewSet
 from logistics.views import LogisticsStatusViewSet, OrderViewSet, ShipmentProgressViewSet, ArrivedOrderViewSet, LogisticsStatusAllViewSet, PackageInfoViewset, CollateralManagerViewSet, ControlCenterViewSet
 
 from dj_rest_auth.registration.views import (
@@ -259,7 +259,7 @@ urlpatterns = [
     # path('api/total_breeds_supplied/', total_breeds_supplied, name='total_breeds_supplied'),
     
     # path('api/supply-vs-demand/', supply_vs_demand_statistics, name='supply_vs_demand_statistics'),
-    path('api/compare-weight-loss-after-slaughter/', compare_weight_loss, name='compare-weight-loss-after-slaughter'),
+    # path('api/compare-weight-loss-after-slaughter/', compare_weight_loss, name='compare-weight-loss-after-slaughter'),
 
     # Equity bank Payments
     # path('make_payment/<int:breeder_trade_id>/', make_payment, name='make_payment'),
@@ -313,7 +313,7 @@ urlpatterns = [
     path('password_reset/', CustomPasswordResetView.as_view(), name='password_reset'),
     path('reset/<uidb64>/<token>/', CustomPasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('reset/complete/', CustomPasswordResetCompleteView.as_view(), name='password_reset_complete'),
-    path('password_reset/done/', CustomPasswordResetDoneView.as_view(), name='password_reset_done'),  # Add this line
+    path('password_reset/done/', CustomPasswordResetDoneView.as_view(), name='password_reset_done'), 
     path('logout/', views.logout_view, name='custom_logout'),
 
     path('register/buyer/', views.register_buyer, name='buyer_register'),
@@ -321,10 +321,15 @@ urlpatterns = [
     path('register/seller/', views.register_seller, name='seller_register'),
     path('register/bank/', views.register_bank, name='bank_register'),
     path('register/collateral-manager/', views.register_collateral_manager, name='collateral_manager_register'),
+    path('register/inventory-manager/', views.register_inventory_manager, name='inventory_manager_register'),
+    path('register/success', views.register_success, name='register_success'),
     path('unauthorized/', views.unauthorized, name='unauthorized'),
+    path('set-password/<uidb64>/<token>/', views.send_password_reset_email, name='set_password'),
 
     # dashboards
-    path('dashboard/seller/', views.seller_dashboard, name='seller_dashboard'),
+    path('dashboard/superuser/', views.superuser, name='superuser'),
+
+    path('dashboard/sellers/', slaugher_house_views.supply_vs_demand_statistics, name='supply_vs_demand_statistics'),
     path('dashboard/breeder/', views.breeder_dashboard, name='breeder_dashboard'),
     path('dashboard/buyer/', views.buyer_dashboard, name='buyer_dashboard'),
     path('dashboard/stock-shift/', views.stock_shift_dashboard, name='stock_shift_dashboard'),
@@ -332,10 +337,11 @@ urlpatterns = [
     path('dashboard/control-centers/', views.control_centers_dashboard, name='control_centers_dashboard'),
     path('dashboard/collateral-manager/<int:collateral_manager_id>/', views.collateral_manager_dashboard, name='collateral_manager_dashboard'),
     path('dashboard/export-management/', views.export_management_dashboard, name='export_management'),
+    path('dashboard/inventory_manager/', views.stock_shift_dashboard, name='stock_shift_dashboard'),
 
     # Transaction urls
     path('trade/create_breader_trade/', trade_views.create_breader_trade, name='create_breader_trade'),
-    path('trade/success/', trade_views.success_view, name='success_url'),
+    path('trade/success/', trade_views.success_url, name='success_url'),
     path('trade/supply-history/', trade_views.supply_history, name='supply_history'),
     path('trade/seller_supply-history/', trade_views.seller_breeder_trade, name='seller_supply_history'),
 
@@ -348,7 +354,7 @@ urlpatterns = [
     path('buyer/quotations/reject/<int:quotation_id>/', quotation_views.reject_quotation, name='reject_quotation'),
     path('buyer/quotations/success', quotation_views.quotation_created, name='quotation_created'),
     path('buyer/quotations/quotation-confirmed/', quotation_views.quotation_confirmed, name='quotation_confirmed'),
-    path('buyer/quotations/quotation-rejected/', quotation_views.reject_quotation, name='reject_quotation'),
+    path('buyer/quotations/quotation-rejected/', quotation_views.quotation_reject, name='quotation_reject'),
 
     # LC
     path('all_lcs/', lc_views.all_letter_of_credit_list, name='all_letter_of_credit_list'),
@@ -360,16 +366,20 @@ urlpatterns = [
     path('update_letter_of_credit_status/<int:pk>/', lc_views.update_letter_of_credit_status, name='update_letter_of_credit_status'),
 
     # Inventory
-    path('inventory/control-center/', inventory_views.inventory_information, name='inventory_information'),
+    path('inventory/control-center/', slaugher_house_views.inventory_information, name='inventory_information'),
     path('bank/inventory/control-center/<int:center_id>', inventory_views.bank_inventory_information, name='bank_inventory_information'),
-    path('supply_demand/', slaugher_house_views.supply_vs_demand_statistics, name='supply_demand_statistics'),
+    path('dashboard/seller/', slaugher_house_views.supply_vs_demand_statistics, name='supply_demand_statistics'),
 
     # Sellers, buyers, cmanagers
     path('list/sellers/', custom_reg_views.sellers_list, name='sellers_list'),
     path('list/buyers/', custom_reg_views.buyers_list, name='buyers_list'),
+    path('list/breeders/', custom_reg_views.breeders_list, name='breeders_list'),
+
     path('list/collateral-managers/', custom_reg_views.collateral_managers_list, name='collateral_managers_list'),
 
     path('details/seller/<int:seller_id>/', views.seller_details, name='seller_details'),
+    path('details/breeder/<int:breeder_id>/', views.breeders_details, name='breeder_details'),
+
     path('details/collateral_manager/<int:collateral_manager_id>/', views.collateral_manager_details, name='collateral_manager_details'),
     path('list/buyers/<int:buyer_id>/', custom_reg_views.buyer_details, name='buyer_details'),
 
@@ -409,6 +419,10 @@ urlpatterns = [
     # User profile
     path('view-profile/', custom_reg_views.view_profile, name='view_profile'),
     path('edit-profile/<int:user_id>/', custom_reg_views.edit_profile_picture, name='edit_profile_picture'),
+
+    # compare weight
+    # path('weight-comparison/', slaugher_house_views.compare_weight_loss, name='weight_comparison_view'),
+    # path('test-compare-weight-loss/', slaugher_house_views.compare_weight_loss, name='compare_weight_loss'),
 
 ]
 

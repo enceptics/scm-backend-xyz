@@ -39,6 +39,7 @@ from django.urls import reverse_lazy
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from transaction.models import Breader
+from .models import InventoryManager
 
 # Templates
 from django.shortcuts import render
@@ -566,7 +567,61 @@ def home(request):
     return render(request, 'home.html', context)
 
 from django.contrib.auth.forms import UserCreationForm
-from .forms import BuyerRegistrationForm, BreederRegistrationForm, SellerRegistrationForm, BankRegistrationForm, CollateralManagerRegistrationForm
+from .forms import BuyerRegistrationForm, BreederRegistrationForm, SellerRegistrationForm, BankRegistrationForm, CollateralManagerRegistrationForm, InventoryManagerRegistrationForm
+from django.core.mail import send_mail
+from django.shortcuts import redirect, render
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.contrib.auth.forms import PasswordResetForm
+from django.contrib.auth import get_user_model
+
+
+# def send_password_reset_email(user):
+#     UserModel = get_user_model()
+#     uid = urlsafe_base64_encode(force_bytes(user.pk))
+#     token = default_token_generator.make_token(user)
+#     reset_url = f"{settings.BASE_URL}/set-password/{uid}/{token}/"  # Assuming you have a set-password endpoint
+
+#     subject = 'Set Your Password'
+#     message = f'Please click the following link to set your password: {reset_url}'
+#     sender_email = settings.DEFAULT_FROM_EMAIL
+#     receiver_email = user.email
+
+#     # Send email
+#     send_mail(subject, message, sender_email, [receiver_email])
+
+# Repeat the same pattern for other registration views (register_breeder, register_seller, register_bank, register_collateral_manager)
+
+# from transaction.models import Breeder
+
+
+UserModel = get_user_model()
+
+from django.utils.encoding import force_bytes
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.core.mail import send_mail
+from django.conf import settings
+
+def send_password_reset_email(uidb64, token, email):
+    # Encode the user ID to bytes
+    uid = force_bytes(uidb64)
+
+    # Construct the reset password URL
+    reset_url = f"{settings.BASE_URL}{reverse('password_reset_confirm', kwargs={'uidb64': uidb64, 'token': token})}"
+
+    # Construct the email message
+    subject = 'Set Your Password'
+    message = f'Please click the following link to set your password: {reset_url}'
+    sender_email = settings.DEFAULT_FROM_EMAIL
+
+    # Send the email
+    send_mail(subject, message, sender_email, [email])
+
 def register_buyer(request):
     if request.method == 'POST':
         form = BuyerRegistrationForm(request.POST)
@@ -574,27 +629,28 @@ def register_buyer(request):
             user = form.save(commit=False)
             user.role = CustomUser.BUYER
             user.save()
-            buyer = Buyer.objects.create(buyer=user)  # Assign the user to the seller_id field
-            return redirect('login')
+            # Generate uidb64 and token for password reset email
+            uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+
+            # Send password reset email
+           # Generate uidb64 and token for password reset email
+            uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+
+            # Send password reset email
+            send_password_reset_email(uidb64, token, user.email)
+
+
+            buyer = Buyer.objects.create(buyer=user)  # Assign the user to the buyer field
+
+            # Send password reset email
+            send_password_reset_email(uidb64, token, user.email)
+
+            return redirect('register_success')
     else:
         form = BuyerRegistrationForm()
     return render(request, 'auth/buyer_registration.html', {'form': form})
-
-# from transaction.models import Breeder
-
-def register_breeder(request):
-    if request.method == 'POST':
-        form = BreederRegistrationForm(request.POST)
-        if form.is_valid():
-            user = form.save(commit=False)
-            user.role = CustomUser.BREEDER
-            user.save()
-            # Create a new Seller instance and associate the user with it
-            # breeder = Breeder.objects.create(breeder=user)  # Assign the user to the seller_id field
-            return redirect('login')
-    else:
-        form = BreederRegistrationForm()
-    return render(request, 'auth/breeder_registration.html', {'form': form})
 
 def register_seller(request):
     if request.method == 'POST':
@@ -604,12 +660,41 @@ def register_seller(request):
             user.role = CustomUser.SELLER
             user.save()
 
+            # Generate uidb64 and token for password reset email
+            uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+
+            # Send password reset email
+            send_password_reset_email(uidb64, token, user.email)
+
             # Create a new Seller instance and associate the user with it
             seller = Seller.objects.create(seller=user)  # Assign the user to the seller_id field
-            return redirect('login')
+            return redirect('register_success')
     else:
         form = SellerRegistrationForm()
     return render(request, 'auth/seller_registration.html', {'form': form})
+
+def register_breeder(request):
+    if request.method == 'POST':
+        form = BreederRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.role = CustomUser.BREEDER
+            user.save()
+
+            # Generate uidb64 and token for password reset email
+            uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+
+            # Send password reset email
+            send_password_reset_email(uidb64, token, user.email)
+
+            # Create a new Seller instance and associate the user with it
+            # breeder = Breeder.objects.create(breeder=user)  # Assign the user to the seller_id field
+            return redirect('register_success')
+    else:
+        form = BreederRegistrationForm()
+    return render(request, 'auth/breeder_registration.html', {'form': form})
 
 def register_bank(request):
     if request.method == 'POST':
@@ -618,7 +703,15 @@ def register_bank(request):
             user = form.save(commit=False)
             user.role = CustomUser.BANK
             user.save()
-            return redirect('login')
+
+# Generate uidb64 and token for password reset email
+            uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+
+            # Send password reset email
+            send_password_reset_email(uidb64, token, user.email)
+
+            return redirect('register_success')
     else:
         form = BankRegistrationForm()
     return render(request, 'auth/bank_registration.html', {'form': form})
@@ -630,42 +723,96 @@ def register_collateral_manager(request):
             user = form.save(commit=False)
             user.role = CustomUser.COLLATERAL_MANAGER
             user.save()
-                        # Create a new Seller instance and associate the user with it
             name = CollateralManager.objects.create(name=user)  # Assign the user to the seller_id field
-            return redirect('login')
+
+# Generate uidb64 and token for password reset email
+            uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+
+            # Send password reset email
+            send_password_reset_email(uidb64, token, user.email)
+
+            return redirect('register_success')
     else:
         form = CollateralManagerRegistrationForm()
     return render(request, 'auth/collateral_manager_registration.html', {'form': form})
 
+def register_inventory_manager(request):
+    if request.method == 'POST':
+        form = InventoryManagerRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.role = CustomUser.INVENTORY_MANAGER
+            user.save()
+            name = InventoryManager.objects.create(name=user)  # Assign the user to the seller_id field
+
+# Generate uidb64 and token for password reset email
+            uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+
+            # Send password reset email
+            send_password_reset_email(uidb64, token, user.email)
+
+            return redirect('register_success')
+    else:
+        form = InventoryManagerRegistrationForm()
+    return render(request, 'auth/inventory_manager_registration.html', {'form': form})
+
+def register_success(request):
+    """View to redirect to registration success page."""
+    return render(request, 'auth/register_success.html')
+
+
     # Registration
+from django.core.mail import send_mail
+from django.contrib.auth.models import User
+from django.shortcuts import render, redirect
+import random
+
+def generate_verification_code():
+    return str(random.randint(100000, 999999))
+
+def send_verification_email(email, code):
+    send_mail(
+        'Verification Code',
+        f'Your verification code is: {code}',
+        [email],
+        fail_silently=False,
+    )
+
+from django.core.mail import send_mail
+from django.conf import settings
+from django.shortcuts import render, redirect
+
 def register_user(request):
     if request.method == 'POST':
         form = CustomUserRegistrationForm(request.POST)
         if form.is_valid():
             user_type = form.cleaned_data.get('user_type')
+            user_email = form.cleaned_data.get('email')
             # Create user instance based on user type
             if user_type == 'seller':
-                user = Seller.objects.create_user(**form.cleaned_data)
-                user.is_seller = True  # Assign seller role
+                user = Seller.objects.create_user(email=user_email, **form.cleaned_data)
+                user.is_seller = True
             elif user_type == 'breeder':
-                user = Breeder.objects.create_user(**form.cleaned_data)
-                user.is_breeder = True  # Assign breeder role
+                user = Breeder.objects.create_user(email=user_email, **form.cleaned_data)
+                user.is_breeder = True
             elif user_type == 'buyer':
-                user = Buyer.objects.create_user(**form.cleaned_data)
-                user.is_buyer = True  # Assign buyer role
-            # Add more user types as needed
+                user = Buyer.objects.create_user(email=user_email, **form.cleaned_data)
+                user.is_buyer = True
+            
+            # Send email with unique link to set password
+            subject = 'Set Your Password'
+            message = f'Please click the following link to set your password: {settings.BASE_URL}/set-password/{user_email}'
+            sender_email = settings.DEFAULT_FROM_EMAIL
+            receiver_email = user_email
 
-            user.save()  # Save user with assigned role
+            # Send email
+            send_mail(subject, message, sender_email, [receiver_email])
 
-            # Redirect to respective dashboard
-            if user:
-                if user_type == 'seller':
-                    return redirect('/seller_dashboard/')  # Replace with seller dashboard URL
-                elif user_type == 'breeder':
-                    return redirect('/breeder_dashboard/')  # Replace with breeder dashboard URL
-                elif user_type == 'buyer':
-                    return redirect('/buyer_dashboard/')  # Replace with buyer dashboard URL
-                # Add more redirects for other user types
+            # Redirect to respective dashboard after registration
+            return redirect('superuser')  # Replace 'superuser' with actual dashboard URL
+
     else:
         form = CustomUserRegistrationForm()
 
@@ -695,9 +842,9 @@ def login_view(request):
                 elif user.role == CustomUser.WAREHOUSE_PERSONNEL:
                     return redirect('/warehouse_personnel_dashboard/')  # Redirect warehouse personnel to warehouse personnel dashboard
                 elif user.role == CustomUser.INVENTORY_MANAGER:
-                    return redirect('/inventory_manager_dashboard/')  # Redirect inventory managers to inventory manager dashboard
+                    return redirect('/dashboard/inventory_manager/')  # Redirect inventory managers to inventory manager dashboard
                 elif user.role == CustomUser.SLAUGHTERHOUSE_MANAGER:
-                    return redirect('/slaughterhouse_manager_dashboard/')  # Redirect slaughterhouse managers to slaughterhouse manager dashboard
+                    return redirect('/dashboard/slaughterhouse_manager/')  # Redirect slaughterhouse managers to slaughterhouse manager dashboard
                 elif user.role == CustomUser.COLLATERAL_MANAGER:
                     try:
                         collateral_manager = CollateralManager.objects.get(name=user)
@@ -709,8 +856,9 @@ def login_view(request):
                     # Handle other roles or scenarios
                     return redirect('/')  # Redirect to a generic dashboard
             else:
-                # Return an invalid login message
-                messages.error(request, 'Invalid username or password.')
+                # Add a non-field error to the form indicating invalid username or password
+                form.add_error(None, 'Invalid username or password.')
+                return render(request, 'auth/login.html', {'form': form})
     else:
         form = CustomLoginForm()  # If it's a GET request, initialize an empty form
 
@@ -721,10 +869,20 @@ def logout_view(request):
     # Redirect to a specific page after logout, if needed
     return redirect('home')  # Replace 'home' with the name of your homepage URL pattern
 
+def superuser(request):
+    if  not request.user.is_superuser:
+        return redirect('unauthorized')
+    return render(request, 'superuser.html')
+
 def seller_dashboard(request):
     if request.user.role != 'seller' and not request.user.is_superuser:
         return redirect('unauthorized')
     return render(request, 'seller_dashboard.html')
+
+def inventory_manager_dashboard(request):
+    # if request.user.role != 'inventory_manager' and not request.user.is_superuser:
+    #     return redirect('unauthorized')
+    return render(request, 'stock_shift.html')
 
 def buyer_dashboard(request):
     if control_centers_dashboard.user.role != 'buyer' and not request.user.is_superuser:
@@ -768,6 +926,15 @@ def sellers_list(request):
     sellers = Seller.objects.all().order_by('-created_at')
     num_sellers = sellers.count()  # Calculate the number of sellers
     return render(request, 'sellers_list.html', {'sellers': sellers, 'num_sellers': num_sellers})
+
+def breeders_list(request):
+    breeders = Breeder.objects.all().order_by('-created_at')
+    num_breeders = breeders.count()  # Calculate the number of sellers
+    return render(request, 'breeders_list.html', {'breeders': sellers, 'num_breeders': num_breeders})
+
+def breeders_details(request, seller_id):
+    breeder = get_object_or_404(Breeder, id=breeder_id)
+    return render(request, 'breders_profile.html', {'breeder': breeder})
 
 def buyers_list(request):
     buyers = Buyer.objects.all()
@@ -842,10 +1009,10 @@ def assign_collateral_manager_success(request):
     if request.method == 'POST':
         center_id = request.POST.get('center_id')
         manager_id = request.POST.get('collateral_manager')
-        
+        reset
         center = get_object_or_404(ControlCenter, id=center_id)
         collateral_manager = get_object_or_404(CollateralManager, id=manager_id)
-        
+        reset
         center.assigned_collateral_agent = collateral_manager
         center.save()
         

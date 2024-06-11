@@ -23,6 +23,7 @@ class BreedCut(models.Model):
     sale_type = models.CharField(max_length=255, blank=True, null=True)
     quantity = models.PositiveIntegerField()
     weight = models.CharField(max_length=10, null=True, blank=True)  
+    reference = models.ForeignKey(BreaderTrade, on_delete=models.CASCADE, null=True, blank=True)
     quantity_left = models.PositiveIntegerField(default=0, editable=False)
     sale_date = models.DateField(auto_now_add=True)
 

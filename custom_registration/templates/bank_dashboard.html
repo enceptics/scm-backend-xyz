@@ -48,94 +48,80 @@
 
   <div class="row">
 
-    <div class="col-md-4">
+    <div class="col-md-3">
       <div class="shadow p-1 mb-4 bg-white rounded">
           <a style="text-decoration: none;" href="{% url 'sellers_list'%}">
               <div class="card-body">
                   <p style="color:#666666;"><i class="fas fa-user" style="font-size: 30px; color: #666666;"></i> Sellers</p>
-                  <p style="color:#666666; font-size: 20px; font-weight: bold;">699</p> <!-- Fetch seller count dynamically -->
+                  <p style="color:#666666; font-size: 20px; font-weight: bold;">{{seller_count}}</p> <!-- Fetch seller count dynamically -->
                 </div>
           </a>
       </div>
   </div>
+
+  <div class="col-md-3">
+    <div class="shadow p-1 mb-4 bg-white rounded">
+        <a style="text-decoration: none;" href="{% url 'breeders_list'%}">
+            <div class="card-body">
+                <p style="color:#666666;"><i class="fas fa-user" style="font-size: 30px; color: #666666;"></i> Breeders</p>
+                <p style="color:#666666; font-size: 20px; font-weight: bold;">{{seller_count}}</p> <!-- Fetch seller count dynamically -->
+              </div>
+        </a>
+    </div>
+</div>
   
-    <div class="col-md-4">
+    <div class="col-md-3">
       <div class="shadow shadow-white p-1 bg-white rounded">
         <a style="text-decoration: none;" href="{% url 'collateral_managers_list'%}">
           <div class="card-body">
             <p style="color:#666666;"><i class="fas fa-user-shield" style="font-size: 30px; color: #666666;"></i>&nbsp; Collateral Managers</p>
-            <p style="color:#666666; font-size: 20px; font-weight: bold;">89880</p> <!-- Fetch collateral manager count dynamically -->
+            <p style="color:#666666; font-size: 20px; font-weight: bold;">{{seller_count}}</p> <!-- Fetch collateral manager count dynamically -->
           </div>
         </a>
       </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-3">
       <div class="shadow p-1  bg-white rounded">
         <a style="text-decoration: none;" href="{% url 'buyers_list'%}">
           <div class="card-body">
             <p style="color:#666666;"><i class="fas fa-shopping-bag" style="font-size: 30px; color: #666666;"></i> Buyers</p>
-            <p style="color:#666666; font-size: 20px; font-weight: bold;">7889</p> <!-- Fetch buyer count dynamically -->
+            <p style="color:#666666; font-size: 20px; font-weight: bold;">{{seller_count}}</p> <!-- Fetch buyer count dynamically -->
           </div>
         </a>
       </div>
     </div>
   </div>
 
-    <div class="row">
-      <div class="col-md-5">
-        <div class="shadow p-1 mb-5 bg-white rounded">
-          <div class="card-body">
-            <h5 class="card-title" style="color: #999999;">Transaction Overview</h5>
-            <!-- Replace ReactApexChart with your chart library or HTML/CSS equivalent -->
-            <div class="chart-placeholder" style="height: 350px;">
-              <!-- Insert your chart here -->
+      <div class="row">
+        <div class="col-md-8">
+          <div class="shadow p-1 mb-5 bg-white rounded">
+            <div class="card-body ">
+              <h5 class="card-title" style="color: #999999;">Transaction Overview</h5>
+              <canvas id="transactionOverviewChart" style="height: 350px;"></canvas>
+            </div>
+          </div>
+        </div>
+      
+        <div class="col-md-4"> <!-- Adjusted column width from col to col-md-4 -->
+          <div class="shadow p-1 mb-5 bg-white rounded">
+            <div class="card-body ">
+              <h5 class="card-title" style="color: #999999;">Today</h5>
+              <canvas id="todayChart" style="height: 300px;"></canvas> <!-- Reduced chart height -->
             </div>
           </div>
         </div>
       </div>
-  
-      <div class="col">
-        <div class="shadow p-1 mb-5 bg-white rounded">
-          <div class="card-body ">
-            <h5 class="card-title" style="color: #999999;">Today</h5>
-            <!-- Replace ReactApexChart with your chart library or HTML/CSS equivalent -->
-            <div class="chart-placeholder" style="height: 350px;">
-              <!-- Insert your chart here -->
+      <div class="row">
+        <div class="col-md-12">
+          <div class="shadow p-1 mb-5 bg-white rounded">
+            <div class="card-body">
+              <h5 class="card-title" style="color: #999999;">Last month</h5>
+              <canvas id="lastMonthChart" style="height: 350px;"></canvas>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  
-    <div class="row">
-      <div class="col">
-        <div class="shadow p-1 mb-5 bg-white rounded">
-          <div class="card-body">
-            <h5 class="card-title" style="color: #999999;">Last month</h5>
-            <!-- Replace ReactApexChart with your chart library or HTML/CSS equivalent -->
-            <div class="chart-placeholder" style="height: 350px;">
-              <!-- Insert your chart here -->
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  
-  <div>
-    <hr>
-   
-    <nav aria-label="Page navigation" class="mt-3">
-      <ul class="pagination justify-content-center">
-        <!-- Use Django template syntax to render pagination -->
-        {% for page in pages %}
-        <li class="page-item {% if currentPage == page %}active{% endif %}">
-          <button class="page-link" >{{ page }}</button>
-        </li>
-        {% endfor %}
-      </ul>
-    </nav>
+      
   </div>
 
 
@@ -143,12 +129,71 @@
     <script src="{% static 'js/bootstrap.min.js' %}"></script>
     <!-- Add other JS imports as needed -->
     <!-- Add your custom JavaScript code here -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script>
-        // Your custom JavaScript code here
-        function handleTabClick(tabName) {
-            // Implement tab click handling
-            // You can use AJAX to load different content based on the clicked tab
+      // Dummy data for charts
+      const transactionOverviewData = {
+        labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+        datasets: [{
+          label: 'Transaction Overview',
+          data: [65, 59, 80, 81, 56, 55, 40],
+          fill: false,
+          borderColor: 'rgb(75, 192, 192)',
+          tension: 0.1
+        }]
+      };
+      
+      // Dummy data for charts
+      const todayData = {
+        // labels: ['Morning', 'Afternoon', 'Evening'],
+        datasets: [{
+          label: 'Products',
+          data: [20, 35, 45],
+          backgroundColor: ['rgb(255, 99, 132)', 'rgb(54, 162, 235)', 'rgb(255, 205, 86)'],
+          hoverOffset: 8,
+          weight: 2 // Adjust the weight to make the doughnut thinner
+        }]
+      };
+      
+      // Dummy data for charts
+      const lastMonthData = {
+        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+        datasets: [{
+          label: 'Last month',
+          data: [120, 150, 180, 200],
+          backgroundColor: 'rgba(255, 99, 132, 0.2)',
+          borderColor: 'rgb(255, 99, 132)',
+          borderWidth: 1
+        }]
+      };
+      
+      // Create charts
+      const transactionOverviewChart = new Chart(document.getElementById('transactionOverviewChart'), {
+        type: 'line',
+        data: transactionOverviewData
+      });
+      
+      const todayChart = new Chart(document.getElementById('todayChart'), {
+        type: 'doughnut',
+        data: todayData,
+        options: {
+          plugins: {
+            legend: {
+              display: false // Hide the legend
+            },
+            tooltip: {
+              enabled: false // Disable tooltips
+            }
+          }
         }
-    </script>
+      });
+      
+      const lastMonthChart = new Chart(document.getElementById('lastMonthChart'), {
+        type: 'bar',
+        data: lastMonthData
+      });
+      </script>
+            
 {% endblock %}
 

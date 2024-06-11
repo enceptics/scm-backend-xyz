@@ -30,7 +30,6 @@ class SlaughterhouseRecord(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='confirmed_records', null=True, blank=True)
     seller = models.ForeignKey(Seller, on_delete=models.CASCADE, null=True, blank=True)
 
-
     def __str__(self):
         return f"Slaughterhouse Record - Date: {self.slaughter_date}, Quantity: {self.quantity}"
 
@@ -45,6 +44,15 @@ class SlaughterhouseRecord(models.Model):
                 # Ensure net breed supply doesn't become negative
                 self.control_center.net_breed_supply = max(net_breed_supply, 0)
                 self.control_center.save()
+
+    @classmethod
+    def get_slaughter_data(cls):
+        slaughter_data = {}
+        breeds = cls.objects.values_list('breed', flat=True).distinct()
+        for breed in breeds:
+            total_slaughtered = cls.objects.filter(breed=breed).aggregate(Sum('quantity'))['quantity__sum']
+            slaughter_data[breed] = total_slaughtered or 0
+        return slaughter_data
 
 class Confirmation(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)

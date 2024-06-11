@@ -46,15 +46,18 @@
         <div class="d-flex">
             <div class="col-auto  mt-" style="position: relative;">
                 <a href="{% url 'breeder_register' %}" style="color: #d9d9d9; text-decoration: none;">
-
                 <button class="btn btn-sm bg-light" style="margin-left: 5px;"> <i class='fas fa-user-plus'></i> Register Breeder</button>
                 </a>
             </div>
             
             <div class="col-auto  mt-" style="position: relative;">
                 <a  href="{% url 'buyer_register' %}" style="color: #d9d9d9; text-decoration: none;">
-
                 <button class="btn btn-sm bg-light" style="margin-left: 5px;"> <i class='fas fa-user-plus'></i> Register Buyer</button>
+                </a>
+            </div>
+            <div class="col-auto  mt-" style="position: relative;">
+                <a  href="{% url 'inventory_manager_register' %}" style="color: #d9d9d9; text-decoration: none;">
+                <button class="btn btn-sm bg-light" style="margin-left: 5px;"> <i class='fas fa-user-plus'></i> Inventory manager</button>
                 </a>
             </div>
         </div>
@@ -153,132 +156,110 @@
     </div>
 </div>
 
-<!-- Content Row -->
-<div class="row">
 
-    <!-- Area Chart -->
-   <!-- Content Row -->
 <div class="row">
-    <!-- Supply vs Demand Statistics Chart -->
-    <div class="col-xl-8 col-lg-7">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-primary">Supply vs Demand Statistics</h6>
-            </div>
-            <div class="card-body">
-                <canvas id="supplyDemandChart"></canvas>
-<canvas id="myPieChart"></canvas>
-
+        <!-- Supply vs Demand Statistics Chart -->
+        <div class="col-md-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Supply vs Demand Statistics</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="supplyDemandChart" style="height: 300px;"></canvas>
+                </div>
             </div>
         </div>
-    </div>
 
     <!-- Products available by category Chart -->
-    <div class="col-xl-4 col-lg-5">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-primary">Products available by category</h6>
-            </div>
-            <div class="card-body">
-                <canvas id="myPieChart"></canvas>
-                    
-            </div>
+<!-- Products available by category Chart -->
+<div class="col-md-5">
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Products available by name</h6>
+        </div>
+        <div class="card-body">
+            <ul class="list-group">
+                {% for breed_data in supply_vs_demand_data %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ breed_data.breed }}
+                        <span class="badge badge-primary badge-pill">{{ breed_data.total_bred }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
         </div>
     </div>
 </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var ctx = document.getElementById('supplyDemandChart').getContext('2d');
+        var supplyVsDemandData = {{ supply_vs_demand_data|safe }};
+
+        var breeds = supplyVsDemandData.map(function (item) {
+            return item.breed;
+        });
+
+        var supplyData = supplyVsDemandData.map(function (item) {
+            return item.total_bred;
+        });
+
+        var demandData = supplyVsDemandData.map(function (item) {
+            return item.total_slaughtered;
+        });
+
+        var chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: breeds,
+                datasets: [{
+                    label: 'Supply',
+                    backgroundColor: 'rgba(0, 27, 66, 0.7)',
+                    borderColor: 'rgba(0, 27, 66, 1)',
+                    borderWidth: 1,
+                    data: supplyData
+                }, {
+                    label: 'Demand',
+                    backgroundColor: 'rgba(0, 255, 0, 0.5)',
+                    borderColor: 'green',
+                    borderWidth: 1,
+                    data: demandData
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        labels: {
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        },
+                        ticks: {
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
 {% endblock content %}
-
-<!-- Specific Page JS goes HERE  -->
-{% block javascripts %}
-<script src="{% static 'static/js/chart.js' %}"></script>
-
-<script>
-    // JavaScript code for Supply vs Demand Statistics chart
-document.addEventListener("DOMContentLoaded", function() {
-    var supplyData = JSON.parse('{{ supply_data|safe }}'); // Parse supply data from backend
-    
-    var ctx = document.getElementById('supplyDemandChart').getContext('2d'); // Get canvas element
-    var myLineChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: supplyData.labels, // Use labels from supplyData
-            datasets: [{
-                label: "Supply vs Demand",
-                lineTension: 0.3,
-                backgroundColor: "rgba(78, 115, 223, 0.05)",
-                borderColor: "rgba(78, 115, 223, 1)",
-                pointRadius: 3,
-                pointBackgroundColor: "rgba(78, 115, 223, 1)",
-                pointBorderColor: "rgba(78, 115, 223, 1)",
-                pointHoverRadius: 3,
-                pointHoverBackgroundColor: "rgba(78, 115, 223, 1)",
-                pointHoverBorderColor: "rgba(78, 115, 223, 1)",
-                pointHitRadius: 10,
-                pointBorderWidth: 2,
-                data: supplyData.values, // Use values from supplyData
-            }],
-        },
-        options: {
-            scales: {
-                xAxes: [{
-                    ticks: {
-                        beginAtZero: true
-                    }
-                }],
-                yAxes: [{
-                    ticks: {
-                        beginAtZero: true
-                    }
-                }]
-            },
-            legend: {
-                display: true,
-                position: 'top'
-            }
-        }
-    });
-});
-
-</script>
-
-<script>
-// JavaScript code for Products available by category chart
-document.addEventListener("DOMContentLoaded", function() {
-    var topProductsNames = JSON.parse(document.getElementById("top_products_names").value); // Parse top products names
-    var topProductsQuantity = JSON.parse(document.getElementById("top_products_quantity").value); // Parse top products quantity
-    
-    var ctx = document.getElementById("myPieChart").getContext('2d'); // Get canvas element
-    var myPieChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: topProductsNames,
-            datasets: [{
-                data: topProductsQuantity,
-                backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc'],
-                hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf'],
-                hoverBorderColor: "rgba(234, 236, 244, 1)",
-            }],
-        },
-        options: {
-            scales: {
-                xAxes: [{
-                    ticks: {
-                        beginAtZero: true
-                    }
-                }],
-                yAxes: [{
-                    ticks: {
-                        beginAtZero: true
-                    }
-                }]
-            },
-            legend: {
-                display: true,
-                position: 'top'
-            }
-        }
-    });
-});
-
-</script>
-{% endblock javascripts %}

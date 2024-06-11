@@ -21,10 +21,20 @@
     </li>
     <hr class="sidebar-divider my-0">
 
+    {% if request.user.is_superuser %}
+    <!-- Nav Item - Sellers -->
+    <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
+        <a class="nav-link" href="{% url 'superuser' %}">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Registraion</span></a>
+    </li>
+    <hr class="sidebar-divider my-0">
+    {% endif %}
+
     {% if request.user.role == 'seller' or request.user.is_superuser %}
     <!-- Nav Item - Sellers -->
     <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
-        <a class="nav-link" href="{% url 'seller_dashboard' %}">
+        <a class="nav-link" href="{% url 'supply_demand_statistics' %}">
             <i class="fas fa-fw fa-tachometer-alt"></i>
             <span>Sellers</span></a>
     </li>
@@ -41,11 +51,24 @@
     <hr class="sidebar-divider my-0">
     {% endif %}
 
-    {% if request.user.role == 'seller' or request.user.is_superuser %}
+    {% if request.user.role == 'inventory_manager' or request.user.is_superuser %}
     <!-- Nav Item - Stock Shift -->
    <!-- Nav Item - Stock Shift -->
 <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
     <a class="nav-link" href="{% url 'inventory_records_list'%}">
+        <i class="fas fa-fw fa-tachometer-alt"></i>
+        <span>Stock Shift</span>
+    </a>
+</li>
+<hr class="sidebar-divider my-0">
+    <hr class="sidebar-divider my-0">
+    {% endif %}
+
+    {% if request.user.role == 'collateral_manager' or request.user.is_superuser %}
+    <!-- Nav Item - Stock Shift -->
+   <!-- Nav Item - Stock Shift -->
+<li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
+    <a class="nav-link" href="{% url 'stock_shift_dashboard'%}">
         <i class="fas fa-fw fa-tachometer-alt"></i>
         <span>Stock Shift</span>
     </a>
@@ -85,7 +108,7 @@
     <hr class="sidebar-divider my-0">
     {% endif %}
 
-    {% if request.user.role == 'seller' or request.user.is_superuser %}
+    {% if request.user.role == 'inventory_manager' or request.user.is_superuser %}
     <!-- Nav Item - Bank -->
     <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
         <a class="nav-link" href="{% url 'slaughter_house_create' %}">
@@ -133,7 +156,7 @@
     <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
         <a class="nav-link" href="{% url 'bank_list_bill_of_lading' %}">
             <i class="fas fa-fw fa-cart-plus"></i>
-            <span>Bill of lading</span></a>
+            <span>Bills of lading</span></a>
     </li>
     <hr class="sidebar-divider my-0">
     {% endif %}

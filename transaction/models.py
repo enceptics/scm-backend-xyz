@@ -52,6 +52,15 @@ class BreaderTrade(models.Model):
             control_center.net_breed_supply += self.breeds_supplied
             control_center.save()
 
+    @classmethod
+    def get_supply_data(cls):
+        supply_data = {}
+        breeds = cls.objects.values_list('breed', flat=True).distinct()
+        for breed in breeds:
+            total_supply = cls.objects.filter(breed=breed).aggregate(Sum('breeds_supplied'))['breeds_supplied__sum']
+            supply_data[breed] = total_supply or 0
+        return supply_data
+
     def get_seller_full_name(self):
         if self.seller:
             return f'{self.seller.first_name} {self.seller.last_name}'

@@ -6,8 +6,18 @@
 {% endblock %}
 
 {% block content %}
+<div class="row mt-n4 mb-3" style="font-size: 15px; background-color: #001b40; color: white;">
+    <ul class="nav nav-tabs " id="myTab" role="tablist">
+    
+        <li class="nav-item">
+            <a class="nav-link" id="quotation-tab" style="color: #d9d9d9; text-decoration: none;">Hello, {{request.user.username}}</a>
+    </ul>
+
+</div>
     <div class="container">
-        <h4>Letter of Credits from the bank</h4>
+        <h5>Letters of Credit from the bank</h5>
+        <hr style="background-color: white;height: 10px;border-radius: 30px;">
+
         {% if letters %}
             <table class="table">
                 <thead>
@@ -35,19 +45,25 @@
                             <td>
                                 {% if letter.status == 'sent_to_bank' %}
                                 <div class="d-flex">
-                                    <form method="POST" action="{% url 'update_letter_of_credit_status' letter.id %}">
+                                    <form method="POST" action="{% url 'update_letter_of_credit_status' letter.id %}" class="ml-2">
                                         {% csrf_token %}
                                         <input type="hidden" name="status" value="approved">
-                                        <button class="btn btn-sm btn-success" type="submit">Approve</button>
-                                        <textarea name="collection_market" placeholder="Market to collect from" style="flex-grow: 1; margin-left: 10px; height: 50px;font-size: 13px;" required></textarea>
+                                        <div class="input-group">
+                                            <textarea class="form-control form-control-sm" name="collection_market" placeholder="Market to collect from" style="font-size: 10px;" rows="1" required></textarea>
+                                            <button class="btn btn-sm btn-success btn-smaller" type="submit">Approve</button>
+                                        </div>
                                     </form>
-                                    <form method="POST" action="{% url 'update_letter_of_credit_status' letter.id %}">
+                                    <form method="POST" action="{% url 'update_letter_of_credit_status' letter.id %}" class="ml-2">
                                         {% csrf_token %}
                                         <input type="hidden" name="status" value="rejected">
-                                        <textarea class="mt-2" name="reason" placeholder="Reason for rejection" required></textarea>  <!-- Add textarea for reason -->
-                                        <button class="btn btn-sm btn-danger" type="submit">Reject</button>
+                                        <div class="input-group">
+                                            <textarea class="form-control form-control-sm" name="reason" placeholder="Reason for rejection" style="font-size: 10px;" rows="1" required></textarea>
+                                            <button class="btn btn-sm btn-danger btn-smaller" type="submit">Reject</button>
+                                        </div>
                                     </form>
                                 </div>
+                                
+                                
                                    
                                 {% endif %}
                             </td>

@@ -104,6 +104,10 @@ class CollateralManagerRegistrationForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
         model = CustomUser
         fields = ['username', 'password1', 'password2', 'first_name', 'last_name', 'email', 'phone_number', 'address', 'id_number', 'county', 'country', 'bank_branch']
+class InventoryManagerRegistrationForm(UserCreationForm):
+    class Meta(UserCreationForm.Meta):
+        model = CustomUser
+        fields = ['username', 'password1', 'password2', 'first_name', 'last_name', 'email', 'phone_number', 'address', 'id_number', 'county', 'country']
 
 class CollateralManagerForm(forms.Form):
     collateral_manager = forms.ModelChoiceField(queryset=CollateralManager.objects.all(), empty_label="Select a Collateral Manager")

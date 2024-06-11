@@ -427,6 +427,11 @@ def buyer_quotation_list(request):
         # You may want to redirect the user or display an error message
         return render(request, 'buyer_quotation_list.html', {'quotations': None})
 
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from django.conf import settings
+
 @login_required
 def confirm_quotation(request, quotation_id):
     """View to confirm a quotation."""
@@ -435,15 +440,26 @@ def confirm_quotation(request, quotation_id):
     if not quotation.confirm:
         quotation.confirm = True
         quotation.save()
+
+        # Send email notification for approval
+        subject = 'Quotation Approved'
+        sender_email = settings.DEFAULT_FROM_EMAIL
+        receiver_email = quotation.seller.seller.email  # Assuming seller has an email field
+
+        # Render email template
+        email_context = {'buyer_name': quotation.buyer.buyer.first_name + " " + quotation.buyer.buyer.last_name,
+                         'seller_name': quotation.seller.seller.first_name + " " + quotation.seller.seller.last_name}
+        email_body = render_to_string('quotation_confirmation_email.html', email_context)
+
+        # Send email
+        plain_email_body = strip_tags(email_body)
+        send_mail(subject, plain_email_body, sender_email, [receiver_email], html_message=email_body)
+
         messages.success(request, 'Quotation confirmed successfully.')
     else:
         messages.error(request, 'Quotation is already confirmed.')
 
     return redirect('quotation_confirmed')
-
-def quotation_confirmed(request):
-    """Success template for quotation confirmation."""
-    return render(request, 'confirm_quotation.html')
 
 @login_required
 def reject_quotation(request, quotation_id):
@@ -454,18 +470,50 @@ def reject_quotation(request, quotation_id):
         quotation.explanation = explanation  # Save the explanation to the quotation
         quotation.rejected = True  # Set the rejected field to True
         quotation.save()  # Save the changes to the database
+
+        # Send email notification for rejection
+        subject = 'Quotation Rejected'
+        sender_email = settings.DEFAULT_FROM_EMAIL
+        receiver_email = quotation.seller.seller.email  # Assuming seller has an email field
+
+        # Render email template
+        email_context = {'buyer_name': quotation.buyer.buyer.first_name + " " + quotation.buyer.buyer.last_name,
+                         'seller_name': quotation.seller.seller.first_name + " " + quotation.seller.seller.last_name,
+                         'explanation': explanation}
+        email_body = render_to_string('quotation_rejection_email.html', email_context)
+
+        # Send email
+        plain_email_body = strip_tags(email_body)
+        send_mail(subject, plain_email_body, sender_email, [receiver_email], html_message=email_body)
+
         messages.success(request, 'Quotation rejected successfully.')
-        return redirect('reject_quotation')  # Redirect to the quotation list page
+        return redirect('quotation_reject')  # Redirect to the desired URL after rejection
     else:
         return render(request, 'reject_quotation.html', {'quotation': quotation})
 
-def reject_quotation(request):
+def quotation_reject(request):
     """Success template for quotation confirmation."""
     return render(request, 'reject_quotation.html')
 
 from django.contrib import messages
+from io import BytesIO  # Add this import at the beginning of your views.py file
 
 from django.core.files.storage import FileSystemStorage
+import os
+
+from django.contrib.auth.decorators import login_required
+from django.template.loader import render_to_string
+from django.http import HttpResponse
+from xhtml2pdf import pisa
+import os
+from django.conf import settings
+from django.core.mail import send_mail
+from django.shortcuts import redirect, render
+from django.contrib import messages
+
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 import os
 
 @login_required
@@ -475,17 +523,42 @@ def create_quotation(request):
         form = QuotationForm(request.POST, request.FILES)
         if form.is_valid():
             quotation = form.save(commit=False)
-            quotation.seller = Seller.objects.get(seller=request.user)
+            seller = Seller.objects.get(seller=request.user)
+            quotation.seller = seller
             quotation.save()
 
-            # Save the uploaded PDF file to a specific directory
-            pdf_file = request.FILES.get('pdf_file')
-            if pdf_file:
-                # Construct the file path where the PDF file will be saved
-                file_path = os.path.join(settings.MEDIA_ROOT, 'pdf_quotations', f'quotation_{quotation.id}.pdf')
-                # Save the file to the file system
-                fs = FileSystemStorage()
-                fs.save(file_path, pdf_file)
+            # Define buyer name and seller name
+            buyer_name = quotation.buyer.buyer.first_name
+            seller_name = quotation.seller.seller.first_name
+
+            # Generate HTML content for the PDF
+            html_content = render_to_string('quotation_pdf_template.html', {'quotation': quotation})
+
+            # Generate PDF from the HTML content
+            pdf_file = generate_pdf(html_content)
+
+            # Save the PDF file to a specific directory
+            file_path = os.path.join(settings.MEDIA_ROOT, 'pdf_quotations', f'quotation_{quotation.id}.pdf')
+            with open(file_path, 'wb') as pdf_output:
+                pdf_output.write(pdf_file)
+
+            # Send email to the buyer with PDF attachment
+            buyer_email_subject = 'New Quotation Received'
+            buyer_email_message = render_to_string('buyer_quotation_email.html', {'quotation': quotation, 'buyer_name': buyer_name})
+            buyer_email_text_content = strip_tags(buyer_email_message)
+            buyer_email = EmailMultiAlternatives(buyer_email_subject, buyer_email_text_content, settings.DEFAULT_FROM_EMAIL, [quotation.buyer.buyer.email])
+            buyer_email.attach_alternative(buyer_email_message, "text/html")
+            buyer_email.attach_file(file_path)
+            buyer_email.send()
+
+            # Send email to the seller with PDF attachment
+            seller_email_subject = 'Quotation Sent Successfully'
+            seller_email_message = render_to_string('seller_quotation_email.html', {'quotation': quotation, 'seller_name': seller_name})
+            seller_email_text_content = strip_tags(seller_email_message)
+            seller_email = EmailMultiAlternatives(seller_email_subject, seller_email_text_content, settings.DEFAULT_FROM_EMAIL, [seller.seller.email])
+            seller_email.attach_alternative(seller_email_message, "text/html")
+            seller_email.attach_file(file_path)
+            seller_email.send()
 
             # Redirect to the success template upon successful creation
             return redirect('quotation_created')
@@ -499,9 +572,29 @@ def create_quotation(request):
     
     return render(request, 'create_quotation.html', {'form': form})
 
+def generate_pdf(html_content):
+    """Function to generate PDF from HTML content."""
+    # Create a PDF document
+    result = BytesIO()
+    pdf = pisa.pisaDocument(BytesIO(html_content.encode("UTF-8")), result)
+    
+    if not pdf.err:
+        # Return the generated PDF content
+        return result.getvalue()
+    else:
+        # Handle error while generating PDF
+        raise Exception("Error generating PDF: %s" % pdf.err)
+
+
+
 def quotation_created(request):
     """Success template for quotation creation."""
     return render(request, 'quotation_success.html')
+
+
+def quotation_confirmed(request):
+    """Success template for quotation confirmation."""
+    return render(request, 'confirm_quotation.html')
 
 def update_quotation(request, quotation_id):
     """View to update an existing quotation."""
@@ -546,17 +639,14 @@ def letter_of_credit_create(request):
 
 def lc_creation_success(request):
     return render(request, 'lc_successfully_created.html')
-    
+ 
 @login_required
 def all_letter_of_credit_list(request):
     if request.user.role != 'bank' and not request.user.is_superuser:
         return redirect('unauthorized')
-
-    letters_of_credit = LetterOfCredit.objects.all().order_by('-issue_date')
-    context = {
-        'letters_of_credit': letters_of_credit,
-    }
-    return render(request, 'all_letter_of_credit_list.html', context)
+    
+    letters = LetterOfCredit.objects.all().order_by('-issue_date')
+    return render(request, 'all_letter_of_credit_list.html', {'letters': letters})
 
 @login_required
 def seller_letter_of_credit_list(request):
@@ -588,42 +678,72 @@ def buyer_letter_of_credit_list(request):
 
 from django.http import JsonResponse
 
+@login_required
 def update_letter_of_credit_status(request, pk):
     if request.method == 'POST':
         new_status = request.POST.get('status')
-        rejection_reason = request.POST.get('reason')  # get rejection reason from POST data
-        collection_market = request.POST.get('collection_market')  # Get the collection market from POST data
+        rejection_reason = request.POST.get('reason')
+        collection_market = request.POST.get('')
 
         if new_status:
             try:
-                # Retrieve the LetterOfCredit object using the provided pk
                 letter_of_credit = get_object_or_404(LetterOfCredit, pk=pk)
-                
-                # Update the status
                 letter_of_credit.status = new_status
                 
-                # If status is rejected, save the rejection reason
                 if new_status == 'rejected':
                     letter_of_credit.rejection_reason = rejection_reason
+                    # Send email notification for rejection
+                    subject = 'Letter of Credit Rejection'
+                    sender_email = settings.DEFAULT_FROM_EMAIL
+                    receiver_email = letter_of_credit.buyer.buyer.email
+
+                    # Get buyer and seller names
+                    buyer_name = letter_of_credit.buyer.buyer.first_name + " " + letter_of_credit.buyer.buyer.last_name
+                    seller_name = letter_of_credit.seller.seller.first_name + " " + letter_of_credit.seller.seller.last_name
+
+                    email_context = {
+                        'buyer_name': buyer_name,
+                        'seller_name': seller_name,
+                        'rejection_reason': rejection_reason,
+                    }
+                    email_body = render_to_string('lc_rejection_email_template.html', email_context)
+
+                    # Send email
+                    plain_email_body = strip_tags(email_body)
+                    send_mail(subject, plain_email_body, sender_email, [receiver_email], html_message=email_body)
                 elif new_status == 'approved':
-                    letter_of_credit.collection_market = collection_market  # Save the collection market
+                    letter_of_credit.collection_market = collection_market
+                    # Send email notification for approval
+                    subject = 'Letter of Credit Approval'
+                    sender_email = settings.DEFAULT_FROM_EMAIL
+                    receiver_email = letter_of_credit.seller.seller.email
+
+                    # Get buyer and seller names
+                    buyer_name = letter_of_credit.buyer.buyer.first_name + " " + letter_of_credit.buyer.buyer.last_name
+                    seller_name = letter_of_credit.seller.seller.first_name + " " + letter_of_credit.seller.seller.last_name
+
+                    email_context = {
+                        'buyer_name': buyer_name,
+                        'seller_name': seller_name,
+                    }
+                    email_body = render_to_string('lc_approval_email_template.html', email_context)
+
+                    # Send email
+                    plain_email_body = strip_tags(email_body)
+                    send_mail(subject, plain_email_body, sender_email, [receiver_email], html_message=email_body)
 
                 letter_of_credit.save()
                 
-                # Pass the letter_of_credit object to the context
                 context = {'letter': letter_of_credit}
                 
-                # Render success HTML template with the context
                 return render(request, 'lc_success.html', context)
             except LetterOfCredit.DoesNotExist:
-                # If the LetterOfCredit object does not exist, render an error HTML template
                 return render(request, 'lc_error.html')
         else:
-            # If the 'status' field is missing in the POST data, return an error response
             return HttpResponse('Missing status field in POST data', status=400)
     else:
-        # If the request method is not POST, return an error response
         return HttpResponse('Only POST requests are allowed', status=405)
+
         
 def letter_of_credit_detail(request, pk):
     letter_of_credit = get_object_or_404(LetterOfCredit, pk=pk)
@@ -700,49 +820,13 @@ def buyer_letter_of_credit_list(request):
         return render(request, 'buyer_letter_of_credit_list.html', {'letters': letters})
     else:
         return render(request, 'error.html', {'message': 'You are not authorized to view this page.'})
-
-@login_required
-def update_letter_of_credit_status(request, pk):
-    if request.method == 'POST':
-        new_status = request.POST.get('status')
-        rejection_reason = request.POST.get('reason')  # get rejection reason from POST data
-        collection_market = request.POST.get('collection_market')  # Get the collection market from POST data
-
-        if new_status:
-            try:
-                # Retrieve the LetterOfCredit object using the provided pk
-                letter_of_credit = get_object_or_404(LetterOfCredit, pk=pk)
-                
-                # Update the status
-                letter_of_credit.status = new_status
-                
-                # If status is rejected, save the rejection reason
-                if new_status == 'rejected':
-                    letter_of_credit.rejection_reason = rejection_reason
-                elif new_status == 'approved':
-                    letter_of_credit.collection_market = collection_market  # Save the collection market
-
-                letter_of_credit.save()
-                
-                # Pass the letter_of_credit object to the context
-                context = {'letter': letter_of_credit}
-                
-                # Render success HTML template with the context
-                return render(request, 'lc_success.html', context)
-            except LetterOfCredit.DoesNotExist:
-                # If the LetterOfCredit object does not exist, render an error HTML template
-                return render(request, 'lc_error.html')
-        else:
-            # If the 'status' field is missing in the POST data, return an error response
-            return HttpResponse('Missing status field in POST data', status=400)
-    else:
-        # If the request method is not POST, return an error response
-        return HttpResponse('Only POST requests are allowed', status=405)
         
 @login_required
 def letter_of_credit_detail(request, pk):
     letter_of_credit = get_object_or_404(LetterOfCredit, pk=pk)
     return render(request, 'letter_of_credit_detail.html', {'letter_of_credit': letter_of_credit})
+
+from .utils import extract_table_data
 
 @login_required
 def extracted_data_list(request):
@@ -751,12 +835,24 @@ def extracted_data_list(request):
         return redirect('unauthorized')
     
     approved_lc_documents = LetterOfCredit.objects.filter(status='approved').order_by('-issue_date')
+    
+    # Get the initial length of the extracted_data_list
+    initial_length = len(request.session.get('extracted_data_list', []))
+    
     extracted_data_list = []
     for lc_document in approved_lc_documents:
-        extracted_data = extract_lc_data(lc_document.lc_document.path)
+        # Extract data from the table on the first page of each LC document
+        extracted_data = extract_table_data(lc_document.lc_document.path, page_number=1)
         extracted_data_list.append(extracted_data)
-    return render(request, 'document_viewer/document_detail.html', {'extracted_data_list': extracted_data_list})
-
+    
+    # Set the extracted_data_list in the session for comparison later
+    request.session['extracted_data_list'] = extracted_data_list
+    
+    # Check if the length has increased
+    new_data = len(extracted_data_list) > initial_length
+    
+    return render(request, 'document_viewer/document_detail.html', {'extracted_data_list': extracted_data_list, 'new_data': new_data})
+    
 def lc_document_extracted_content_detail(request, lc_document_id):
     lc_document = LetterOfCredit.objects.get(pk=lc_document_id)
     extracted_data = extract_lc_data(lc_document.lc_document.path)

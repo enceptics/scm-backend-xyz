@@ -10,21 +10,9 @@
         </li>
         <li class="nav-item">
             <a class="nav-link" id="quotation-tab" href="{% url 'letter_of_credit_create' %}" style="color: #d9d9d9; text-decoration: none;">Create Letter of credit</a>
-       
     </ul>
     <span class="ml-auto mx-2 mt-2">{{request.user.username}} Bank</span>
 
-    <div class="tab-content" id="myTabContent">
-        <div class="tab-pane fade show active" id="dashboard" role="tabpanel" aria-labelledby="home-tab">
-            <!-- Dashboard content here -->
-        </div>
-        <div class="tab-pane fade" id="quotation" role="tabpanel" aria-labelledby="quotation-tab">
-            <!-- Send quotation content here -->
-        </div>
-        <div class="tab-pane fade" id="control-centers" role="tabpanel" aria-labelledby="control-centers-tab">
-            <!-- Control centers content here -->
-        </div>
-    </div>
 </div>
 
 
@@ -39,6 +27,7 @@
                 <th>Issue Date</th>
                 <th>Expiry Date</th>
                 <th>Status</th>
+                <th>View Document</th>
             </tr>
         </thead>
         <tbody>
@@ -50,6 +39,14 @@
                 <td>{{ lc.issue_date }}</td>
                 <td>{{ lc.expiry_date }}</td>
                 <td>{{ lc.status }}</td>
+                <td style="font-size: 14px;">
+                    {% if lc.lc_document %}
+                        <a href="{{ lc.lc_document.url }}">View/Download</a>
+                    {% else %}
+                        Not available
+                    {% endif %}
+                </td>
+                
                
             </tr>
             {% empty %}

@@ -1,0 +1,40 @@
+<!-- comparison_results.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparison Results</title>
+</head>
+<body>
+    <h1>Comparison Results</h1>
+
+    <table class='table table-striped table-bordered table-hover weight-table' style="font-size: 14px;">
+        <thead class="text-white" style="background-color: #001b42">
+            <tr>
+                <th>#</th>
+                <th>Reference</th>
+                <th>Breed</th>
+                <th>Trade Weight</th>
+                <th>Quantity</th>
+                <th>% Weight Loss</th>
+                <th>Classification</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for comparison_result in comparison_results %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ comparison_result.reference }}</td>
+                <td>{{ comparison_result.breed }}</td>
+                <td>{{ comparison_result.trade_weight }} </td>
+                <td>{{ comparison_result.breeds_supplied }}</td>
+                <td>{{ comparison_result.weight_loss_percentage }}%</td>
+                <td>{{ comparison_result.classification }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

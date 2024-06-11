@@ -24,7 +24,7 @@ class Payment(models.Model):
     SENT_TO_BANK = 'payment_initiated'
     DISBURSED = 'disbursed'
     PAID = 'paid'
-
+    
     STATUS_CHOICES = [
         (SENT_TO_BANK, 'Sent to Bank for Payment Processing'),
         (DISBURSED, 'Disbursed'),
@@ -140,6 +140,11 @@ class CustomerService(models.Model):
 
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name}"
+
+class InventoryManager(models.Model):
+    name = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+
 
 class Seller(models.Model):
     seller = models.ForeignKey(CustomUser, on_delete=models.CASCADE)

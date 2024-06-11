@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Supply vs Demand Statistics{% endblock title %}
+{% load static %}
+{% block content %}
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Supply vs Demand Statistics</h6>
+    </div>
+    <div class="card-body">
+        <canvas id="supplyDemandChart" style="height: 300px;"></canvas>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var ctx = document.getElementById('supplyDemandChart').getContext('2d');
+        var supplyVsDemandData = {{ supply_vs_demand_data|safe }};
+
+        var breeds = supplyVsDemandData.map(function (item) {
+            return item.breed;
+        });
+
+        var supplyData = supplyVsDemandData.map(function (item) {
+            return item.total_bred;
+        });
+
+        var demandData = supplyVsDemandData.map(function (item) {
+            return item.total_slaughtered;
+        });
+
+        var chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: breeds,
+                datasets: [{
+                    label: 'Supply',
+                    backgroundColor: 'rgba(0, 27, 66, 0.7)',
+                    borderColor: 'rgba(0, 27, 66, 1)',
+                    borderWidth: 1,
+                    data: supplyData
+                }, {
+                    label: 'Demand',
+                    backgroundColor: 'rgba(0, 255, 0, 0.5)',
+                    borderColor: 'green',
+                    borderWidth: 1,
+                    data: demandData
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        labels: {
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        },
+                        ticks: {
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock content %}

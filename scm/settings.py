@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 import json
 from custom_registration.custom_email_backend import OAuthEmailBackend
 
-import dj_database_url
+# import dj_database_url
 # Load environment variables from .env
 load_dotenv()
 
@@ -155,6 +155,8 @@ EMAIL_HOST_USER = 'pascalouma54@gmail.com'  # Your email address
 EMAIL_HOST_PASSWORD = 'jcfgolmahddantnv'
 EMAIL_USE_SSL = False
 
+BASE_URL = '127.0.0.1:8000'
+
 PROTOCOL = 'http'
 DOMAIN = '127.0.0.1:8000'
 
@@ -236,11 +238,12 @@ MEDIA_URL = '/media/'
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
-    os.path.join(BASE_DIR, 'staticfiles_build', 'static'),
+    os.path.join(BASE_DIR, 'staticfiles_build', 'static'),  # Corrected directory name
 ]
 
 # Define the directory where collected static files will be stored
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 
 # REST_FRAMEWORK = {
 #     'DEFAULT_PERMISSION_CLASSES': [
