@@ -267,7 +267,7 @@ def inventory_information(request):
         for breed in breeds:
             # Calculate breed-related metrics
             total_supplied = BreaderTrade.objects.filter(control_center=control_center, breed=breed).aggregate(total_supplied=Sum('breeds_supplied'))['total_supplied'] or 0
-            total_weight = BreaderTrade.objects.filter(control_center=control_center, breed=breed).aggregate(total_weight=Sum('goat_weight'))['total_weight'] or 0
+            total_weight = BreaderTrade.objects.filter(control_center=control_center, breed=breed).aggregate(total_weight=Sum('weight'))['total_weight'] or 0
             total_slaughtered = SlaughterhouseRecord.objects.filter(control_center=control_center, breed=breed).aggregate(total_slaughtered=Sum('quantity'))['total_slaughtered'] or 0
             
             slaughter_records = SlaughterhouseRecord.objects.filter(control_center=control_center, breed=breed)
@@ -308,7 +308,7 @@ def bank_inventory_information(request, center_id):
     breeds = BreaderTrade.objects.filter(control_center=control_center).values_list('breed', flat=True).distinct().order_by('-created_at')
     for breed in breeds:
         total_supplied = BreaderTrade.objects.filter(control_center=control_center, breed=breed).aggregate(total_supplied=Sum('breeds_supplied'))['total_supplied'] or 0
-        total_weight = BreaderTrade.objects.filter(control_center=control_center, breed=breed).aggregate(total_weight=Sum('goat_weight'))['total_weight'] or 0
+        total_weight = BreaderTrade.objects.filter(control_center=control_center, breed=breed).aggregate(total_weight=Sum('weight'))['total_weight'] or 0
         total_slaughtered = SlaughterhouseRecord.objects.filter(control_center=control_center, breed=breed).aggregate(total_slaughtered=Sum('quantity'))['total_slaughtered'] or 0
         net_breed_supply = total_supplied - total_slaughtered
         breeds_info[breed] = {

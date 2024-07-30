@@ -305,8 +305,16 @@ class LetterOfCredit(models.Model):
     quotatation = models.ForeignKey(Quotation, on_delete=models.CASCADE, null=True, blank=True)
     rejection_reason = models.TextField(blank=True, null=True)
     collection_market = models.CharField(max_length=100, blank=True, null=True)
-    text_content = models.TextField(blank=True, null=True)
+    collection_date = models.DateField(blank=True, null=True)
 
+    # store extracted data
+    item = models.CharField(max_length=255)
+    weight = models.FloatField(blank=True, null=True)
+    quantity = models.FloatField(blank=True, null=True)
+    unit_price = models.FloatField(blank=True, null=True)
+    total_amount = models.FloatField(blank=True, null=True)
+    delivery_date = models.DateField(blank=True, null=True)
+    
     def get_buyer_full_name(self):
         if self.buyer:
             return f'{self.buyer.buyer.first_name} {self.buyer.buyer.last_name} '
@@ -318,7 +326,7 @@ class LetterOfCredit(models.Model):
         return "Unknown"
 
     def __str__(self):
-        return f'Letter of Credit #{self.id} from the bank, issued at {self.issue_date} - Status: {self.status} '
+        return f"{self.item} - {self.weight}kg - {self.delivery_date}"
 
 class DocumentToSeller(models.Model):
     seller = models.ForeignKey(Seller, on_delete=models.CASCADE)

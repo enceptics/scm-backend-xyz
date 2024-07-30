@@ -983,7 +983,7 @@ def collateral_manager_dashboard(request, collateral_manager_id):
         breeds = BreaderTrade.objects.filter(control_center=center).values_list('breed', flat=True).distinct().order_by('-created_at')
         for breed in breeds:
             total_supplied = BreaderTrade.objects.filter(control_center=center, breed=breed).aggregate(total_supplied=Sum('breeds_supplied'))['total_supplied'] or 0
-            total_weight = BreaderTrade.objects.filter(control_center=center, breed=breed).aggregate(total_weight=Sum('goat_weight'))['total_weight'] or 0
+            total_weight = BreaderTrade.objects.filter(control_center=center, breed=breed).aggregate(total_weight=Sum('weight'))['total_weight'] or 0
             total_slaughtered = SlaughterhouseRecord.objects.filter(control_center=center, breed=breed).aggregate(total_slaughtered=Sum('quantity'))['total_slaughtered'] or 0
             net_breed_supply = total_supplied - total_slaughtered
             breeds_info[breed] = {
@@ -1008,10 +1008,10 @@ def assign_collateral_manager_success(request):
     if request.method == 'POST':
         center_id = request.POST.get('center_id')
         manager_id = request.POST.get('collateral_manager')
-        reset
+        # reset
         center = get_object_or_404(ControlCenter, id=center_id)
         collateral_manager = get_object_or_404(CollateralManager, id=manager_id)
-        reset
+        # reset
         center.assigned_collateral_agent = collateral_manager
         center.save()
         

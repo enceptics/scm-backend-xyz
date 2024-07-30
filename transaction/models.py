@@ -38,10 +38,10 @@ class BreaderTrade(models.Model):
     transaction_date = models.DateField(auto_now_add=True)
     breed = models.CharField(max_length=255)
     breeds_supplied = models.PositiveIntegerField(default=0)
-    goat_weight = models.PositiveIntegerField(default=0)
+    weight = models.PositiveIntegerField(default=0)
     vaccinated = models.BooleanField(default=False, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, null=True, blank=True)
     reference = models.CharField(max_length=20, unique=True)
 
     def save(self, *args, **kwargs):

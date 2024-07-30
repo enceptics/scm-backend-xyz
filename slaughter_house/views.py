@@ -37,7 +37,7 @@ class SlaughterhouseRecordViewSet(viewsets.ModelViewSet):
 #         for trade in breader_trades:
 #             # Extract relevant trade information
 #             breed = trade.breed
-#             trade_weight = trade.goat_weight
+#             trade_weight = trade.weight
 #             total_cut_weight = 0
             
 #             # Calculate the total weight cut for the breed
@@ -115,7 +115,7 @@ def inventory_information(request):
         for breed in breeds:
             # Calculate breed-related metrics
             total_supplied = BreaderTrade.objects.filter(control_center=control_center, breed=breed).aggregate(total_supplied=Sum('breeds_supplied'))['total_supplied'] or 0
-            total_weight = BreaderTrade.objects.filter(control_center=control_center, breed=breed).aggregate(total_weight=Sum('goat_weight'))['total_weight'] or 0
+            total_weight = BreaderTrade.objects.filter(control_center=control_center, breed=breed).aggregate(total_weight=Sum('weight'))['total_weight'] or 0
             total_slaughtered = SlaughterhouseRecord.objects.filter(control_center=control_center, breed=breed).aggregate(total_slaughtered=Sum('quantity'))['total_slaughtered'] or 0
             
             slaughter_records = SlaughterhouseRecord.objects.filter(control_center=control_center, breed=breed)
@@ -145,7 +145,7 @@ def inventory_information(request):
     for trade in breader_trades:
         # Extract relevant trade information
         breed = trade.breed
-        trade_weight = trade.goat_weight
+        trade_weight = trade.weight
         total_cut_weight = 0
         
         # Calculate the total weight cut for the breed
@@ -450,7 +450,7 @@ def weight_comparison_view(request):
     for trade in breader_trades:
         reference = trade.reference
         breed = trade.breed
-        trade_weight = trade.goat_weight
+        trade_weight = trade.weight
         total_cut_weight = Decimal(0)  # Initialize total cut weight
 
         breed_cuts = InventoryBreedSales.objects.filter(reference=reference, breed=breed)

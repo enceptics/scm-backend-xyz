@@ -64,20 +64,6 @@
     <hr class="sidebar-divider my-0">
     {% endif %}
 
-    {% if request.user.role == 'collateral_manager' or request.user.is_superuser %}
-    <!-- Nav Item - Stock Shift -->
-   <!-- Nav Item - Stock Shift -->
-<li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
-    <a class="nav-link" href="{% url 'stock_shift_dashboard'%}">
-        <i class="fas fa-fw fa-tachometer-alt"></i>
-        <span>Stock Shift</span>
-    </a>
-</li>
-<hr class="sidebar-divider my-0">
-
-    <hr class="sidebar-divider my-0">
-    {% endif %}
-
     {% if request.user.role == 'breeder' or request.user.is_superuser %}
     <!-- Nav Item - Suppliers -->
     <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">

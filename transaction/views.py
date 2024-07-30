@@ -390,7 +390,7 @@ def supply_history(request):
     supply_history = BreaderTrade.objects.filter(breeder=current_breeder).order_by('-created_at')
 
     # Paginate the supply history items
-    paginator = Paginator(supply_history, 5)  # Show 5 items per page
+    paginator = Paginator(supply_history, 20)  # Show 5 items per page
     page_number = request.GET.get('page')
     try:
         supplies = paginator.page(page_number)
@@ -412,7 +412,7 @@ def seller_breeder_trade(request):
     breeder_trades = BreaderTrade.objects.filter(control_center=control_center)
 
     # Paginate the breeder trades
-    paginator = Paginator(breeder_trades, 5)  # Show 5 items per page
+    paginator = Paginator(breeder_trades, 20)  # Show 5 items per page
     page_number = request.GET.get('page')
     try:
         breeder_trades = paginator.page(page_number)

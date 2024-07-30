@@ -682,22 +682,25 @@ from django.http import JsonResponse
 def update_letter_of_credit_status(request, pk):
     if request.method == 'POST':
         new_status = request.POST.get('status')
-        rejection_reason = request.POST.get('reason')
-        collection_market = request.POST.get('')
+        rejection_reason = request.POST.get('reason', '')
+        collection_market = request.POST.get('collection_market', '')
+        collection_date = request.POST.get('collection_date', '')
 
         if new_status:
             try:
                 letter_of_credit = get_object_or_404(LetterOfCredit, pk=pk)
                 letter_of_credit.status = new_status
-                
+
+                extracted_data = {}  # Initialize extracted_data to store extracted values
+
                 if new_status == 'rejected':
                     letter_of_credit.rejection_reason = rejection_reason
+
                     # Send email notification for rejection
                     subject = 'Letter of Credit Rejection'
                     sender_email = settings.DEFAULT_FROM_EMAIL
                     receiver_email = letter_of_credit.buyer.buyer.email
 
-                    # Get buyer and seller names
                     buyer_name = letter_of_credit.buyer.buyer.first_name + " " + letter_of_credit.buyer.buyer.last_name
                     seller_name = letter_of_credit.seller.seller.first_name + " " + letter_of_credit.seller.seller.last_name
 
@@ -707,18 +710,27 @@ def update_letter_of_credit_status(request, pk):
                         'rejection_reason': rejection_reason,
                     }
                     email_body = render_to_string('lc_rejection_email_template.html', email_context)
-
-                    # Send email
                     plain_email_body = strip_tags(email_body)
                     send_mail(subject, plain_email_body, sender_email, [receiver_email], html_message=email_body)
+
                 elif new_status == 'approved':
                     letter_of_credit.collection_market = collection_market
+                    letter_of_credit.collection_date = collection_date
+
+                    # Extract data from the PDF
+                    pdf_path = letter_of_credit.lc_document.path
+                    extracted_data = extract_lc_data(pdf_path)
+
+                    letter_of_credit.item = extracted_data.get('item', 'Unknown')
+                    letter_of_credit.weight = extracted_data.get('weight', 0.0)
+                    letter_of_credit.quantity = extracted_data.get('quantity', 0)
+                    letter_of_credit.delivery_date = extracted_data.get('delivery_date', None)
+
                     # Send email notification for approval
                     subject = 'Letter of Credit Approval'
                     sender_email = settings.DEFAULT_FROM_EMAIL
                     receiver_email = letter_of_credit.seller.seller.email
 
-                    # Get buyer and seller names
                     buyer_name = letter_of_credit.buyer.buyer.first_name + " " + letter_of_credit.buyer.buyer.last_name
                     seller_name = letter_of_credit.seller.seller.first_name + " " + letter_of_credit.seller.seller.last_name
 
@@ -727,24 +739,26 @@ def update_letter_of_credit_status(request, pk):
                         'seller_name': seller_name,
                     }
                     email_body = render_to_string('lc_approval_email_template.html', email_context)
-
-                    # Send email
                     plain_email_body = strip_tags(email_body)
                     send_mail(subject, plain_email_body, sender_email, [receiver_email], html_message=email_body)
 
                 letter_of_credit.save()
-                
-                context = {'letter': letter_of_credit}
-                
+
+                # Prepare context for the template
+                context = {
+                    'letter': letter_of_credit,
+                    'extracted_data': extracted_data,
+                    'new_data': True  # Set this based on your actual logic if needed
+                }
+
                 return render(request, 'lc_success.html', context)
             except LetterOfCredit.DoesNotExist:
-                return render(request, 'lc_error.html')
+                return render(request, 'lc_error.html', {'message': 'Letter of Credit not found'})
         else:
             return HttpResponse('Missing status field in POST data', status=400)
     else:
         return HttpResponse('Only POST requests are allowed', status=405)
 
-        
 def letter_of_credit_detail(request, pk):
     letter_of_credit = get_object_or_404(LetterOfCredit, pk=pk)
     return render(request, 'letter_of_credit_detail.html', {'letter_of_credit': letter_of_credit})
@@ -754,9 +768,11 @@ def letter_of_credit_detail(request, pk):
 import re
 import PyPDF2
 from PyPDF2 import PdfReader
+from django.utils.dateparse import parse_date
 from .forms import LetterOfCreditForm
 from .models import LetterOfCredit
-import PyPDF2
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
 
 @login_required
 def letter_of_credit_create(request):
@@ -773,15 +789,16 @@ def letter_of_credit_create(request):
         if form.is_valid():
             form.save()
             # Redirect to a success URL or a specific view
-            return redirect('lc_creation_success')  # Assuming 'lc_successfully_created' is a URL pattern name
+            return redirect('lc_creation_success')  # Assuming 'lc_creation_success' is a URL pattern name
     else:
         form = LetterOfCreditForm()
     
     return render(request, 'letter_of_credit_create.html', {'form': form})
 
+@login_required
 def lc_creation_success(request):
     return render(request, 'lc_successfully_created.html')
-    
+
 @login_required
 def all_letter_of_credit_list(request):
     if request.user.role != 'bank' and not request.user.is_superuser:
@@ -797,6 +814,7 @@ def all_letter_of_credit_list(request):
 def seller_letter_of_credit_list(request):
     if request.user.role != 'seller' and not request.user.is_superuser:
         return redirect('unauthorized')
+    
     try:
         seller = Seller.objects.get(seller=request.user)
     except Seller.DoesNotExist:
@@ -820,87 +838,99 @@ def buyer_letter_of_credit_list(request):
         return render(request, 'buyer_letter_of_credit_list.html', {'letters': letters})
     else:
         return render(request, 'error.html', {'message': 'You are not authorized to view this page.'})
-        
+
 @login_required
 def letter_of_credit_detail(request, pk):
     letter_of_credit = get_object_or_404(LetterOfCredit, pk=pk)
     return render(request, 'letter_of_credit_detail.html', {'letter_of_credit': letter_of_credit})
 
-from .utils import extract_table_data
+# Convert weight to quantity
+def convert_weight_to_quantity(item, weight):
+    conversion_rates = {
+        'Goat Meat': 25,  # kg per goat
+        'Cow Meat': 500,  # kg per cow
+        'Sheep Meat': 30,  # kg per sheep
+        'Chicken Meat': 2,  # kg per chicken
+        'Avocado': 0.2,  # kg per avocado (example rate, adjust as needed)
+    }
+    if item in conversion_rates:
+        return weight / conversion_rates[item]
+    return 0
 
 @login_required
 def extracted_data_list(request):
     allowed_roles = ['superuser', 'seller', 'breeder']
     if not request.user.is_superuser and request.user.role not in allowed_roles:
         return redirect('unauthorized')
-    
+
     approved_lc_documents = LetterOfCredit.objects.filter(status='approved').order_by('-issue_date')
-    
-    # Get the initial length of the extracted_data_list
-    initial_length = len(request.session.get('extracted_data_list', []))
-    
+
     extracted_data_list = []
     for lc_document in approved_lc_documents:
-        # Extract data from the table on the first page of each LC document
-        extracted_data = extract_table_data(lc_document.lc_document.path, page_number=1)
-        extracted_data_list.append(extracted_data)
-    
-    # Set the extracted_data_list in the session for comparison later
-    request.session['extracted_data_list'] = extracted_data_list
-    
-    # Check if the length has increased
-    new_data = len(extracted_data_list) > initial_length
-    
-    return render(request, 'document_viewer/document_detail.html', {'extracted_data_list': extracted_data_list, 'new_data': new_data})
-    
+        extracted_data_list.append({
+            'item': lc_document.item,
+            'collection_market': lc_document.collection_market,
+            'collection_date': lc_document.collection_date,
+            'weight': lc_document.weight,
+            'quantity': lc_document.quantity,
+            'delivery_date': lc_document.delivery_date,
+        })
+
+    return render(request, 'document_viewer/document_detail.html', {'extracted_data_list': extracted_data_list})
+
+@login_required
 def lc_document_extracted_content_detail(request, lc_document_id):
     lc_document = LetterOfCredit.objects.get(pk=lc_document_id)
     extracted_data = extract_lc_data(lc_document.lc_document.path)
     return render(request, 'document_viewer/active_orders.html', {'lc_document': lc_document, 'extracted_data': extracted_data})
 
+import pdfplumber
+import re
+from django.utils.dateparse import parse_date
+from .models import LetterOfCredit
+
 def extract_lc_data(pdf_path):
     extracted_data = {
-        'buyer_name': 'Unknown',
-        'buyer_email': 'Unknown',
-        'buyer_address': 'Unknown',
-        'buyer_country': 'Unknown',
-        'seller_name': 'Unknown',
-        'seller_email': 'Unknown',
-        'seller_address': 'Unknown',
-        'seller_country': 'Unknown',
-        'product': 'Unknown',
-        'unit_price': 'Unknown',
-        'created_on': 'Unknown',
-        'quantity': 'Unknown',  # Add quantity field
+        'item': 'Unknown',
+        'weight': 'Unknown',
+        'delivery_date': 'Unknown',
+        'quantity': 'Unknown',
     }
 
-    with open(pdf_path, 'rb') as file:
-        reader = PyPDF2.PdfReader(file)
-        for page_num in range(len(reader.pages)):
-            text = reader.pages[page_num].extract_text()
+    with pdfplumber.open(pdf_path) as pdf:
+        for page in pdf.pages:
+            text = page.extract_text()
 
-            # Extracting buyer's information
-            buyer_match = re.search(r'Full Name:\s*(.*?)\s*Email:\s*(.*?)\s*Address:\s*(.*?)\s*Country:\s*(.*?)', text, re.DOTALL)
-            if buyer_match:
-                extracted_data['buyer_name'] = buyer_match.group(1).strip()
-                extracted_data['buyer_email'] = buyer_match.group(2).strip()
-                extracted_data['buyer_address'] = buyer_match.group(3).strip()
-                extracted_data['buyer_country'] = buyer_match.group(4).strip()
+            # Extracting item information
+            item_match = re.search(r'Product:\s*(.*?)\s*Weight:', text)
+            if item_match:
+                extracted_data['item'] = item_match.group(1).strip()
 
-            # Extracting seller's information
-            seller_match = re.search(r'Full Name:\s*(.*?)\s*Email:\s*(.*?)\s*Address:\s*(.*?)\s*Country:\s*(.*?)', text, re.DOTALL)
-            if seller_match:
-                extracted_data['seller_name'] = seller_match.group(1).strip()
-                extracted_data['seller_email'] = seller_match.group(2).strip()
-                extracted_data['seller_address'] = seller_match.group(3).strip()
-                extracted_data['seller_country'] = seller_match.group(4).strip()
+            # Extracting weight information
+            weight_match = re.search(r'Weight:\s*(\d+(\.\d+)?)\s*kg', text)
+            if weight_match:
+                extracted_data['weight'] = weight_match.group(1).strip()
 
-            # Extracting product information
-            product_match = re.search(r'Product:\s*(.*?)\s*Unit Price:\s*(.*?)\s*Created on:\s*(.*?)\s*Delivered by:\s*(.*?)\s*No:\s*(.*?)\s*Message:', text, re.DOTALL)
-            if product_match:
-                extracted_data['product'] = product_match.group(1).strip()
-                extracted_data['unit_price'] = product_match.group(2).strip()
-                extracted_data['created_on'] = product_match.group(3).strip()
-                extracted_data['quantity'] = product_match.group(4).strip()
+            # Extracting delivery date information
+            date_match = re.search(r'Delivery Date:\s*(\d{4}-\d{2}-\d{2})', text)
+            if date_match:
+                extracted_data['delivery_date'] = date_match.group(1).strip()
+
+    # Convert weight to float
+
+    try:
+        weight_value = re.match(r'(\d+(\.\d+)?)', extracted_data['weight'])
+        if weight_value:
+            extracted_data['weight'] = float(weight_value.group(1))
+        else:
+            extracted_data['weight'] = 0.0
+    except ValueError:
+        extracted_data['weight'] = 0.0
+
+    # Convert weight to quantity
+    try:
+        extracted_data['quantity'] = int(convert_weight_to_quantity(extracted_data['item'], extracted_data['weight']))
+    except Exception as e:
+        extracted_data['quantity'] = 0
 
     return extracted_data
