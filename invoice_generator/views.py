@@ -33,6 +33,8 @@ from django.utils.html import strip_tags
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 
+from transaction.models import BreaderTrade
+
 # DOCUMENT SCANNER
 
 from django.http import JsonResponse
@@ -726,6 +728,8 @@ def update_letter_of_credit_status(request, pk):
                     letter_of_credit.quantity = extracted_data.get('quantity', 0)
                     letter_of_credit.delivery_date = extracted_data.get('delivery_date', None)
 
+souce encode
+
                     # Send email notification for approval
                     subject = 'Letter of Credit Approval'
                     sender_email = settings.DEFAULT_FROM_EMAIL
@@ -865,18 +869,29 @@ def extracted_data_list(request):
 
     approved_lc_documents = LetterOfCredit.objects.filter(status='approved').order_by('-issue_date')
 
-    extracted_data_list = []
+    open_orders = []
+    closed_orders = []
+
     for lc_document in approved_lc_documents:
-        extracted_data_list.append({
+        extracted_data = {
+            'id': lc_document.id,
             'item': lc_document.item,
             'collection_market': lc_document.collection_market,
             'collection_date': lc_document.collection_date,
             'weight': lc_document.weight,
             'quantity': lc_document.quantity,
             'delivery_date': lc_document.delivery_date,
-        })
+            'status': lc_document.status,
+        }
+        if lc_document.quantity > 0:
+            open_orders.append(extracted_data)
+        else:
+            closed_orders.append(extracted_data)
 
-    return render(request, 'document_viewer/document_detail.html', {'extracted_data_list': extracted_data_list})
+    return render(request, 'document_viewer/document_detail.html', {
+        'open_orders': open_orders,
+        'closed_orders': closed_orders
+    })
 
 @login_required
 def lc_document_extracted_content_detail(request, lc_document_id):

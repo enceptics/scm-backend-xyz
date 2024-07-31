@@ -13,6 +13,8 @@ from logistics.models import ControlCenter
 from logistics.serializers import ControlCenterTotalSerializer
 from django.db.models import F, Func
 from rest_framework.permissions import IsAuthenticated
+# Uodate lc quantity when breeder commits to supply
+from invoice_generator.models import LetterOfCredit
 
 class InventoryBreedViewSet(viewsets.ModelViewSet):
     queryset = InventoryBreed.objects.all()
@@ -295,9 +297,7 @@ def inventory_information(request):
     return render(request, 'inventory_information.html', context)
 
 
-
 from django.shortcuts import redirect
-
 
 def bank_inventory_information(request, center_id):
     # Fetch control center

@@ -20,6 +20,7 @@ from rest_framework import permissions
 from django.utils.html import strip_tags
 from logistics.views import ControlCenter
 from django.shortcuts import render, redirect
+from invoice_generator.models import LetterOfCredit
 
 class AbattoirViewSet(viewsets.ModelViewSet):
     queryset = Abattoir.objects.all()
@@ -365,19 +366,51 @@ class AbattoirPaymentToBreaderViewSet(viewsets.ModelViewSet):
 from .forms import BreaderTradeForm
 from django.contrib.auth.decorators import login_required
 
-@login_required
-def create_breader_trade(request):
+def create_breader_trade(request, lc_id):
+    lc = LetterOfCredit.objects.get(id=lc_id)  # Get the Letter of Credit instance
+
     if request.method == 'POST':
         form = BreaderTradeForm(request.POST)
         if form.is_valid():
-            # Set the logged-in user as the breeder
+            requested_quantity = form.cleaned_data['breeds_supplied']  # Get the quantity from the form
+            
+            # Compare the requested quantity with the available quantity
+            if requested_quantity > lc.quantity:  # Assuming 'quantity' is the field name in LetterOfCredit
+                error_message = (
+                    f"The quantity you are attempting to supply ({requested_quantity}) exceeds "
+                    f"the quantity we want ({lc.quantity}). Please adjust the quantity."
+                )
+                # Render the form with the error message
+                return render(request, 'create_breader_trade.html', {
+                    'form': form,
+                    'error_message': error_message,
+                    'available_quantity': lc.quantity
+                })
+            
+            # If no errors, proceed with saving the form
             breader_trade = form.save(commit=False)
             breader_trade.breeder = request.user  # Assign the logged-in user as the breeder
+            breader_trade.letter_of_credit = lc  # Associate the trade with the LC
             breader_trade.save()
+            lc.update_quantity(breader_trade.breeds_supplied)  # Update quantity
             return redirect('success_url')  # Redirect to a success page after form submission
+        
+        # If form is not valid, pass form errors to template
+        error_messages = form.errors.as_data()
+        return render(request, 'create_breader_trade.html', {
+            'form': form,
+            'error_messages': error_messages,
+            'available_quantity': lc.quantity
+        })
     else:
         form = BreaderTradeForm()
-    return render(request, 'create_breader_trade.html', {'form': form})
+        error_message = None
+
+    return render(request, 'create_breader_trade.html', {
+        'form': form,
+        'error_message': error_message,
+        'available_quantity': lc.quantity  # Pass available_quantity to the template
+    })
 
 def success_url(request):
     return render(request, 'trade_success.html')

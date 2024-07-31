@@ -12,7 +12,7 @@ from logistics.models import ControlCenter
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from django.db.models import F, Func
-
+from invoice_generator.models import LetterOfCredit
 
 class Breader(models.Model):    
     breeder = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
@@ -32,7 +32,7 @@ class Abattoir(models.Model):
         return f'{self.user.first_name} {self.user.last_name} '
 
 class BreaderTrade(models.Model):
-    breeder = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    breeder = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)
     seller = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True, related_name='sellers')
     control_center = models.ForeignKey(ControlCenter, on_delete=models.CASCADE, null=True, blank=True)
     transaction_date = models.DateField(auto_now_add=True)
@@ -44,6 +44,9 @@ class BreaderTrade(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, null=True, blank=True)
     reference = models.CharField(max_length=20, unique=True)
 
+    letter_of_credit = models.ForeignKey(LetterOfCredit, on_delete=models.CASCADE, null=True, blank=True)
+
+
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         if self.control_center:
@@ -51,6 +54,10 @@ class BreaderTrade(models.Model):
             control_center = ControlCenter.objects.get(pk=self.control_center.pk)
             control_center.net_breed_supply += self.breeds_supplied
             control_center.save()
+
+        # Update the quantity in the related LetterOfCredit
+        if self.letter_of_credit:
+            self.letter_of_credit.update_quantity(self.breeds_supplied)
 
     @classmethod
     def get_supply_data(cls):

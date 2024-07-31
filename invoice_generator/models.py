@@ -325,6 +325,17 @@ class LetterOfCredit(models.Model):
             return f'{self.seller.seller.first_name} {self.seller.seller.last_name} '
         return "Unknown"
 
+    # update quantity upon fillind breaertrade form
+    def update_quantity(self, supplied_quantity):
+        self.quantity -= supplied_quantity
+        self.save()
+
+    def get_status(self):
+        if self.quantity > 0:
+            return 'Open'
+        else:
+            return 'Closed'
+
     def __str__(self):
         return f"{self.item} - {self.weight}kg - {self.delivery_date}"
 

@@ -1,74 +1,108 @@
 {% extends 'base.html' %}
-
 {% block content %}
 <style>
-    /* Add this CSS to your stylesheet or <style> tag in HTML */
+    .container {
+        margin: auto;
+        width: 60%;
+    }
 
-.container {
-    margin: auto;
-    width: 60%;
-}
+    .header {
+        background-color: #001b42;
+        color: #fff;
+        padding: 20px;
+        text-align: center;
+    }
 
-.header {
-    background-color: #001b42;
-    color: #fff;
-    padding: 20px;
-    text-align: center;
-}
+    .breader-trade-form {
+        margin-top: 20px;
+    }
 
-.breader-trade-form {
-    margin-top: 20px;
-}
+    .form-container {
+        background-color: #f9f9f9;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
 
-.form-container {
-    background-color: #f9f9f9;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
+    .form-container label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
 
-.form-container label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-}
+    .form-container input[type="text"],
+    .form-container input[type="number"],
+    .form-container select {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
 
-.form-container input[type="text"],
-.form-container input[type="number"],
-.form-container select {
-    width: 100%;
-    padding: 8px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-}
+    .submit-btn {
+        background-color: #001b42;
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
 
-.submit-btn {
-    background-color: #001b42;
-    color: #fff;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
+    .submit-btn:hover {
+        background-color: #003366;
+    }
 
-.submit-btn:hover {
-    background-color: #003366;
-}
+    .error-messages {
+        background-color: #ffebeb; /* Light red background for error */
+        border: 1px solid #ff0000; /* Red border */
+        border-radius: 5px;
+        color: #ff0000; /* Red text color */
+        padding: 15px;
+        margin-bottom: 20px;
+        box-shadow: 0 0 10px rgba(255, 0, 0, 0.2); /* Light shadow for emphasis */
+    }
+
+    .error-messages ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .error-messages li {
+        margin-bottom: 10px; /* Space between errors */
+    }
 
 </style>
-    <div class="container-fluid">
-        
-        <div class="form-container mb-3 col-md-6">
-            <div class="header">
-                <h4>Breed supply Form</h4>
-            </div>
-            <form method="post" class="breader-trade-form" >
-                {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit" class="submit-btn">Submit</button>
-            </form>
+<div class="container-fluid">
+    <div class="form-container mb-3 col-md-6">
+        <div class="header">
+            <h4>Breed Supply Form</h4>
         </div>
+
+        <!-- Display error messages -->
+        {% if error_message %}
+            <div class="error-messages">
+                <p>{{ error_message }}</p>
+            </div>
+        {% elif error_messages %}
+            <div class="error-messages">
+                <ul>
+                    {% for field, errors in error_messages.items %}
+                        {% for error in errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <form id="breaderTradeForm" method="post" class="breader-trade-form">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <input type="hidden" id="availableQuantity" value="{{ available_quantity }}">
+            <button type="submit" class="submit-btn">Submit</button>
+        </form>
     </div>
+</div>
 {% endblock %}

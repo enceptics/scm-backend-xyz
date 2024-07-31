@@ -14,4 +14,4 @@ User = get_user_model()
 class BreaderTradeForm(forms.ModelForm):
     class Meta:
         model = BreaderTrade
-        fields = ['control_center', 'breed', 'breeds_supplied', 'weight', 'vaccinated']
+        fields = ['control_center',  'breeds_supplied', 'vaccinated']
