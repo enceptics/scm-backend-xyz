@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block title %}Confirm Item Reception{% endblock title %}
+
+{% block content %}
+<style>
+.btn:disabled,
+.btn[disabled] {
+    cursor: not-allowed;
+    opacity: 0.65;
+    background-color: #6c757d; /* Change to a color to indicate the button is disabled */
+    border-color: #6c757d;
+}
+
+.header-container {
+        background-color: #f8f9fa;
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+    .header-container h1 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+        margin: 0;
+    }
+    .header-container p {
+        font-size: 14px;
+        color: #555;
+        margin: 5px 0 0;
+    }
+
+    table{
+        font-size: 14px;
+    }
+
+</style>
+<div class="header-container">
+    <h1>Confirm Reception of Items{{ trade.breed }}</h1>
+    <p>Inventory Information</p>
+</div>
+<table class="table table-responsive">
+    <thead>
+        <tr>
+            <th>Date Created</th>
+            <th>Breeder</th>
+            <th>Seller</th>
+            <th>Items Supplied</th>
+            <th>Weight</th>
+            <th>Control Center</th>
+            <th>Confirm</th>
+            <th>Payment status</th>
+            <th>See more</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for trade in trades %}
+        <tr>
+            <td>{{ trade.transaction_date }}</td>
+            <td>{{ trade.breeder }}</td>
+            <td>{{ trade.seller }}</td>
+            <td>{{ trade.breeds_supplied }} {{ trade.breed}} </td>
+            <td>{{ trade.weight }} Kg</td>
+            <td>{{ trade.control_center }}</td>
+            
+            <td>
+                {% if trade.reception_confirmed %}
+                    <span class="badge bg-success" style="font-size: 12px;">Confirmed </span>
+                {% else %}
+                    {% if request.user.role == 'inventory_manager' %}
+                        <a class="btn btn-sm" href="{% url 'confirm_reception' trade.id %}" style="background-color: #001b42; color: #f8f9fa;">
+                            <span style="font-size: 12px;">Confirm Reception</span>
+                        </a>
+                    {% else %}
+                        <span class="badge bg-warning" style="font-size: 12px;">Not Confirmed</span>
+                    {% endif %}
+                {% endif %}
+            </td>
+            <td>
+                {% if trade.payment_status %}
+                    <span class="badge bg-success" style="font-size: 12px;">Paid</span>
+                {% else %}
+                    <span class="badge bg-warning" style="font-size: 12px;">Pending</span>
+                {% endif %}
+            </td>
+            <td>
+                <a class="btn btn-info btn-sm" href="{% url 'trade_detail' trade.id %}" style="font-size: 12px;">See More</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

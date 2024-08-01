@@ -36,14 +36,8 @@ class SlaughterhouseRecord(models.Model):
     def save(self, *args, **kwargs):
         with transaction.atomic():
             super().save(*args, **kwargs)
-            
             if self.control_center:
-                # Calculate the net breed supply after deducting the slaughtered quantity
-                net_breed_supply = self.control_center.net_breed_supply - self.quantity
-                
-                # Ensure net breed supply doesn't become negative
-                self.control_center.net_breed_supply = max(net_breed_supply, 0)
-                self.control_center.save()
+                self.control_center.update_net_breed_supply()
 
     @classmethod
     def get_slaughter_data(cls):

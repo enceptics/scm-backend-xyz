@@ -353,25 +353,19 @@ from django.contrib.auth.decorators import login_required
 
 @login_required
 def slaughter_house_create(request):
-    """View to create a new quotation."""
     if request.method == 'POST':
         form = SlaughterhouseRecordForm(request.POST)
         if form.is_valid():
-            record = form.save(commit=False)
-            # Retrieve the user associated with the logged-in user
-            user = request.user
-            record.user = user
-            record.save()
-            # Redirect to the success template upon successful creation
+            with transaction.atomic():
+                record = form.save(commit=False)
+                record.user = request.user
+                record.save()
+                if record.control_center:
+                    record.control_center.update_net_breed_supply()
             return redirect('record_creation_success')
-        else:
-            # If the form is not valid, display error messages
-            messages.error(request, 'Failed to create record. Please check the form.')
+        messages.error(request, 'Failed to create record. Please check the form.')
     else:
-        # Initialize the form with the user field set to the user associated with the logged-in user
-        user = request.user
-        form = SlaughterhouseRecordForm(initial={'user': user})
-    
+        form = SlaughterhouseRecordForm(initial={'user': request.user})
     return render(request, 'slaughterhouse.html', {'form': form})
 
 

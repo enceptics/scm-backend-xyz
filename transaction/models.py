@@ -38,26 +38,34 @@ class BreaderTrade(models.Model):
     transaction_date = models.DateField(auto_now_add=True)
     breed = models.CharField(max_length=255)
     breeds_supplied = models.PositiveIntegerField(default=0)
-    weight = models.PositiveIntegerField(default=0)
+    weight = models.PositiveIntegerField(null=True, blank=True)
     vaccinated = models.BooleanField(default=False, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, null=True, blank=True)
     reference = models.CharField(max_length=20, unique=True)
-
     letter_of_credit = models.ForeignKey(LetterOfCredit, on_delete=models.CASCADE, null=True, blank=True)
 
+    received_weight = models.PositiveIntegerField( null=True, blank=True)
+    good_condition = models.PositiveIntegerField( null=True, blank=True)
+    destroyed_condition = models.PositiveIntegerField( null=True, blank=True)
+    poor_condition = models.PositiveIntegerField( null=True, blank=True)
+    reception_confirmed = models.BooleanField(default=False)
+    payment_status = models.BooleanField(default=False)
+    def save(self, *args, **kwargs):
+        if not self.reference:
+            self.reference = f"{timezone.now().strftime('%y%m%d%H%M%S')}_{uuid.uuid4().hex[:6]}"
+        super().save(*args, **kwargs)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         if self.control_center:
-            # Increment the net breed supply by adding the newly supplied breeds
-            control_center = ControlCenter.objects.get(pk=self.control_center.pk)
-            control_center.net_breed_supply += self.breeds_supplied
-            control_center.save()
+            self.control_center.update_net_breed_supply()
 
-        # Update the quantity in the related LetterOfCredit
+        # Update the quantity and breed in the related LetterOfCredit
         if self.letter_of_credit:
             self.letter_of_credit.update_quantity(self.breeds_supplied)
+            self.breed = self.letter_of_credit.item
+            self.save(update_fields=['breed'])
 
     @classmethod
     def get_supply_data(cls):
@@ -109,7 +117,7 @@ class BreaderTrade(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.breeder.first_name} {self.breeder.last_name} supplied {self.breeds_supplied} {self.breed}'s to {self.control_center} on {self.created_at}"
+        return f"{self.id} supplied {self.breeds_supplied} to {self.control_center} on {self.created_at}"
 
 class Inventory(models.Model):
     name = models.CharField(max_length=255, blank=True, null=True)

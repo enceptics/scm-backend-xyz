@@ -728,7 +728,6 @@ def update_letter_of_credit_status(request, pk):
                     letter_of_credit.quantity = extracted_data.get('quantity', 0)
                     letter_of_credit.delivery_date = extracted_data.get('delivery_date', None)
 
-souce encode
 
                     # Send email notification for approval
                     subject = 'Letter of Credit Approval'

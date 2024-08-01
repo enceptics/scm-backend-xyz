@@ -105,4 +105,26 @@
         </form>
     </div>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#id_control_center').change(function() {
+        var controlCenterId = $(this).val();
+        if (controlCenterId) {
+            $.ajax({
+                url: '{% url "get_seller" %}',  // The URL to your view that returns the seller for a control center
+                data: {
+                    'control_center_id': controlCenterId
+                },
+                success: function(data) {
+                    $('#id_seller').val(data.seller_id);  // Set the seller field value
+                }
+            });
+        } else {
+            $('#id_seller').val('');  // Clear the seller field if no control center is selected
+        }
+    });
+});
+</script>
 {% endblock %}

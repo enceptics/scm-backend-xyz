@@ -365,53 +365,83 @@ class AbattoirPaymentToBreaderViewSet(viewsets.ModelViewSet):
 # TEMPLATES
 from .forms import BreaderTradeForm
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
+
+def get_seller(request):
+    control_center_id = request.GET.get('control_center_id')
+    if control_center_id:
+        try:
+            control_center = ControlCenter.objects.get(id=control_center_id)
+            return JsonResponse({'seller_id': control_center.seller.id})
+        except ControlCenter.DoesNotExist:
+            return JsonResponse({'seller_id': None})
+    return JsonResponse({'seller_id': None})
 
 def create_breader_trade(request, lc_id):
-    lc = LetterOfCredit.objects.get(id=lc_id)  # Get the Letter of Credit instance
-
+    lc = get_object_or_404(LetterOfCredit, id=lc_id)
     if request.method == 'POST':
         form = BreaderTradeForm(request.POST)
         if form.is_valid():
-            requested_quantity = form.cleaned_data['breeds_supplied']  # Get the quantity from the form
-            
-            # Compare the requested quantity with the available quantity
-            if requested_quantity > lc.quantity:  # Assuming 'quantity' is the field name in LetterOfCredit
+            requested_quantity = form.cleaned_data['breeds_supplied']
+            if requested_quantity > lc.quantity:
                 error_message = (
                     f"The quantity you are attempting to supply ({requested_quantity}) exceeds "
                     f"the quantity we want ({lc.quantity}). Please adjust the quantity."
                 )
-                # Render the form with the error message
                 return render(request, 'create_breader_trade.html', {
                     'form': form,
                     'error_message': error_message,
                     'available_quantity': lc.quantity
                 })
-            
-            # If no errors, proceed with saving the form
-            breader_trade = form.save(commit=False)
-            breader_trade.breeder = request.user  # Assign the logged-in user as the breeder
-            breader_trade.letter_of_credit = lc  # Associate the trade with the LC
-            breader_trade.save()
-            lc.update_quantity(breader_trade.breeds_supplied)  # Update quantity
-            return redirect('success_url')  # Redirect to a success page after form submission
-        
-        # If form is not valid, pass form errors to template
-        error_messages = form.errors.as_data()
+            with transaction.atomic():
+                breader_trade = form.save(commit=False)
+                breader_trade.breeder = request.user
+                breader_trade.letter_of_credit = lc
+                breader_trade.breed = lc.item
+                breader_trade.seller = breader_trade.control_center.seller  # Automatically set the seller
+                breader_trade.save()
+                lc.update_quantity(breader_trade.breeds_supplied)
+                breader_trade.control_center.update_net_breed_supply()
+            return redirect('success_url')
+
         return render(request, 'create_breader_trade.html', {
             'form': form,
-            'error_messages': error_messages,
+            'error_messages': form.errors.as_data(),
             'available_quantity': lc.quantity
         })
-    else:
-        form = BreaderTradeForm()
-        error_message = None
-
+    form = BreaderTradeForm()
     return render(request, 'create_breader_trade.html', {
         'form': form,
-        'error_message': error_message,
-        'available_quantity': lc.quantity  # Pass available_quantity to the template
+        'available_quantity': lc.quantity
     })
 
+# Reception
+from .forms import ReceptionForm
+@login_required
+def list_breader_trades(request):
+    trades = BreaderTrade.objects.all().order_by('-id')
+    return render(request, 'list_breader_trades.html', {'trades': trades})
+
+@login_required
+def confirm_reception(request, trade_id):
+    trade = get_object_or_404(BreaderTrade, id=trade_id)
+    if request.method == 'POST':
+        form = ReceptionForm(request.POST, instance=trade)
+        if form.is_valid():
+            reception = form.save(commit=False)
+            reception.reception_confirmed = True
+            reception.save()
+            return redirect('list_breader_trades')  # Redirect to a success page
+    else:
+        form = ReceptionForm(instance=trade)
+    
+    return render(request, 'confirm_reception.html', {'form': form, 'trade': trade})
+
+@login_required
+def trade_detail(request, trade_id):
+    trade = get_object_or_404(BreaderTrade, id=trade_id)
+    return render(request, 'trade_detail.html', {'trade': trade})
+    
 def success_url(request):
     return render(request, 'trade_success.html')
 

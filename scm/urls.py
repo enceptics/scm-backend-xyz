@@ -340,7 +340,11 @@ urlpatterns = [
     path('dashboard/inventory_manager/', views.stock_shift_dashboard, name='stock_shift_dashboard'),
 
     # Transaction urls
+    path('get_seller/', trade_views.get_seller, name='get_seller'),
     path('trade/create_breader_trade/<int:lc_id>/', trade_views.create_breader_trade, name='create_breader_trade'),
+    path('list-breader-trades/', trade_views.list_breader_trades, name='list_breader_trades'),
+    path('confirm-reception/<int:trade_id>/', trade_views.confirm_reception, name='confirm_reception'),
+    path('trade/<int:trade_id>/details/', trade_views.trade_detail, name='trade_detail'),
     path('trade/success/', trade_views.success_url, name='success_url'),
     path('trade/supply-history/', trade_views.supply_history, name='supply_history'),
     path('trade/seller_supply-history/', trade_views.seller_breeder_trade, name='seller_supply_history'),

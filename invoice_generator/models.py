@@ -9,7 +9,7 @@ from datetime import timedelta
 # from transaction.models import Breader
 from custom_registration.models import Seller
 import PyPDF2
-
+from django.apps import apps
 # ---------------Seller Purchase order--------------------------------------------
 
 class PurchaseOrder(models.Model):
@@ -329,6 +329,13 @@ class LetterOfCredit(models.Model):
     def update_quantity(self, supplied_quantity):
         self.quantity -= supplied_quantity
         self.save()
+
+    def update_breader_trades(self):
+        BreaderTrade = apps.get_model('transaction', 'BreaderTrade')
+        breader_trades = BreaderTrade.objects.filter(letter_of_credit=self)
+        for trade in breader_trades:
+            trade.breed = self.item
+            trade.save(update_fields=['breed'])
 
     def get_status(self):
         if self.quantity > 0:

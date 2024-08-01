@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block title %}Trade Details{% endblock title %}
+
+{% block content %}
+<style>
+    .trade-detail-container {
+        background-color: #ffffff;
+        padding: 30px;
+        border-radius: 12px;
+        margin-top: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .trade-detail-container h4 {
+        font-size: 20px;
+        color: #343a40;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 10px;
+    }
+    .trade-detail-container .row {
+        margin-bottom: 15px;
+    }
+    .trade-detail-container .col-md-4 {
+        font-size: 16px;
+        color: #495057;
+    }
+    .trade-detail-container .col-md-4 strong {
+        color: #007bff;
+    }
+
+</style>
+
+<div class="container mt-4">
+    <div class="trade-detail-container">
+        <h4>Details of Items Supplied by {{ trade.breeder }}</h4>
+        
+        <div class="row">
+            <div class="col-md-4">
+                <strong>Date Created:</strong> {{ trade.transaction_date }}
+            </div>
+            <div class="col-md-4">
+                <strong>Breeder:</strong> {{ trade.breeder }}
+            </div>
+            <div class="col-md-4">
+                <strong>Seller:</strong> {{ trade.seller }}
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-4">
+                <strong>Breed:</strong> {{ trade.breed }}
+            </div>
+            <div class="col-md-4">
+                <strong>Items Supplied:</strong> {{ trade.breeds_supplied }}
+            </div>
+            <div class="col-md-4">
+                <strong>Weight:</strong> {{ trade.weight }} Kg
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-4">
+                <strong>Control Center:</strong> {{ trade.control_center }}
+            </div>
+            <div class="col-md-4">
+                <strong>Confirmation:</strong> {% if trade.reception_confirmed %} <span class="badge bg-success">Confirmed</span> {% else %} <span class="badge bg-warning">Not confirmed</span> {% endif %}
+            </div>
+            <div class="col-md-4">
+                <strong>Payment Status:</strong> {% if trade.payment_status %} <span class="badge bg-success">Paid</span> {% else %} <span class="badge bg-danger">Pending</span> {% endif %}
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-4">
+                <strong>Good Condition:</strong> {{ trade.good_condition }}
+            </div>
+            <div class="col-md-4">
+                <strong>Destroyed Condition:</strong> {{ trade.destroyed_condition }}
+            </div>
+            <div class="col-md-4">
+                <strong>Poor Condition:</strong> {{ trade.poor_condition }}
+            </div>
+        </div>
+
+        <a class="btn btn-back btn-sm btn-info" href="{% url 'list_breader_trades' %}">Back to List</a>
+    </div>
+</div>
+{% endblock %}

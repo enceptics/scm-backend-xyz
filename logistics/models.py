@@ -5,6 +5,8 @@ from django.dispatch import receiver
 from invoice_generator.models import Invoice, Buyer, Seller
 from custom_registration.models import CustomUser
 from inventory_management.choices import BREED_CHOICES, PART_CHOICES, SALE_CHOICES
+from django.apps import apps
+from django.db.models import Sum
 
 # Control centers
 
@@ -64,6 +66,14 @@ class ControlCenter(models.Model):
             return self.seller.get_full_name()
         else:
             return "Not assigned"
+
+    def update_net_breed_supply(self):
+        BreaderTrade = apps.get_model('transaction', 'BreaderTrade')
+        SlaughterhouseRecord = apps.get_model('slaughter_house', 'SlaughterhouseRecord')
+        total_supplied = BreaderTrade.objects.filter(control_center=self).aggregate(total_supplied=Sum('breeds_supplied'))['total_supplied'] or 0
+        total_slaughtered = SlaughterhouseRecord.objects.filter(control_center=self).aggregate(total_slaughtered=Sum('quantity'))['total_slaughtered'] or 0
+        self.net_breed_supply = total_supplied - total_slaughtered
+        self.save()
 
     def __str__(self):
         return self.name

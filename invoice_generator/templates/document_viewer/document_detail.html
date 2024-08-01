@@ -109,6 +109,11 @@
     </div>
   </div>
   {% endfor %}
+  {% else %}
+  <div class="text-center mt-5">
+    <i class="fas fa-exclamation-circle fa-4x" style="color: #001b40;"></i>
+    <p class="mt-3" style="font-size: 24px; font-weight: 500;">There are currently no active orders.</p>
+  </div>
 {% endif %}
 
 {% if closed_orders %}
