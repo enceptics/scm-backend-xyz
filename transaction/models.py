@@ -51,6 +51,7 @@ class BreaderTrade(models.Model):
     poor_condition = models.PositiveIntegerField( null=True, blank=True)
     reception_confirmed = models.BooleanField(default=False)
     payment_status = models.BooleanField(default=False)
+    
     def save(self, *args, **kwargs):
         if not self.reference:
             self.reference = f"{timezone.now().strftime('%y%m%d%H%M%S')}_{uuid.uuid4().hex[:6]}"

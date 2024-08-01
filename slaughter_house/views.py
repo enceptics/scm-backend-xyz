@@ -346,31 +346,85 @@ def item_confirmation_error_view(request):
 
 # Templates
 from .forms import FinishedProductForm, SlaughterhouseRecordForm
+from transaction.forms import WeightRecordForm
+
 from django.contrib import messages
 from custom_registration.models import Seller
 
 from django.contrib.auth.decorators import login_required
 
 @login_required
-def slaughter_house_create(request):
+def slaughterhouse_dashboard(request):
+    # Filter trades where reception is confirmed and weight is recorded
+    trades = BreaderTrade.objects.filter(reception_confirmed=True, weight__isnull=False)
+    
+    # Aggregate Data
+    total_items_received = trades.aggregate(total_items_received=Sum('breeds_supplied'))['total_items_received']
+    total_reception_confirmed = trades.aggregate(total_reception_confirmed=Count('id'))['total_reception_confirmed']
+    total_received_weight = trades.aggregate(total_received_weight=Sum('received_weight'))['total_received_weight']
+    total_good_condition = trades.aggregate(total_good_condition=Sum('good_condition'))['total_good_condition']
+    total_destroyed_condition = trades.aggregate(total_destroyed_condition=Sum('destroyed_condition'))['total_destroyed_condition']
+    total_poor_condition = trades.aggregate(total_poor_condition=Sum('poor_condition'))['total_poor_condition']
+    
+    context = {
+        'trades': trades,
+        'total_items_received': total_items_received or 0,
+        'total_reception_confirmed': total_reception_confirmed or 0,
+        'total_received_weight': total_received_weight or 0,
+        'total_good_condition': total_good_condition or 0,
+        'total_destroyed_condition': total_destroyed_condition or 0,
+        'total_poor_condition': total_poor_condition or 0,
+        'form': WeightRecordForm()  # Include the form for the modal
+    }
+    
+    return render(request, 'slaughterhouse_dashboard.html', context)
+
+from django.db import transaction
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.db import transaction
+
+
+@login_required
+def slaughter_house_create(request, trade_id):
+    trade = get_object_or_404(BreaderTrade, id=trade_id)
+
     if request.method == 'POST':
         form = SlaughterhouseRecordForm(request.POST)
         if form.is_valid():
+            # Get the form values
+            weight = form.cleaned_data.get('weight')
+            breeds_supplied = form.cleaned_data.get('breeds_supplied')
+
+            # Initialize trade values to 0 if None
+            trade_breeds_supplied = trade.breeds_supplied or 0
+            trade_weight = trade.weight or 0
+
+            # Check if the amounts to be deducted are valid
+            if breeds_supplied > trade_breeds_supplied:
+                messages.error(request, 'Breeds supplied exceeds the available amount.')
+                return redirect('slaughter_house_create', trade_id=trade_id)
+
+            if weight > trade_weight:
+                messages.error(request, 'Weight exceeds the available weight.')
+                return redirect('slaughter_house_create', trade_id=trade_id)
+
+            # Perform the deduction
             with transaction.atomic():
-                record = form.save(commit=False)
-                record.user = request.user
-                record.save()
-                if record.control_center:
-                    record.control_center.update_net_breed_supply()
-            return redirect('record_creation_success')
-        messages.error(request, 'Failed to create record. Please check the form.')
+                trade.breeds_supplied -= breeds_supplied
+                trade.weight -= weight
+                trade.save()
+                messages.success(request, 'You have successfully removed an item to be slaughtered.')
+                return redirect('slaughterhouse_dashboard')
+        else:
+            messages.error(request, 'Failed to create record. Please check the form.')
     else:
-        form = SlaughterhouseRecordForm(initial={'user': request.user})
-    return render(request, 'slaughterhouse.html', {'form': form})
+        form = SlaughterhouseRecordForm()
 
+    return render(request, 'slaughterhouse.html', {'form': form, 'trade': trade})
 
-def record_creation_success(request):
-    return render(request, 'slaughterhouse_record_created_successfully.html')
 
 # Templates
 from inventory_management.forms import InventoryBreedSalesForm

@@ -71,6 +71,7 @@ class CustomUser(AbstractUser):
     BUYER = 'buyer'
     SELLER = 'seller'
     WAREHOUSE_PERSONNEL = 'warehouse_personnel'
+    EXPORT_MANAGER  = 'export_manager'
     INVENTORY_MANAGER = 'inventory_manager'
     COLLATERAL_MANAGER = 'collateral_manager'
     ADMIN = 'admin'
@@ -88,6 +89,7 @@ class CustomUser(AbstractUser):
         (BUYER, 'Buyer'),
         (SELLER, 'Seller'),
         (WAREHOUSE_PERSONNEL, 'Warehouse Personnel'),
+        (EXPORT_MANAGER, 'Export Manager'),
         (INVENTORY_MANAGER, 'Inventory Manager'),
         (ADMIN, 'Admin'),
         (SLAUGHTERHOUSE_MANAGER, 'Slaughterhouse Manager'),

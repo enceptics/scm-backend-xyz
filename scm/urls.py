@@ -322,6 +322,8 @@ urlpatterns = [
     path('register/bank/', views.register_bank, name='bank_register'),
     path('register/collateral-manager/', views.register_collateral_manager, name='collateral_manager_register'),
     path('register/inventory-manager/', views.register_inventory_manager, name='inventory_manager_register'),
+    path('register/slaughter-house-manager/', views.register_slaughter_house, name='slaughter_house_register'),
+    path('register/export_management/', views.register_export_manager, name='export_manager_register'),
     path('register/success', views.register_success, name='register_success'),
     path('unauthorized/', views.unauthorized, name='unauthorized'),
     path('set-password/<uidb64>/<token>/', views.send_password_reset_email, name='set_password'),
@@ -344,6 +346,7 @@ urlpatterns = [
     path('trade/create_breader_trade/<int:lc_id>/', trade_views.create_breader_trade, name='create_breader_trade'),
     path('list-breader-trades/', trade_views.list_breader_trades, name='list_breader_trades'),
     path('confirm-reception/<int:trade_id>/', trade_views.confirm_reception, name='confirm_reception'),
+    path('record_weight/<int:trade_id>/', trade_views.record_item_weight, name='record_weight'),
     path('trade/<int:trade_id>/details/', trade_views.trade_detail, name='trade_detail'),
     path('trade/success/', trade_views.success_url, name='success_url'),
     path('trade/supply-history/', trade_views.supply_history, name='supply_history'),
@@ -402,8 +405,9 @@ urlpatterns = [
 
     # URL for viewing extracted data detail for a specific LetterOfCredit instance
     path('lc_document_extracted_content_detail/<int:lc_document_id>/', lc_views.lc_document_extracted_content_detail, name='lc_document_extracted_content_detail'),
-    path('slaughterhouse_create/', slaugher_house_views.slaughter_house_create, name='slaughter_house_create'), # Add this line
-    path('slaughterhouse_creation_success/', slaugher_house_views.record_creation_success, name='record_creation_success'),
+    path('dashboard/slaughterhouse/<int:trade_id>/', slaugher_house_views.slaughter_house_create, name='slaughter_house_create'),
+    # path('slaughterhouse_creation_success/', slaugher_house_views.record_creation_success, name='record_creation_success'),
+    path('slaughterhouse_dashboard/', slaugher_house_views.slaughterhouse_dashboard, name='slaughterhouse_dashboard'),
 
     # Record forms
     path('create_finished_products/', slaugher_house_views.create_inventory_breed_sale, name='create_inventory_breed_sale'),

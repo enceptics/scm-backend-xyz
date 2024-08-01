@@ -20,42 +20,43 @@
 <main class="container " style="height: 70vh;">
     <div class="row">
         <div class="col-md-3">
-            <section id="buyer">
-                <div class="card">
-                    <div class="card-header">
-                        <h2>Buyer Registration</h2>
-                    </div>
-                    <a href="{% url 'buyer_register' %}" class="card-body card-body-link">
-                        <div class="card-body">
-                            Click here to register a buyer.
-                        </div>
-                    </a>
-                </div>
-            </section>
-        </div>
-        <div class="col-md-3">
             <section id="seller">
                 <div class="card">
                     <div class="card-header">
-                        <h2>Seller Registration</h2>
+                        <h2>Seller </h2>
                     </div>
                     <a href="{% url 'seller_register' %}" class="card-body card-body-link">
                         <div class="card-body">
-                            Click here to register a seller.
+                            Register seller.
                         </div>
                     </a>
                 </div>
             </section>
         </div>
         <div class="col-md-3">
+            <section id="buyer">
+                <div class="card">
+                    <div class="card-header">
+                        <h2> Buyer </h2>
+                    </div>
+                    <a href="{% url 'buyer_register' %}" class="card-body card-body-link">
+                        <div class="card-body">
+                            Register Buyer.
+                        </div>
+                    </a>
+                </div>
+            </section>
+        </div>
+      
+        <div class="col-md-3">
             <section id="bank">
                 <div class="card">
                     <div class="card-header">
-                        <h2>Bank Registration</h2>
+                        <h2>Bank</h2>
                     </div>
                     <a href="{% url 'bank_register' %}" class="card-body card-body-link">
                         <div class="card-body">
-                            Click here to register bank.
+                            Register bank.
                         </div>
                     </a>
                 </div>
@@ -65,11 +66,11 @@
             <section id="bank">
                 <div class="card">
                     <div class="card-header">
-                        <h2>Collateral Manager/h2>
+                        <h2>Collateral Manager</h2>
                     </div>
                     <a href="{% url 'collateral_manager_register' %}" class="card-body card-body-link">
                         <div class="card-body">
-                            Click here to register collateral manager.
+                            Register Collateral manager.
                         </div>
                     </a>
                 </div>
@@ -83,7 +84,21 @@
                     </div>
                     <a href="{% url 'breeder_register' %}" class="card-body card-body-link">
                         <div class="card-body">
-                            Click here to register as a breeder.
+                           Register breeder.
+                        </div>
+                    </a>
+                </div>
+            </section>
+        </div>
+        <div class="col-md-3">
+            <section id="bank">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Collateral Manager</h2>
+                    </div>
+                    <a href="{% url 'collateral_manager_register' %}" class="card-body card-body-link">
+                        <div class="card-body">
+                            Register Collateral manager.
                         </div>
                     </a>
                 </div>
@@ -93,11 +108,25 @@
             <section id="breeder">
                 <div class="card">
                     <div class="card-header">
-                        <h2>Inventory Manager Registration</h2>
+                        <h2>Slaughter House</h2>
                     </div>
-                    <a href="{% url 'inventory_manager_register' %}" class="card-body card-body-link">
+                    <a href="{% url 'slaughter_house_register' %}" class="card-body card-body-link">
                         <div class="card-body">
-                            Click here to register as a inventory manager.
+                           Register SlaughterHouse.
+                        </div>
+                    </a>
+                </div>
+            </section>
+        </div>
+        <div class="col-md-3">
+            <section id="breeder">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Export Manager</h2>
+                    </div>
+                    <a href="{% url 'export_manager_register' %}" class="card-body card-body-link">
+                        <div class="card-body">
+                            Register Export Manager.
                         </div>
                     </a>
                 </div>

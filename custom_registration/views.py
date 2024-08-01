@@ -43,7 +43,7 @@ from .models import InventoryManager
 # Templates
 from django.shortcuts import render
 
-from .forms import CustomUserRegistrationForm, CustomPasswordResetForm, CustomLoginForm  # Import the CustomUserRegistrationForm
+from .forms import CustomUserRegistrationForm, CustomPasswordResetForm, CustomLoginForm, ExportManagerRegistrationForm, SlaughterHouseRegistrationForm  # Import the CustomUserRegistrationForm
 
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
@@ -695,6 +695,50 @@ def register_breeder(request):
         form = BreederRegistrationForm()
     return render(request, 'auth/breeder_registration.html', {'form': form})
 
+def register_slaughter_house(request):
+    if request.method == 'POST':
+        form = SlaughterHouseRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.role = CustomUser.SLAUGHTERHOUSE_MANAGER
+            user.save()
+
+            # Generate uidb64 and token for password reset email
+            uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+
+            # Send password reset email
+            send_password_reset_email(uidb64, token, user.email)
+
+            # Create a new Seller instance and associate the user with it
+            # breeder = Breeder.objects.create(breeder=user)  # Assign the user to the seller_id field
+            return redirect('register_success')
+    else:
+        form = SlaughterHouseRegistrationForm()
+    return render(request, 'auth/slaughter_house_registration.html', {'form': form})
+
+def register_export_manager(request):
+    if request.method == 'POST':
+        form = ExportManagerRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.role = CustomUser.EXPORT_MANAGER
+            user.save()
+
+            # Generate uidb64 and token for password reset email
+            uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+
+            # Send password reset email
+            send_password_reset_email(uidb64, token, user.email)
+
+            # Create a new Seller instance and associate the user with it
+            # breeder = Breeder.objects.create(breeder=user)  # Assign the user to the seller_id field
+            return redirect('register_success')
+    else:
+        form = ExportManagerRegistrationForm()
+    return render(request, 'auth/export_manager_registration.html', {'form': form})
+
 def register_bank(request):
     if request.method == 'POST':
         form = BankRegistrationForm(request.POST)
@@ -843,7 +887,7 @@ def login_view(request):
                 elif user.role == CustomUser.INVENTORY_MANAGER:
                     return redirect('/dashboard/inventory_manager/')  # Redirect inventory managers to inventory manager dashboard
                 elif user.role == CustomUser.SLAUGHTERHOUSE_MANAGER:
-                    return redirect('/dashboard/slaughterhouse_manager/')  # Redirect slaughterhouse managers to slaughterhouse manager dashboard
+                    return redirect('/dashboard/slaughterhouse/')  # Redirect slaughterhouse managers to slaughterhouse manager dashboard
                 elif user.role == CustomUser.COLLATERAL_MANAGER:
                     try:
                         collateral_manager = CollateralManager.objects.get(name=user)

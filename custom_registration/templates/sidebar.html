@@ -101,11 +101,21 @@
     <hr class="sidebar-divider my-0">
     {% endif %}
 
+    {% if request.user.role == 'bank'  %}
+    <li class="{% if 'dashboard' in active_icon %} nav-item active {% else %} nav-item {% endif %}">
+        <a class="nav-link" href="{% url 'list_breader_trades' %}">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Item reception</span>
+        </a>
+    </li>
+    
+    <hr class="sidebar-divider my-0">
+    {% endif %}
 
-    {% if request.user.role == 'inventory_manager' or request.user.role == 'seller' or request.user.is_superuser  %}
+    {% if request.user.role == 'inventory_manager' or request.user.role == 'seller' or request.user.role == 'slaughterhouse_manager' or request.user.is_superuser  %}
     <!-- Nav Item - Bank -->
     <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
-        <a class="nav-link" href="{% url 'slaughter_house_create' %}">
+        <a class="nav-link" href="{% url 'slaughterhouse_dashboard' %}">
             <i class="fas fa-fw fa-tachometer-alt"></i>
             <span>Slaughter House</span></a>
     </li>
@@ -151,7 +161,7 @@
     <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
         <a class="nav-link" href="{% url 'all_letter_of_credit_list' %}">
             <i class="fas fa-fw fa-cart-plus"></i>
-            <span>Letter of credit</span></a>
+            <span>Letters of credit</span></a>
     </li>
     <hr class="sidebar-divider my-0">
     {% endif %}

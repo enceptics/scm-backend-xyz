@@ -22,9 +22,9 @@ class BreaderTradeForm(forms.ModelForm):
 class ReceptionForm(forms.ModelForm):
     class Meta:
         model = BreaderTrade
-        fields = ['weight', 'good_condition', 'destroyed_condition', 'poor_condition']
+        fields = ['good_condition', 'destroyed_condition', 'poor_condition']
         widgets = {
-            'weight': forms.TextInput(attrs={'placeholder': 'Enter the weight received'}),
+            
             'good_condition': forms.TextInput(attrs={'placeholder': 'Enter the number of good condition items'}),
             'destroyed_condition': forms.TextInput(attrs={'placeholder': 'Enter the number of destroyed/dead items'}),
             'poor_condition': forms.TextInput(attrs={'placeholder': 'Enter the number of poor condition items'}),
@@ -32,13 +32,22 @@ class ReceptionForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        weight = cleaned_data.get('weight')
         good_condition = cleaned_data.get('good_condition')
         destroyed_condition = cleaned_data.get('destroyed_condition')
         poor_condition = cleaned_data.get('poor_condition')
         breeds_supplied = self.instance.breeds_supplied
 
         # Ensure the total of confirmed values does not exceed supplied amount
-        total_confirmed = (weight) + (good_condition ) + (destroyed_condition ) + (poor_condition )
+        total_confirmed = (good_condition ) + (destroyed_condition ) + (poor_condition )
         if total_confirmed > breeds_supplied:
             raise forms.ValidationError("The total confirmed amounts cannot exceed the supplied amount.")
+            
+class WeightRecordForm(forms.ModelForm):
+    class Meta:
+        model = BreaderTrade
+        fields = ['weight']
+        widgets = {
+            'weight': forms.TextInput(attrs={'placeholder': 'Enter the weight received'}),
+        }
+
+   

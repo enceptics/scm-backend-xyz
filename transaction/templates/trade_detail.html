@@ -33,6 +33,24 @@
 <div class="container mt-4">
     <div class="trade-detail-container">
         <h4>Details of Items Supplied by {{ trade.breeder }}</h4>
+
+        {% if request.user.role == 'bank' %}
+        <h5>Breeder Personal details</h5>
+        <div class="row">
+            
+            <hr>
+            <div class="col-md-4">
+                <strong>Full Names:</strong> {{ trade.breeder.first_name }} {{ trade.breeder.last_name }}
+            </div>
+            <div class="col-md-4">
+                <strong>ID Number:</strong> {{ trade.breeder.id_number }}
+            </div>
+            <div class="col-md-4">
+                <strong>Account Number:</strong> {{ trade.breeder.bank_account_number }}
+            </div>
+        </div>  <hr>
+                    {% endif %}
+                  
         
         <div class="row">
             <div class="col-md-4">
@@ -51,7 +69,7 @@
                 <strong>Breed:</strong> {{ trade.breed }}
             </div>
             <div class="col-md-4">
-                <strong>Items Supplied:</strong> {{ trade.breeds_supplied }}
+                <strong>Items Supplied:</strong> {{ trade.breeds_supplied }} {{trade.breed}}s
             </div>
             <div class="col-md-4">
                 <strong>Weight:</strong> {{ trade.weight }} Kg

@@ -12,7 +12,13 @@ class FinishedProductForm(forms.ModelForm):
         model = SlaughterhouseRecord
         fields = '__all__'  
 
+from django import forms
+from .models import BreaderTrade
+
 class SlaughterhouseRecordForm(forms.ModelForm):
     class Meta:
-        model = SlaughterhouseRecord
-        fields = ['breed', 'control_center', 'weight', 'quantity']
+        model = BreaderTrade
+        fields = ['weight', 'breeds_supplied']
+
+
+

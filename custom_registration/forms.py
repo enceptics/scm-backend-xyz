@@ -100,10 +100,23 @@ class BankRegistrationForm(UserCreationForm):
         model = CustomUser
         fields = ['username', 'password1', 'password2', 'email', 'phone_number', 'address', 'county', 'country', 'location']
 
+class SlaughterHouseRegistrationForm(UserCreationForm):
+    class Meta(UserCreationForm.Meta):
+        model = CustomUser
+        fields = ['username', 'password1', 'password2', 'first_name', 'last_name', 'email', 'phone_number', 'address', 'id_number', 'county', 'country']
+
+class ExportManagerRegistrationForm(UserCreationForm):
+
+    class Meta(UserCreationForm.Meta):
+        model = CustomUser
+        fields = ['username', 'password1', 'password2', 'first_name', 'last_name', 'email', 'phone_number', 'address', 'id_number', 'county', 'country']
+
 class CollateralManagerRegistrationForm(UserCreationForm):
+
     class Meta(UserCreationForm.Meta):
         model = CustomUser
         fields = ['username', 'password1', 'password2', 'first_name', 'last_name', 'email', 'phone_number', 'address', 'id_number', 'county', 'country', 'bank_branch']
+
 class InventoryManagerRegistrationForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
         model = CustomUser

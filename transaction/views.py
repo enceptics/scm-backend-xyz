@@ -363,7 +363,7 @@ class AbattoirPaymentToBreaderViewSet(viewsets.ModelViewSet):
 # END PAYMENT
 
 # TEMPLATES
-from .forms import BreaderTradeForm
+from .forms import BreaderTradeForm, WeightRecordForm
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 
@@ -419,8 +419,23 @@ def create_breader_trade(request, lc_id):
 from .forms import ReceptionForm
 @login_required
 def list_breader_trades(request):
-    trades = BreaderTrade.objects.all().order_by('-id')
-    return render(request, 'list_breader_trades.html', {'trades': trades})
+    trades = BreaderTrade.objects.filter(reception_confirmed=True, weight__isnull=False).order_by('-id')
+    
+    # Calculate aggregate values
+    total_received_weight = trades.aggregate(total_weight=Sum('weight'))['total_weight'] or 0
+    total_good_condition = trades.aggregate(total_good=Sum('good_condition'))['total_good'] or 0
+    total_destroyed_condition = trades.aggregate(total_destroyed=Sum('destroyed_condition'))['total_destroyed'] or 0
+    total_poor_condition = trades.aggregate(total_poor=Sum('poor_condition'))['total_poor'] or 0
+    
+    context = {
+        'trades': trades,
+        'total_received_weight': total_received_weight,
+        'total_good_condition': total_good_condition,
+        'total_destroyed_condition': total_destroyed_condition,
+        'total_poor_condition': total_poor_condition,
+    }
+    
+    return render(request, 'list_breader_trades.html', context)
 
 @login_required
 def confirm_reception(request, trade_id):
@@ -436,6 +451,27 @@ def confirm_reception(request, trade_id):
         form = ReceptionForm(instance=trade)
     
     return render(request, 'confirm_reception.html', {'form': form, 'trade': trade})
+
+@login_required
+def record_item_weight(request, trade_id):
+    trade = get_object_or_404(BreaderTrade, id=trade_id)
+    
+    if request.method == 'POST':
+        form = WeightRecordForm(request.POST, instance=trade)
+        if form.is_valid():
+            reception = form.save(commit=False)
+            
+            if reception.weight:  # Check if weight is populated
+                reception.reception_confirmed = True
+            else:
+                reception.reception_confirmed = False
+            
+            reception.save()
+            return redirect('slaughterhouse_dashboard')  # Redirect to the dashboard
+    else:
+        form = WeightRecordForm(instance=trade)
+    
+    return render(request, 'record_weight.html', {'form': form, 'trade': trade})
 
 @login_required
 def trade_detail(request, trade_id):
