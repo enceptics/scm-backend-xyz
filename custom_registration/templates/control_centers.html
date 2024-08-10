@@ -1,110 +1,160 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %} Bank Control Centers {% endblock %}
+{% block title %} Control Centers {% endblock %}
 
 {% block content %}
-<div class="row mt-n4 mb-3 rounded" style="font-size: 15px; background-color: #001b40; color: white;">
-    <ul class="nav nav-tabs" id="myTab" role="tablist">
-    </ul>
-    <div class="">
-        <a class="nav-link" id="quotation-tab" style="color: #d9d9d9; text-decoration: none;">Hello, {{request.user.username}}</a>
-    </div>
-    <div class="col mt-1 text-center">
-        
-        <span class="" style="margin-right: 5px; color: #999999;letter-spacing: 5px;font-size: 20px;"> Control Centers</span>
-    </div>
-    <div class="col d-flex justify-content-end align-items-center">
-        <a href="javascript:history.back()" class="text-decoration-none text-secondary">
-            <span class="ml-auto mx-3"><i class="fas fa-arrow-left"></i> Back</span>
-        </a>
-    </div>
-</div>
+<style>
+    .clickable-icon {
+    transition: color 0.3s ease;
+}
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <span class="mr-2 clickable-icon" style="cursor: pointer;font-size: 20px;" data-toggle="popover" title="Help" data-content="Efficiently manage collateral managers by assigning them to control centers to oversee and administer seller inventories. Begin by registering collateral managers, then assign them to control centers to facilitate the effective management of various seller inventories."><i class="fas fa-question-circle" id="modalParagraph"></i></span>
-    <div>
+.clickable-icon:hover {
+    color: #0056b3; /* Darker shade of primary color */
+}
+
+</style>
+<div class="container mt-4">
+    <div class="row mb-3 rounded" style="background-color: #001b40; color: white;">
+        <div class="col-md-6">
+            <p class="m-0 py-2 px-3" style="font-size: 15px;">
+                Hello, {{ request.user.username }}
+            </p>
+        </div>
+        <div class="col-md-6 text-right">
+            <a href="javascript:history.back()" class="text-decoration-none text-light">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+        <div class="col-12 text-center mt-2 mb-3">
+            <span style="color: #d9d9d9; letter-spacing: 2px; font-size: 20px;">Control Centers</span>
+        </div>
+    </div>
+
+    {% if request.user.role == 'bank' %}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="mr-2 clickable-icon" style="font-size: 20px;" data-toggle="popover" title="Help" data-content="Efficiently manage collateral managers by assigning them to control centers to oversee and administer seller inventories. Begin by registering collateral managers, then assign them to control centers to facilitate the effective management of various seller inventories.">
+            <i class="fas fa-question-circle text-primary"></i>
+        </span>
         <a href="{% url 'collateral_manager_register' %}">
-            <button class="btn" style="font-size: 12px; background-color: #001b42; color: azure;">
+            <button class="btn btn-dark" style="font-size: 12px;">
                 <i class="fas fa-plus" style="margin-right: 5px;"></i> Add Collateral Manager
             </button>
         </a>
     </div>
-</div>
+    {% endif %}
 
-<!-- Rejection Message Modal -->
-<div class="modal fade" id="customModal" tabindex="-1" role="dialog" aria-labelledby="customModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="customModalLabel">Control  center info</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+    {% if request.user.role == 'seller' %}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="mr-2 clickable-icon" style="font-size: 20px;" data-toggle="popover" title="Help" data-content="To begin, add a control center. The bank will subsequently assign a collateral manager, and inventory information will become available once suppliers have made their deliveries.">
+            <i class="fas fa-question-circle text-primary"></i>
+        </span>
+        <a href="{% url 'controlcenter_create' %}">
+            <button class="btn btn-dark" style="font-size: 12px;">
+                <i class="fas fa-plus" style="margin-right: 5px;"></i> Add Control Center
+            </button>
+        </a>
+    </div>
+    {% endif %}
+
+    {% if request.user.role == 'collateral_manager' %}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="clickable-icon text-primary" style="cursor: pointer; font-size: 20px;" data-toggle="popover" title="Help" data-content="Here you will access the inventory information from various control centers assigned to you.">
+            <i class="fas fa-question-circle"></i>
+        </span>
+        
+
+    </div>
+    {% endif %}
+
+    <!-- Rejection Message Modal -->
+    <div class="modal fade" id="customModal" tabindex="-1" role="dialog" aria-labelledby="customModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="customModalLabel">Information</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p id="modalContent">Modal content goes here</p>
+                </div>
+                <div class="modal-footer">
+                </div>
             </div>
-            <div class="modal-body">
-                <p id="modalContent">Modal content goes here</p>
-            </div>
-            <div class="modal-footer">
-            </div>
+        </div>
+    </div>
+
+    <!-- List of Control Centers -->
+    <div class="row">
+        <div class="col">
+            {% if control_centers.exists %}
+                <table class="table table-striped">
+                    <thead class="bg-dark text-light">
+                        <tr>
+                            <th>Name</th>
+                            <th>Location</th>
+                            <th>Address</th>
+                            <th>Contact</th>
+                            <th>Seller</th>
+                            <th>Collateral Manager</th>
+                            {% if request.user.role == 'bank' %}
+                            <th>Action</th>
+                            {% endif %}
+                            <th>Inventory</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for center in control_centers %}
+                        <tr>
+                            <td>{{ center.name }}</td>
+                            <td>{{ center.location }}</td>
+                            <td>{{ center.address }}</td>
+                            <td>{{ center.contact }}</td>
+                            <td>{{ center.get_full_name }}</td>
+                            <td>{{ center.get_agent_full_name }}</td>
+                            {% if request.user.role == 'bank' %}
+                            <td>
+                                <form method="post" action="{% url 'assign_collateral_manager' %}" class="input-group">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="center_id" value="{{ center.id }}">
+                                    <select name="assigned_collateral_manager" class="form-control form-control-sm" required>
+                                        <option value="">Select Manager</option>
+                                        {% for manager in collateral_managers %}
+                                        <option value="{{ manager.id }}">{{ manager.get_full_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="input-group-append">
+                                        <button type="submit" class="btn btn-dark btn-sm">Assign</button>
+                                    </div>
+                                </form>
+                                
+                            </td>
+                            {% endif %}
+                            <td>
+                                <a href="{% url 'bank_inventory_information' center_id=center.id %}" class="btn btn-secondary btn-sm">Inventory Info</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="text-center my-5">
+                    <i class="fas fa-exclamation-circle" style="font-size: 48px; color: #999;"></i>
+                    <p style="font-size: 18px; color: #666; margin-top: 15px;">
+                        {% if request.user.role == 'bank' %}
+                            No control centers found. Please check back later.
+                        {% elif request.user.role == 'seller' %}
+                            No control centers found. Add a new control center to get started.
+                        {% endif %}
+                    </p>
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>
 
-<!-- List of Control Centers -->
-
-<div class="row">
-    <div class="col">
-        <table class="table table-responsive" >
-            <thead style="color: #666666;">
-                <tr>
-                    <th>Name</th>
-                    <th>Location</th>
-                    <th>Address</th>
-                    <th>Contact</th>
-                    <th>Seller</th>
-                    <th>Collateral Manager</th>
-                    <th>Action</th>
-                    <th>Inventory</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for center in control_centers %}
-                <tr>
-                    <td>{{ center.name }}</td>
-                    <td>{{ center.location }}</td>
-                    <td>{{ center.address }}</td>
-                    <td>{{ center.contact }}</td>
-                    <td>{{ center.get_full_name }}</td>
-                    <td>{{ center.get_agent_full_name }}</td>
-                    <td>
-                        <!-- Form to assign collateral manager -->
-                        <form method="post" action="{% url 'assign_collateral_manager_success' %}" class="input-group">
-                            {% csrf_token %}
-                            <input type="hidden" name="center_id" value="{{ center.id }}">
-                            <select name="collateral_manager" class="form-control form-control-sm" required>
-                                <option value="">Select Manager</option>
-                                {% for manager in collateral_managers %}
-                                <option value="{{ manager.id }}">{{ manager.get_full_name }}</option>
-                                {% endfor %}
-                            </select>
-                            <div class="input-group-append">
-                                <button type="submit" class="btn btn-sm" style="background-color: #001b42;color: azure;">Assign</button>
-                            </div>
-                        </form>
-                        
-                    </td>
-                    <td>
-                        <!-- Button to go to inventory information for this control center -->
-                        <a href="{% url 'bank_inventory_information' center_id=center.id %}" class="btn btn-sm btn-secondary" >Inventory Info</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        
-    </div>
-</div>
 {% endblock %}
 
 {% block javascripts %}
@@ -112,11 +162,14 @@
     <!-- JavaScript for customModal -->
     <script>
         $(document).ready(function() {
-            $('#modalParagraph').click(function() {
-                var message = "Efficiently manage collateral managers by assigning them to control centers to oversee and administer seller inventories. Begin by registering collateral managers, then assign them to control centers to facilitate the effective management of various seller inventories.";
-                $('#modalContent').text(message);
-                $('#customModal').modal('show');
-            });
+            $('[data-toggle="popover"]').popover();
+        });
+
+        $('#customModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget); 
+            var message = button.data('content'); 
+            var modal = $(this);
+            modal.find('.modal-body #modalContent').text(message);
         });
     </script>
 {% endblock %}

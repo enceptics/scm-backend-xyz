@@ -336,7 +336,6 @@ class AbattoirPaymentToBreaderViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
         else:
 
-
             # Handle payment failure, return an appropriate response
             return Response({'error': 'Payment processing failed'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -376,6 +375,8 @@ def get_seller(request):
         except ControlCenter.DoesNotExist:
             return JsonResponse({'seller_id': None})
     return JsonResponse({'seller_id': None})
+
+@login_required
 
 def create_breader_trade(request, lc_id):
     lc = get_object_or_404(LetterOfCredit, id=lc_id)
@@ -419,8 +420,7 @@ def create_breader_trade(request, lc_id):
 from .forms import ReceptionForm
 @login_required
 def list_breader_trades(request):
-    trades = BreaderTrade.objects.filter(reception_confirmed=True, weight__isnull=False).order_by('-id')
-    
+    trades = BreaderTrade.objects.filter(control_center__isnull=False).order_by('-id')
     # Calculate aggregate values
     total_received_weight = trades.aggregate(total_weight=Sum('weight'))['total_weight'] or 0
     total_good_condition = trades.aggregate(total_good=Sum('good_condition'))['total_good'] or 0
@@ -478,10 +478,13 @@ def trade_detail(request, trade_id):
     trade = get_object_or_404(BreaderTrade, id=trade_id)
     return render(request, 'trade_detail.html', {'trade': trade})
     
+@login_required
+
 def success_url(request):
     return render(request, 'trade_success.html')
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+@login_required
 
 def supply_history(request):
     # Filter supply history items by current breeder
@@ -530,6 +533,7 @@ from django.http import JsonResponse
 
 from django.shortcuts import render
 from django.http import JsonResponse
+@login_required
 
 def supply_vs_demand_statistics(request):
     # Query BreaderTrade and SlaughterhouseRecord models to fetch data
@@ -558,6 +562,7 @@ def supply_vs_demand_statistics(request):
     # Pass the supply data to the template
     return render(request, 'seller_dashboard.html', {'supply_data': supply_data})
 
+@login_required
 
 def breed_supply_vs_demand_statistics(request):
     # Query BreaderTrade and SlaughterhouseRecord models to fetch data

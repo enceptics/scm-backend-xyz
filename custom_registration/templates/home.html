@@ -2,31 +2,82 @@
 
 {% load static %}
 
-{% block title %}Intellima home{% endblock title %}
+{% block title %}Intellima Home{% endblock title %}
 
 {% block content %}
 
 <style>
   .hero-section {
     position: relative;
-    height: 85vh;
-    background-size: cover;
-    background-position: center;
+    min-height: 75vh;
+    background: linear-gradient(135deg, #001b42 0%, #4a7cc3 100%);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 30px 0 0 0;
   }
 
   .hero-image {
     position: absolute;
-    top: 0;
-    right: 2rem; 
-    width: 400px; 
-    height: 400px; 
-    background-image: url('static/img/hero3.jpg'); 
+    right: 5%;
+    width: 350px;
+    height: 350px;
+    background-image: url('{% static "img/hero3.jpg" %}');
     background-size: cover;
-    opacity: 0.5;
     background-position: center;
+    border-radius: 50%;
+    opacity: 0.7;
     z-index: 1;
-    border-radius: 50%; 
-    margin-right: 2rem;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: left;
+    max-width: 600px;
+  }
+
+  .hero-image,
+  .hero-content h1,
+  .hero-content p,
+  .hero-content a {
+    opacity: 0;
+    transform: translateY(-20px);
+    animation: slideIn 2s forwards ease-in-out;
+  }
+
+  .hero-content h1 {
+    font-size: 2.8rem;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 20px;
+    animation-delay: 0.3s;
+  }
+
+  .hero-content p {
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+    animation-delay: 0.6s;
+  }
+
+  .hero-content span {
+    color: #ffcc00;
+  }
+
+  .hero-content a.btn {
+    background-color: #ffcc00;
+    color: #001b42;
+    font-weight: bold;
+    padding: 10px 30px;
+    border-radius: 30px;
+    transition: background-color 0.3s ease;
+    animation-delay: 0.9s;
+  }
+
+  .hero-content a.btn:hover {
+    background-color: #e6b800;
   }
 
   .overlay {
@@ -35,74 +86,65 @@
     left: 0;
     width: 100%;
     height: 100%;
-    opacity: 0.2;
-    z-index: 2;
+    background: rgba(0, 27, 64, 0.5);
+    z-index: 1;
+    border-radius: 30px 0 0 0;
   }
 
-  .hero-content {
-    position: relative;
-    z-index: 3;
-    color: white;
-    padding: 20px;
-  }
-
-  .hero-content h1 {
-    font-size: 2.5rem;
-    margin-bottom: 20px;
-  }
-
-  .hero-content .btn {
-    background-color: white;
-    color: blue;
-    font-weight: bold;
-  }
-
-  .clipped {
-    clip-path: polygon(50% 0, 100% 0, 100% 100%, 0% 100%);
-  }
-
-  /* Media queries for different devices */
-
-  @media only screen and (max-width: 991px) {
-    /* Adjustments for medium devices (tablets) */
-    .hero-content h1 {
-      font-size: 2rem;
+  @keyframes slideIn {
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
 
-  @media only screen and (max-width: 767px) {
-    /* Adjustments for small devices (phones) */
+  @media (max-width: 991px) {
+    .hero-content h1 {
+      font-size: 2.2rem;
+    }
+  }
+
+  @media (max-width: 767px) {
     .hero-content h1 {
       font-size: 1.8rem;
     }
-  }
 
-  @media only screen and (max-width: 575px) {
-    /* Adjustments for extra small devices (smaller phones) */
     .hero-image {
-      display: none; /* Hide the hero image on extra small devices */
-    }
-    .hero-content h1 {
-      font-size: 20px;
+      width: 250px;
+      height: 250px;
     }
   }
 
+  @media (max-width: 575px) {
+    .hero-image {
+      display: none;
+    }
+
+    .hero-content h1 {
+      font-size: 1.5rem;
+    }
+
+    .hero-content .btn {
+      padding: 10px 20px;
+    }
+  }
 </style>
 
-<div class="hero-section">
-  <div class="hero-image my-5"></div> 
-
+<div class="hero-section mt-n4">
   <div class="overlay"></div>
-  <div class="container-fluid">
-    <div class="row  ">
-      <div class="col-md-7 hero-content mt-3">
-        <h1 class="my-5 " style="color: black;font-weight: bold;">Innovative platform for automated supply  chains <br /> <span class="my-4" style="color: blue;">Across several portfolios</span></h1>
-        <a href="{%url 'login'%}" class="btn px-5 py-3 text-blue mt-3 mt-sm-0">Get Started</a>
-      </div>
-      <!-- <div class="col-md-6 h-100 clipped" style="min-height: 500px;background-image: url('static/img/hero_img.svg');background-position: center;background-size: cover;"></div> -->
 
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-7 hero-content">
+        <h1>Streamlined Trading Across Borders</h1>
+        <p>Connecting buyers, sellers, and breeders with secure bank funding. Optimize your supply chain and track global deliveries seamlessly with our automated, cross-country trading platform.</p>
+        <a href="{% url 'login' %}" class="btn mt-3">Get Started</a>
+    </div>
+    
     </div>
   </div>
+
+  <div class="hero-image"></div>
 </div>
 
 {% endblock content %}

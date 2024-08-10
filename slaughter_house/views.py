@@ -94,18 +94,28 @@ from django.core.paginator import Paginator
 
 @csrf_exempt
 def inventory_information(request):
-    # Check if the user is a seller or superuser
-    if request.user.role != 'seller' and not request.user.is_superuser:
-        return redirect('unauthorized')
+    # Determine the user's role
+    user_role = request.user.role
 
-    # Fetch control centers associated with the current seller
-    control_centers = ControlCenter.objects.filter(seller=request.user)
-    
     # Initialize dictionary to store inventory information
     inventory_info = {}
     cumulative_total_remaining = 0
 
-    # Iterate over control centers associated with the seller
+    # Check if the user is a seller, bank, or collateral manager
+    if user_role == 'seller':
+        # Sellers can only see their own control centers
+        control_centers = ControlCenter.objects.filter(seller=request.user)
+    elif user_role == 'bank':
+        # Banks can see all control centers
+        control_centers = ControlCenter.objects.all()
+    elif user_role == 'collateral_manager':
+        # Collateral managers see specific control centers (e.g., based on assigned control centers)
+        control_centers = ControlCenter.objects.filter(collateral_manager=request.user)
+    else:
+        # Unauthorized users are redirected
+        return redirect('unauthorized')
+
+    # Iterate over control centers
     for control_center in control_centers:
         breeds_info = {}
         
@@ -136,8 +146,11 @@ def inventory_information(request):
         # Add control center information to the main dictionary
         inventory_info[control_center] = breeds_info
 
-    # Retrieve all BreaderTrade records
-    breader_trades = BreaderTrade.objects.all()
+    # Retrieve all BreaderTrade records if the user is a bank; otherwise, filter by control centers
+    if user_role == 'bank':
+        breader_trades = BreaderTrade.objects.all()
+    else:
+        breader_trades = BreaderTrade.objects.filter(control_center__in=control_centers)
     
     # Perform comparison logic
     comparison_results = []
@@ -165,7 +178,11 @@ def inventory_information(request):
             if slaughtered_quantity is not None:
                 # Ensure breeds_supplied does not become negative
                 breeds_supplied = max(0, breeds_supplied - slaughtered_quantity)
-        
+                
+        # Ensure trade_weight and total_cut_weight are not None
+        trade_weight = trade_weight if trade_weight is not None else 0
+        total_cut_weight = total_cut_weight if total_cut_weight is not None else 0
+
         # Calculate the weight loss percentage
         if trade_weight > 0:  # Check if trade_weight is not 0 to avoid division by zero
             weight_loss_percentage = ((trade_weight - total_cut_weight) / trade_weight) * 100
@@ -194,6 +211,15 @@ def inventory_information(request):
 
         comparison_results.append(comparison_result)
 
+    # Add other necessary context data and render the template
+    context = {
+        'inventory_info': inventory_info,
+        'cumulative_total_remaining': cumulative_total_remaining,
+        'comparison_results': comparison_results,
+    }
+
+    return render(request, 'inventory_information.html', context)
+
     # Paginate comparison results
     paginator = Paginator(comparison_results, 3)  # Show 4 comparison results per page
     page_number = request.GET.get('page')
@@ -207,8 +233,6 @@ def inventory_information(request):
 
     return render(request, 'inventory_information.html', context)
 
-
-        
 
 class SupplyVsDemandStatisticsViewSet(viewsets.ViewSet):
     def list(self, request):
@@ -291,12 +315,12 @@ from .models import SlaughterhouseRecord
 
 @login_required
 def inventory_records_list(request):
-    allowed_roles = ['seller', 'slaughterhouse_manager', 'collateral_manager', 'inventory_manager']
+    allowed_roles = ['seller', 'slaughterhouse_manager','inventory_manager']
 
     if request.user.role not in allowed_roles and not request.user.is_superuser:
         return redirect('unauthorized')
        
-    records = SlaughterhouseRecord.objects.all().order_by('-created_at')
+    records = BreaderTrade.objects.filter().order_by('-created_at')
     context = {'records': records}
     return render(request, 'stock_shift.html', context)
 
@@ -304,37 +328,67 @@ def inventory_records_list(request):
 from django.contrib import messages
 
 @login_required
-def confirm_slaughterhouse_record(request, record_id):
+def confirm_slaughterhouse_record(request, trade_id):
     allowed_roles = ['seller', 'inventory_manager', 'collateral_manager']
 
     if request.user.role not in allowed_roles and not request.user.is_superuser:
         return redirect('unauthorized')
 
-    # Get the slaughterhouse record
-    record = get_object_or_404(SlaughterhouseRecord.objects.order_by('-created_at'), pk=record_id)
+    # Get the BreaderTrade record
+    record = get_object_or_404(BreaderTrade, pk=trade_id)
 
-    # Check if the current user has already confirmed either last_confirmation_by or confirmed_by
-    if request.user == record.last_confirmation_by or request.user == record.confirmed_by:
-        # If the user has already confirmed one of them, show error message
+    # Check if the current user has already confirmed either last_confirmation_by or first_confirmed_by
+    if request.user == record.last_confirmation_by or request.user == record.first_confirmed_by:
         messages.error(request, "You have already confirmed part of this item.")
         return redirect('inventory_records_list')
 
     # If the user hasn't confirmed anything yet, proceed with confirmation
-    if not record.last_confirmation_by:
+    if not record.first_confirmed_by:
+        record.first_confirmed_by = request.user
+    elif not record.last_confirmation_by:
         record.last_confirmation_by = request.user
-    elif not record.confirmed_by:
-        record.confirmed_by = request.user
 
     # Save the record
     record.save()
 
+    # Perform deductions if both confirmations are completed
+    if record.first_confirmed_by and record.last_confirmation_by:
+        # Initialize trade values to 0 if None
+        trade_breeds_supplied = record.breeds_supplied or 0
+        trade_weight = record.weight or 0
+
+        # Retrieve related slaughterhouse records
+        slaughterhouse_records = SlaughterhouseRecord.objects.filter(breader_trade=record)
+
+        total_breeds_supplied = sum(r.breeds_supplied for r in slaughterhouse_records)
+        total_weight = sum(r.weight for r in slaughterhouse_records)
+
+        # Check if the amounts to be deducted are valid
+        if total_breeds_supplied > trade_breeds_supplied:
+            messages.error(request, 'Breeds supplied exceeds the available amount.')
+            return redirect('inventory_records_list')
+
+        if total_weight > trade_weight:
+            messages.error(request, 'Weight exceeds the available weight.')
+            return redirect('inventory_records_list')
+
+        # Perform the deduction
+        with transaction.atomic():
+            record.breeds_supplied -= total_breeds_supplied
+            record.weight -= total_weight
+            record.save()
+
+            # Optional: Remove related slaughterhouse records if no longer needed
+            slaughterhouse_records.delete()
+
+            messages.success(request, 'You have successfully removed items to be slaughtered.')
+
     # Add confirmation successful message
-    messages.success(request, "You have successfully partly confirmed the removal of this item from the inventory.")
+    else:
+        messages.success(request, "You have successfully partly confirmed the removal of this item from the inventory.")
 
     # Redirect to the inventory records list
     return redirect('inventory_records_list')
-
-
 
 @login_required
 def item_confirmation_success_view(request):
@@ -397,7 +451,9 @@ def slaughter_house_create(request, trade_id):
             # Get the form values
             weight = form.cleaned_data.get('weight')
             breeds_supplied = form.cleaned_data.get('breeds_supplied')
-
+            breed = trade.breed
+            requested_by = trade.user
+            control_center = trade.control_center
             # Initialize trade values to 0 if None
             trade_breeds_supplied = trade.breeds_supplied or 0
             trade_weight = trade.weight or 0
@@ -411,19 +467,37 @@ def slaughter_house_create(request, trade_id):
                 messages.error(request, 'Weight exceeds the available weight.')
                 return redirect('slaughter_house_create', trade_id=trade_id)
 
-            # Perform the deduction
-            with transaction.atomic():
-                trade.breeds_supplied -= breeds_supplied
-                trade.weight -= weight
-                trade.save()
-                messages.success(request, 'You have successfully removed an item to be slaughtered.')
-                return redirect('slaughterhouse_dashboard')
+            # Save the form data
+            slaughterhouse_record = form.save(commit=False)
+            slaughterhouse_record.trade = trade
+            slaughterhouse_record.save()
+            messages.success(request, 'Record created successfully. Awaiting confirmation from both parties.')
+            return redirect('slaughterhouse_dashboard')
         else:
             messages.error(request, 'Failed to create record. Please check the form.')
     else:
         form = SlaughterhouseRecordForm()
 
     return render(request, 'slaughterhouse.html', {'form': form, 'trade': trade})
+
+# def confirm_trade(request, trade_id):
+#     trade = get_object_or_404(BreaderTrade, id=trade_id)
+
+#     # Check if both parties have confirmed
+#     if trade.first_confirmed_by and trade.last_confirmation_by:
+#         slaughterhouse_record = SlaughterhouseRecord.objects.filter(trade=trade).latest('created_at')
+
+#         # Perform the deduction
+#         with transaction.atomic():
+#             trade.breeds_supplied -= slaughterhouse_record.breeds_supplied
+#             trade.weight -= slaughterhouse_record.weight
+#             trade.save()
+#             messages.success(request, 'You have successfully removed an item to be slaughtered.')
+
+#         return redirect('slaughterhouse_dashboard')
+#     else:
+#         messages.error(request, 'The trade must be confirmed by both parties before performing deductions.')
+#         return redirect('slaughterhouse_dashboard')
 
 
 # Templates
@@ -432,22 +506,47 @@ from inventory_management.models import InventoryBreedSales
 from django.db.models import Count
 
 @login_required
-def create_inventory_breed_sale(request):
+def create_inventory_breed_sale(request, trade_id):
+    trade = get_object_or_404(BreaderTrade, id=trade_id)
+
     if request.method == 'POST':
         form = InventoryBreedSalesForm(request.POST)
         if form.is_valid():
-            instance = form.save(commit=False)  # Save form data without committing to database yet
-            instance.created_by = request.user  # Assign the current user as the creator
-            instance.save()  # Now save the instance with the updated fields
-            
+            new_trade = form.save(commit=False)
+            new_trade.breed = trade.breed  # Ensure the breed is set from the existing instance
+            new_trade.reference = trade.reference  # Ensure the breed is set from the existing instance
+
+            new_trade.created_by = request.user  # Assign the current user as the creator (if this field exists)
+
+            # Check for existing record with the same breed and part_name
+            existing_trade = BreaderTrade.objects.filter(
+                breed=new_trade.breed,
+                part_name=new_trade.part_name,
+                sale_type=new_trade.sale_type
+            ).first()
+
+            if existing_trade:
+                # Update existing record
+                existing_trade.part_quantity = (existing_trade.part_quantity or 0) + (new_trade.part_quantity or 0)
+                existing_trade.part_weight = (existing_trade.part_weight or 0) + (new_trade.part_weight or 0)
+                existing_trade.save()
+            else:
+                # Create new record
+                new_trade.save()
+
             # Check the sale type and redirect accordingly
-            if instance.sale_type == 'export':
+            if new_trade.sale_type == 'export':
                 return redirect('list_exports')
-            elif instance.sale_type == 'local_sale_cut':
+            elif new_trade.sale_type == 'local_sale_cut':
                 return redirect('list_local_sale_cuts')
+
+            # Reset form fields
+            form = InventoryBreedSalesForm(initial={'breed': trade.breed})
     else:
-        form = InventoryBreedSalesForm()
+        form = InventoryBreedSalesForm(initial={'breed': trade.breed})
+
     return render(request, 'create_inventory_breed_sale.html', {'form': form})
+
 
 from django.db.models import Sum
 
@@ -455,24 +554,23 @@ from django.db.models import Max
 
 @login_required
 def list_exports(request):
-    # Group by breed and part name and annotate with total quantity, total weight, and last updated date
-    breed_part_exports = InventoryBreedSales.objects.filter(sale_type='export').values('breed', 'part_name').annotate(
-        total_quantity=Sum('quantity'),
-        total_weight=Sum('weight'),
-        last_updated=Max('updated_at')  # Assuming you have an updated_at field in your model
-    ) # Add distinct() and adjust order_by as needed
+    breed_part_exports = BreaderTrade.objects.filter(sale_type='export').values('breed', 'part_name').annotate(
+        total_quantity=Sum('part_quantity'),
+        total_weight=Sum('part_weight'),
+        last_updated=Max('updated_at')
+
+    )
     return render(request, 'list_exports.html', {'breed_part_exports': breed_part_exports})
-    
+
 @login_required
 def list_local_sale_cuts(request):
-    # Group by breed and part name and annotate with total quantity, total weight, and last updated date
-    breed_part_local_sales = InventoryBreedSales.objects.filter(sale_type='local_sale_cut').values('breed', 'part_name').annotate(
-        total_quantity=Sum('quantity'),
-        total_weight=Sum('weight'),
-        last_updated=Max('updated_at')  # Assuming you have an updated_at field in your model
+    breed_part_local_sales = BreaderTrade.objects.filter(sale_type='local_sale_cut').values('breed', 'part_name').annotate(
+        total_quantity=Sum('part_quantity'),
+        total_weight=Sum('part_weight'),
+        last_updated=Max('updated_at')
     )
     return render(request, 'list_local_sale_cuts.html', {'breed_part_local_sales': breed_part_local_sales})
-
+    
 # Weiht loss 
 from django.db.models import Sum
 from django.shortcuts import render

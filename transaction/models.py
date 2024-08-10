@@ -32,6 +32,12 @@ class Abattoir(models.Model):
         return f'{self.user.first_name} {self.user.last_name} '
 
 class BreaderTrade(models.Model):
+
+    SALE_CHOICES = [
+        ('export', 'Export'),
+        ('local_sale_cut', 'Local Sale Cut'),
+    ]
+
     breeder = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)
     seller = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True, related_name='sellers')
     control_center = models.ForeignKey(ControlCenter, on_delete=models.CASCADE, null=True, blank=True)
@@ -42,7 +48,7 @@ class BreaderTrade(models.Model):
     vaccinated = models.BooleanField(default=False, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, null=True, blank=True)
-    reference = models.CharField(max_length=20, unique=True)
+    reference = models.CharField(max_length=20, unique=False)
     letter_of_credit = models.ForeignKey(LetterOfCredit, on_delete=models.CASCADE, null=True, blank=True)
 
     received_weight = models.PositiveIntegerField( null=True, blank=True)
@@ -51,7 +57,20 @@ class BreaderTrade(models.Model):
     poor_condition = models.PositiveIntegerField( null=True, blank=True)
     reception_confirmed = models.BooleanField(default=False)
     payment_status = models.BooleanField(default=False)
-    
+
+    # Record parts
+    part_name = models.CharField(max_length=255, blank=True, null=True)
+    sale_type = models.CharField(max_length=255, choices=SALE_CHOICES, blank=True, null=True)
+    part_quantity = models.PositiveIntegerField(blank=True, null=True)
+    part_weight = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)  # Automatically updated when saving the instance
+
+    # Confirm inventory item removal
+    last_confirmation_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name = 'last_confirmed_slaughterhouse_records')
+    first_confirmed_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name = 'first_confirmed_slaughterhouse_records')
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='confirmed_inventory_removal_records', null=True, blank=True)
+    requested_quanity = models.PositiveIntegerField(blank=True, null=True)
+
     def save(self, *args, **kwargs):
         if not self.reference:
             self.reference = f"{timezone.now().strftime('%y%m%d%H%M%S')}_{uuid.uuid4().hex[:6]}"

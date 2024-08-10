@@ -303,7 +303,7 @@ def bank_inventory_information(request, center_id):
     # Fetch control center
     control_center = ControlCenter.objects.get(pk=center_id)
 
-    # Fetch all breeds associated with the control center
+    # Fetch breeds associated with the control center
     breeds_info = {}
     breeds = BreaderTrade.objects.filter(control_center=control_center).values_list('breed', flat=True).distinct().order_by('-created_at')
     for breed in breeds:
@@ -322,6 +322,7 @@ def bank_inventory_information(request, center_id):
         'inventory_info': {control_center: breeds_info},
     }
     return render(request, 'bank_inventory_info.html', context)
+
 
 # control center
 # views.py
@@ -343,7 +344,7 @@ def controlcenter_create(request):
             # Save the control center with the assigned seller
             control_center.save()
             
-            return redirect('inventory_information')
+            return redirect('control_centers_dashboard')
     else:
         form = ControlCenterForm()
     return render(request, 'create_control_center.html', {'form': form})

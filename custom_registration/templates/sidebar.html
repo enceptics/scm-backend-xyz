@@ -1,14 +1,52 @@
 {% load static %}
 
+<style>
+/* Logo Styles */
+.sidebar-brand {
+
+    background-color: #001b42; /* Navy blue background */
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 4px 8px rgba(255, 255, 0, 0.4); /* Box shadow for depth */
+    text-decoration: none; /* Remove underline */
+    color: #fff; /* White text color */
+    border-radius: 30px;
+    margin: 5px;
+    transition: background-color 0.3s ease; /* Smooth hover transition */
+    font-family: 'Poppins', sans-serif; /* Modern Google Font */
+}
+
+.sidebar-brand:hover {
+    background-color: #e6b800; /* Slightly darker on hover */
+}
+
+.sidebar-brand-icon {
+    margin-right: 10px;
+    transform: rotate(-15deg); /* Rotate icon */
+}
+
+.sidebar-brand-text {
+    font-size: 1rem; /* Slightly larger text */
+    font-weight: 100; /* Semi-bold for emphasis */
+}
+
+/* Optional: Icon color */
+.sidebar-brand-icon i {
+    color: #fff;
+}
+
+
+</style>
+
 <ul class="navbar-nav bg-gradient sidebar sidebar-dark accordion" id="accordionSidebar" style="background-color: #001b42;">
 
     <!-- Sidebar - Brand -->
-    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{% url 'home' %}">
+    <a class="sidebar-brand d-flex align-items-center justify-content-center mb-4 mt-2" href="{% url 'home' %}">
         <div class="sidebar-brand-icon rotate-n-15">
-            <i class="fas fa-laugh-wink"></i>
+            <i class="fas fa-globe-africa"></i> <!-- Globe Icon -->
         </div>
-        <div class="sidebar-brand-text mx-3">Intellima</div>
+        <div class="sidebar-brand-text mx-3" style="letter-spacing: 5px;">Intellima</div>
     </a>
+   
 
     <!-- Divider -->
     <hr class="sidebar-divider  mb-0">
@@ -36,15 +74,9 @@
     <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
         <a class="nav-link" href="{% url 'supply_demand_statistics' %}">
             <i class="fas fa-fw fa-tachometer-alt"></i>
-            <span>Sellers</span></a>
+            <span>Dashboard (Seller)</span></a>
     </li>
-    <hr class="sidebar-divider my-0">
-<li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
-    <a class="nav-link" href="{% url 'inventory_records_list'%}">
-        <i class="fas fa-fw fa-tachometer-alt"></i>
-        <span>Stock Shift</span>
-    </a>
-</li>
+
 <hr class="sidebar-divider my-0">
 
     {% endif %}
@@ -124,6 +156,42 @@
 
     {% if request.user.role == 'seller' or request.user.is_superuser %}
     <!-- Nav Item - Bank -->
+
+    <li class="nav-item">
+        <a class="nav-link" data-toggle="collapse" href="#client-basic" aria-expanded="false" aria-controls="client-basic">
+            <i class="fa fa-folder "></i>
+            <span class="menu-title ">&emsp;Chilled Warehouse</span>
+            <i class="menu-arrow "></i>
+        </a>
+    </li>
+    <div class="collapse mx-1 mt-1" id="client-basic" >
+        <ul class="nav flex-column sub-menu" style="border-radius: 30px;">
+            <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
+                <a class="nav-link" href="{% url 'list_exports' %}">
+                    <i class="fas fa-fw fa-tachometer-alt"></i>
+                    <span>Available for Export</span></a>
+            </li>
+            <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
+                <a class="nav-link" href="{% url 'list_local_sale_cuts' %}">
+                    <i class="fas fa-fw fa-tachometer-alt"></i>
+                    <span>Available for Local Sale</span></a>
+            </li>
+            <hr class="sidebar-divider my-0">
+        </ul>
+
+    </div>
+
+
+    <hr class="sidebar-divider my-0">
+    {% endif %}
+
+    {% if request.user.role == 'seller' or request.user.is_superuser %}
+    <!-- Nav Item - Bank -->
+
+    {% endif %}
+
+    {% if request.user.role == 'seller' or request.user.is_superuser %}
+    <!-- Nav Item - Bank -->
     <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
         <a class="nav-link" href="{% url 'logistics_status_list' %}">
             <i class="fas fa-fw fa-tachometer-alt"></i>
@@ -132,7 +200,7 @@
     <hr class="sidebar-divider my-0">
     {% endif %}
 
-    {% if request.user.role == 'bank' or request.user.is_superuser %}
+    {% if request.user.role == 'bank' or request.user.role == 'seller' or request.user.is_superuser %}
     <!-- Nav Item - Control Centers -->
     <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
         <a class="nav-link" href="{% url 'control_centers_dashboard' %}">
@@ -145,7 +213,7 @@
     {% if request.user.role == 'collateral_manager' or request.user.is_superuser %}
     <!-- Nav Item - Control Centers -->
     <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
-        <a class="nav-link" href="{% url 'collateral_manager_dashboard' collateral_manager_id=request.user.id %}">
+        <a class="nav-link" href="{% url 'control_centers_dashboard' %}">
             <i class="fas fa-fw fa-users"></i>
             <span>Inventory Info</span>
         </a>

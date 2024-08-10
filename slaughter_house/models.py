@@ -23,6 +23,7 @@ class SlaughterhouseRecord(models.Model):
     last_confirmation_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True)
     confirmed_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name = 'confirmed_slaughterhouse_records')
     control_center = models.ForeignKey(ControlCenter, on_delete=models.CASCADE, null=True, blank=True)
+    breader_trade = models.ForeignKey(BreaderTrade, on_delete=models.CASCADE, null=True, blank=True, related_name='breadertrades')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=255, choices=SLAUGHTER_STATUS_CHOICES, default='slaughtered')

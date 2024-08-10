@@ -5,7 +5,7 @@
     <div class="d-flex justify-content-between align-items-center">
         <p class="mb-4 text-muted">
             <i class="fas fa-warehouse mr-2" style="color: #001b42;"></i>
-            This form will add items to the chilled warehouse 
+            This form will deduct inventory items 
         </p>
         <p class="mb-4 text-muted">
             <i class="fas fa-arrow-left mr-2" style="color: #001b42;"></i>
@@ -33,7 +33,7 @@
             {% csrf_token %}
             {{ form.as_p }}
             <input type="hidden" name="trade_id" value="{{ trade.id }}">
-            <button type="submit">Deduct</button>
+            <button class="btn btn-sm btn-info" type="submit">Submit</button>
         </form>
     </div>
 </div>

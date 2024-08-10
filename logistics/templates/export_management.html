@@ -23,7 +23,9 @@
         </div>
         <!-- Your progress bar code -->
         <div class="table-responsive">
-            <table class="table">
+            {% for logistics_status in logistics_statuses %}
+
+            <table class="table table-responsive">
                 <thead>
                     <tr style="background-color: #f8f9fa; color: #666666;">
                         <th style="color: #666666; font-size: 16px;">Current Status</th>
@@ -37,7 +39,6 @@
                 </thead>
                 <tbody>
                     <!-- Render shipment information using Django template syntax -->
-                    {% for logistics_status in logistics_statuses %}
                     <tr>
                         <td>{{ logistics_status.status }}</td>
                         <td>{{ logistics_status.buyer }}</td>
@@ -53,9 +54,15 @@
                         </td>
                         <!-- Add more columns if needed -->
                     </tr>
-                    {% endfor %}
+                    
                 </tbody>
             </table>
+            {% empty %}
+<div class="text-center my-5">
+    <i class="fas fa-exclamation-circle fa-5x text-muted"></i>
+    <p class="mt-3">No Eports available</p>
+</div>
+{% endfor %}
         </div>
         <!-- Render pagination using Django template syntax -->
         <nav aria-label="Pagination">

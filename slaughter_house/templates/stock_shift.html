@@ -58,8 +58,8 @@
                                 <th>Requested by</th>
                                 <th>Control Center</th>
                                 <th>Date</th>
-                                <th>Quantity</th>
                                 <th>Item</th>
+                                <th>Quantity</th>
                                 <th>Weight (Kg)</th>
                                 <th>Status</th>
                                 <th>Action</th>
@@ -72,31 +72,36 @@
                                 <td style="font-size: 14px;">{{ record.user }}</td>
                                 <td style="font-size: 14px;">{{ record.control_center }}</td>
                                 <td style="font-size: 14px;">{{ record.created_at }}</td>
-                                <td style="font-size: 14px;">{{ record.quantity }}</td>
                                 <td style="font-size: 14px;">{{ record.breed }}</td>
+                                <td style="font-size: 14px;">{{ record.breeds_supplied }}</td>
                                 <td style="font-size: 14px;">{{ record.weight }} Kg</td>
                                 <td>
-                                    {% if record.last_confirmation_by and record.confirmed_by %}
+                                    {% if record.last_confirmation_by and record.first_confirmed_by %}
                                         Confirmed
+                                        <span class="text-muted" style="font-size: 14px;color: #001b40 !important;opacity: 0.6;"><br>
+                                            By: 
+                                             {{ record.first_confirmed_by }} & {{ record.last_confirmation_by }}
+
+                                        </span>
                                     {% else %}
                                         Pending
                                     {% endif %}
                                 </td>
                                 <td>
-                                    {% if not record.last_confirmation_by and not record.confirmed_by %}
+                                    {% if not record.last_confirmation_by and not record.first_confirmed_by %}
                                         <form method="post" action="{% url 'inventory_record_confirm' record.id %}">
                                             {% csrf_token %}
                                             <button type="submit" class="btn btn-sm" style="background-color: #001b42; color: white; font-size: 12px;">First Confirmation</button>
                                         </form>
-                                    {% elif record.confirmed_by and not record.last_confirmation_by %}
+                                    {% elif record.first_confirmed_by and not record.last_confirmation_by %}
                                         <form method="post" action="{% url 'inventory_record_confirm' record.id %}">
                                             {% csrf_token %}
                                             <button type="submit" class="btn btn-sm" style="background-color: #001b42; color: white; font-size: 12px;">Last Confirmation</button>
                                         </form>
                                         <div style="font-family: verdana; font-weight: bold; font-size: 14px;">
-                                            Confirmed by: <br> {{ record.confirmed_by }}
+                                            Confirmed by: <br> {{ record.first_confirmed_by }}
                                         </div>
-                                    {% elif record.last_confirmation_by and not record.confirmed_by %}
+                                    {% elif record.last_confirmation_by and not record.first_confirmed_by %}
                                         <form method="post" action="{% url 'inventory_record_confirm' record.id %}">
                                             {% csrf_token %}
                                             <button type="submit" class="btn btn-sm" style="background-color: #001b42; color: white; font-size: 12px;">Last Confirmation</button>
@@ -106,7 +111,7 @@
                                         </div>
                                     {% elif record.confirmed_by and record.last_confirmation_by %}
                                         <div style="font-family: verdana; font-weight: bold; font-size: 14px;">
-                                            Confirmed by: <br> {{ record.last_confirmation_by }} and {{ record.confirmed_by }}
+                                            Confirmed by: <br> {{ record.last_confirmation_by }} and {{ record.first_confirmed_by }}
                                         </div>
                                     {% endif %}
                                 </td>

@@ -887,14 +887,10 @@ def login_view(request):
                 elif user.role == CustomUser.INVENTORY_MANAGER:
                     return redirect('/dashboard/inventory_manager/')  # Redirect inventory managers to inventory manager dashboard
                 elif user.role == CustomUser.SLAUGHTERHOUSE_MANAGER:
-                    return redirect('/dashboard/slaughterhouse/')  # Redirect slaughterhouse managers to slaughterhouse manager dashboard
+                    return redirect('/slaughterhouse_dashboard/') 
                 elif user.role == CustomUser.COLLATERAL_MANAGER:
-                    try:
-                        collateral_manager = CollateralManager.objects.get(name=user)
-                        return redirect('collateral_manager_dashboard', collateral_manager_id=collateral_manager.id)
-                    except CollateralManager.DoesNotExist:
-                        # Handle the case where the user is not associated with a collateral manager
-                        return redirect('/')  # Redirect to a generic dashboard
+                    return redirect('/dashboard/control-centers/') 
+                    
                 else:
                     # Handle other roles or scenarios
                     return redirect('/')  # Redirect to a generic dashboard
@@ -1003,15 +999,32 @@ def buyer_details(request, buyer_id):
 
 from .forms import CollateralManagerForm
 from logistics.models import ControlCenter, CollateralManager
+from django.contrib.auth.decorators import login_required
 
+
+@login_required
 def control_centers_dashboard(request):
-    if request.user.role != 'bank' and not request.user.is_superuser:
+    # Allow access only to banks, sellers, collateral managers, and superusers
+    if request.user.role not in ['bank', 'seller', 'collateral_manager'] and not request.user.is_superuser:
         return redirect('unauthorized')
-        
-    control_centers = ControlCenter.objects.all()
-    collateral_managers = CollateralManager.objects.all()  # Retrieve all collateral managers
-    return render(request, 'control_centers.html', {'control_centers': control_centers, 'collateral_managers': collateral_managers})
 
+    # Filter control centers based on the user's role
+    if request.user.role == 'seller':
+        control_centers = ControlCenter.objects.filter(seller=request.user)
+    elif request.user.role == 'collateral_manager':
+        control_centers = ControlCenter.objects.filter(assigned_collateral_agent=request.user)
+    else:  # Banks and superusers can see all control centers
+        control_centers = ControlCenter.objects.all()
+
+    # Retrieve all users who are collateral managers
+    collateral_managers = CustomUser.objects.filter(role='collateral_manager')
+
+    return render(request, 'control_centers.html', {
+        'control_centers': control_centers,
+        'collateral_managers': collateral_managers
+    })
+
+    
 from django.http import Http404
 from django.db.models import Sum
 from slaughter_house.models import SlaughterhouseRecord
@@ -1045,27 +1058,21 @@ def collateral_manager_dashboard(request, collateral_manager_id):
 
     return render(request, 'collateral_manager_dashboard.html', {'inventory_info': inventory_info})
     
-def assign_collateral_manager_success(request):
-    control_centers = ControlCenter.objects.all()
-    collateral_managers = CollateralManager.objects.all()
-    
+@login_required
+def assign_collateral_manager(request):
     if request.method == 'POST':
         center_id = request.POST.get('center_id')
-        manager_id = request.POST.get('collateral_manager')
-        # reset
-        center = get_object_or_404(ControlCenter, id=center_id)
-        collateral_manager = get_object_or_404(CollateralManager, id=manager_id)
-        # reset
-        center.assigned_collateral_agent = collateral_manager
-        center.save()
+        manager_id = request.POST.get('assigned_collateral_manager')
         
-        return redirect('assign_collateral_manager_success')
-    
-    else:
-        form = CollateralManagerForm()
+        control_center = get_object_or_404(ControlCenter, id=center_id)
+        collateral_manager = get_object_or_404(CustomUser, id=manager_id, role='collateral_manager')
         
-    return render(request, 'assign_collateral_manager.html', {'control_centers': control_centers, 'collateral_managers': collateral_managers, 'form': form})
+        # Assign the selected collateral manager to the control center
+        control_center.assigned_collateral_agent = collateral_manager
+        control_center.save()
 
+        return redirect('control_centers_dashboard')  # Redirect back to the dashboard after assignment
+        
 # USER PROFILE 
 from django.contrib.auth.decorators import login_required
 from .models import UserProfile

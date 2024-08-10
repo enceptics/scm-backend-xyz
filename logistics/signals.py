@@ -5,6 +5,7 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.conf import settings
 from .models import LogisticsStatus
+from transaction.models import BreaderTrade
 
 @receiver(pre_save, sender=LogisticsStatus)
 def update_status_handler(sender, instance, **kwargs):
@@ -36,3 +37,13 @@ def send_email_to_bank(sender, instance, created, **kwargs):
         to_email = ['pascal.owilly@gmail.com']  # Replace with actual bank email
 
         send_mail(subject, plain_message, from_email, to_email, html_message=message)
+
+@receiver(post_save, sender=BreaderTrade)
+@receiver(post_save, sender=SlaughterhouseRecord)
+def update_control_center(sender, instance, **kwargs):
+    if isinstance(instance, BreaderTrade):
+        control_center = instance.control_center
+    elif isinstance(instance, SlaughterhouseRecord):
+        control_center = instance.control_center
+    control_center.update_inventory()
+

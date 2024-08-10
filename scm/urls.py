@@ -390,10 +390,10 @@ urlpatterns = [
     path('details/collateral_manager/<int:collateral_manager_id>/', views.collateral_manager_details, name='collateral_manager_details'),
     path('list/buyers/<int:buyer_id>/', custom_reg_views.buyer_details, name='buyer_details'),
 
-    path('assign_collateral_manager_success/', views.assign_collateral_manager_success, name='assign_collateral_manager_success'),
+    path('assign_collateral_manager/', views.assign_collateral_manager, name='assign_collateral_manager'),
 
     path('inventory-records-list/', slaugher_house_views.inventory_records_list, name='inventory_records_list'),
-    path('confirm_inventory_item_removal/<int:record_id>/', slaugher_house_views.confirm_slaughterhouse_record, name='inventory_record_confirm'),
+    path('confirm_inventory_item_removal/<int:trade_id>/', slaugher_house_views.confirm_slaughterhouse_record, name='inventory_record_confirm'),
     path('item_confirmation_success/', slaugher_house_views.item_confirmation_success_view, name='item_confirmation_success'),
     path('item_confirmation_error/', slaugher_house_views.item_confirmation_error_view, name='item_confirmation_error'),
     path('create-control_center/', inventory_views.controlcenter_create, name='controlcenter_create'),
@@ -410,7 +410,7 @@ urlpatterns = [
     path('slaughterhouse_dashboard/', slaugher_house_views.slaughterhouse_dashboard, name='slaughterhouse_dashboard'),
 
     # Record forms
-    path('create_finished_products/', slaugher_house_views.create_inventory_breed_sale, name='create_inventory_breed_sale'),
+    path('create_finished_products/<int:trade_id>/', slaugher_house_views.create_inventory_breed_sale, name='create_inventory_breed_sale'),
     path('list_exports/', slaugher_house_views.list_exports, name='list_exports'),
     path('list_local_sale_cuts/', slaugher_house_views.list_local_sale_cuts, name='list_local_sale_cuts'),
 

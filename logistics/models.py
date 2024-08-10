@@ -51,9 +51,25 @@ class ControlCenter(models.Model):
     address = models.CharField(max_length=255, null=True, blank=True)
     contact = models.CharField(max_length=255, null=True, blank=True)
     seller = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)
-    assigned_collateral_agent = models.ForeignKey(CollateralManager, on_delete=models.CASCADE, null=True, blank=True)
+    assigned_collateral_agent = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True, related_name='collateral_managers')
     net_breed_supply = models.PositiveIntegerField(default=0, null=True, blank=True)  # Add this field
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+
+    # New fields to store breed information
+    total_supplied = models.PositiveIntegerField(default=0, null=True, blank=True)
+    total_weight = models.PositiveIntegerField(default=0, null=True, blank=True)
+    total_slaughtered = models.PositiveIntegerField(default=0, null=True, blank=True)
+
+    def update_inventory(self):
+        # Update total_supplied
+        self.total_supplied = BreaderTrade.objects.filter(control_center=self).aggregate(total_supplied=Sum('breeds_supplied'))['total_supplied'] or 0
+        # Update total_weight
+        self.total_weight = BreaderTrade.objects.filter(control_center=self).aggregate(total_weight=Sum('weight'))['total_weight'] or 0
+        # Update total_slaughtered
+        self.total_slaughtered = SlaughterhouseRecord.objects.filter(control_center=self).aggregate(total_slaughtered=Sum('quantity'))['total_slaughtered'] or 0
+        # Calculate net_breed_supply
+        self.net_breed_supply = max(self.total_supplied - self.total_slaughtered, 0)
+        self.save()
 
     def get_agent_full_name(self):
         if self.assigned_collateral_agent:
