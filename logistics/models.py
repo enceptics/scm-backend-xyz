@@ -105,7 +105,7 @@ class Order(models.Model):
 class ShipmentProgress(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
     status = models.CharField(max_length=255)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
     def __str__(self):
         return f'{self.status} - Order #{self.order.order_number}'
@@ -126,6 +126,7 @@ class PackageInfo(models.Model):
     height = models.CharField(max_length=255, null=True, blank=True)
     length = models.CharField(max_length=255, null=True, blank=True)
     bill_of_lading=models.FileField(upload_to='bill_of_landings', null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
     def __str__(self):
         return self.package_name
@@ -154,6 +155,7 @@ class LogisticsStatus(models.Model):
     package_info = models.ForeignKey(PackageInfo, on_delete=models.CASCADE, blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     is_status_updated = models.BooleanField(default=False)
+    timestamp = models.DateTimeField(auto_now_add=True)
 
     def get_bill_of_lading_url(self):
         if self.bill_of_lading:
