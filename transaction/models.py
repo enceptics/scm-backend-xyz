@@ -70,22 +70,60 @@ class BreaderTrade(models.Model):
     first_confirmed_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name = 'first_confirmed_slaughterhouse_records')
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='confirmed_inventory_removal_records', null=True, blank=True)
     requested_quanity = models.PositiveIntegerField(blank=True, null=True)
+    record_created = models.BooleanField(default=False)
+    # Fields for temporary deduction values
+    temp_breeds_supplied = models.PositiveIntegerField(default=0)
+    temp_weight = models.PositiveIntegerField(default=0)
+    
+    def create_slaughter_record(self, form):
+        if self.first_confirmed_by or self.last_confirmation_by:
+            raise ValueError("Record already confirmed by both parties.")
+        
+        # Set temporary values based on the form
+        self.temp_breeds_supplied = form.cleaned_data.get('breeds_supplied', 0)
+        self.temp_weight = form.cleaned_data.get('weight', 0)
+        self.record_created = True
+        self.save()
+        return True
+
+    def confirm_as_seller(self, user):
+        self.first_confirmed_by = user
+        self.save()
+
+    def confirm_as_inventory_manager(self, user):
+        self.last_confirmation_by = user
+        if self.first_confirmed_by and self.last_confirmation_by:
+            self.deduct_weight_and_number()
+        self.save()
+
+    def deduct_weight_and_number(self):
+        if self.record_created and self.first_confirmed_by and self.last_confirmation_by:
+            # Deduct weight and breeds_supplied from actual inventory
+            self.breeds_supplied -= self.temp_breeds_supplied
+            self.weight -= self.temp_weight
+            # Reset temporary values
+            self.temp_breeds_supplied = 0
+            self.temp_weight = 0
+            self.record_created = False  # Reset after deductions
+            self.first_confirmed_by = None  # Reset after deductions
+            self.last_confirmation_by = None  # Reset after deductions
+
+            self.save()
+
 
     def save(self, *args, **kwargs):
         if not self.reference:
             self.reference = f"{timezone.now().strftime('%y%m%d%H%M%S')}_{uuid.uuid4().hex[:6]}"
         super().save(*args, **kwargs)
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
+        
         if self.control_center:
             self.control_center.update_net_breed_supply()
 
-        # Update the quantity and breed in the related LetterOfCredit
         if self.letter_of_credit:
             self.letter_of_credit.update_quantity(self.breeds_supplied)
             self.breed = self.letter_of_credit.item
-            self.save(update_fields=['breed'])
+            super().save(update_fields=['breed'])
+
 
     @classmethod
     def get_supply_data(cls):

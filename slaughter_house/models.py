@@ -14,22 +14,24 @@ from custom_registration.models import Seller
 class SlaughterhouseRecord(models.Model):
 
     SLAUGHTER_STATUS_CHOICES = [
-            ('deducted', 'Deducted'),
+        ('deducted', 'Deducted'),
     ]
 
     breed = models.CharField(max_length=255, null=True, blank=True)
     slaughter_date = models.DateField(auto_now_add=True)
     quantity = models.PositiveIntegerField()
-    last_confirmation_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True)
-    confirmed_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name = 'confirmed_slaughterhouse_records')
+    last_confirmation_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True,  related_name='last_confirmation')
+    confirmed_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='confirmed_slaughterhouse_records')
     control_center = models.ForeignKey(ControlCenter, on_delete=models.CASCADE, null=True, blank=True)
     breader_trade = models.ForeignKey(BreaderTrade, on_delete=models.CASCADE, null=True, blank=True, related_name='breadertrades')
+    seller = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)
+    breeder = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True, related_name='breeder_records')
+    reference = models.CharField(max_length=20, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=255, choices=SLAUGHTER_STATUS_CHOICES, default='slaughtered')
     weight = models.PositiveIntegerField(null=True, blank=True)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='confirmed_records', null=True, blank=True)
-    seller = models.ForeignKey(Seller, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return f"Slaughterhouse Record - Date: {self.slaughter_date}, Quantity: {self.quantity}"
@@ -48,6 +50,7 @@ class SlaughterhouseRecord(models.Model):
             total_slaughtered = cls.objects.filter(breed=breed).aggregate(Sum('quantity'))['quantity__sum']
             slaughter_data[breed] = total_slaughtered or 0
         return slaughter_data
+
 
 class Confirmation(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)

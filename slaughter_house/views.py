@@ -328,69 +328,6 @@ def inventory_records_list(request):
 from django.contrib import messages
 
 @login_required
-def confirm_slaughterhouse_record(request, trade_id):
-    allowed_roles = ['seller', 'inventory_manager', 'collateral_manager']
-
-    if request.user.role not in allowed_roles and not request.user.is_superuser:
-        return redirect('unauthorized')
-
-    # Get the BreaderTrade record
-    record = get_object_or_404(BreaderTrade, pk=trade_id)
-
-    # Check if the current user has already confirmed either last_confirmation_by or first_confirmed_by
-    if request.user == record.last_confirmation_by or request.user == record.first_confirmed_by:
-        messages.error(request, "You have already confirmed part of this item.")
-        return redirect('inventory_records_list')
-
-    # If the user hasn't confirmed anything yet, proceed with confirmation
-    if not record.first_confirmed_by:
-        record.first_confirmed_by = request.user
-    elif not record.last_confirmation_by:
-        record.last_confirmation_by = request.user
-
-    # Save the record
-    record.save()
-
-    # Perform deductions if both confirmations are completed
-    if record.first_confirmed_by and record.last_confirmation_by:
-        # Initialize trade values to 0 if None
-        trade_breeds_supplied = record.breeds_supplied or 0
-        trade_weight = record.weight or 0
-
-        # Retrieve related slaughterhouse records
-        slaughterhouse_records = SlaughterhouseRecord.objects.filter(breader_trade=record)
-
-        total_breeds_supplied = sum(r.breeds_supplied for r in slaughterhouse_records)
-        total_weight = sum(r.weight for r in slaughterhouse_records)
-
-        # Check if the amounts to be deducted are valid
-        if total_breeds_supplied > trade_breeds_supplied:
-            messages.error(request, 'Breeds supplied exceeds the available amount.')
-            return redirect('inventory_records_list')
-
-        if total_weight > trade_weight:
-            messages.error(request, 'Weight exceeds the available weight.')
-            return redirect('inventory_records_list')
-
-        # Perform the deduction
-        with transaction.atomic():
-            record.breeds_supplied -= total_breeds_supplied
-            record.weight -= total_weight
-            record.save()
-
-            # Optional: Remove related slaughterhouse records if no longer needed
-            slaughterhouse_records.delete()
-
-            messages.success(request, 'You have successfully removed items to be slaughtered.')
-
-    # Add confirmation successful message
-    else:
-        messages.success(request, "You have successfully partly confirmed the removal of this item from the inventory.")
-
-    # Redirect to the inventory records list
-    return redirect('inventory_records_list')
-
-@login_required
 def item_confirmation_success_view(request):
     return render(request, 'item_confirmation_success.html')
 
@@ -446,58 +383,43 @@ def slaughter_house_create(request, trade_id):
     trade = get_object_or_404(BreaderTrade, id=trade_id)
 
     if request.method == 'POST':
-        form = SlaughterhouseRecordForm(request.POST)
+        form = SlaughterhouseRecordForm(request.POST, trade=trade)
         if form.is_valid():
-            # Get the form values
-            weight = form.cleaned_data.get('weight')
-            breeds_supplied = form.cleaned_data.get('breeds_supplied')
-            breed = trade.breed
-            requested_by = trade.user
-            control_center = trade.control_center
-            # Initialize trade values to 0 if None
-            trade_breeds_supplied = trade.breeds_supplied or 0
-            trade_weight = trade.weight or 0
-
-            # Check if the amounts to be deducted are valid
-            if breeds_supplied > trade_breeds_supplied:
-                messages.error(request, 'Breeds supplied exceeds the available amount.')
-                return redirect('slaughter_house_create', trade_id=trade_id)
-
-            if weight > trade_weight:
-                messages.error(request, 'Weight exceeds the available weight.')
-                return redirect('slaughter_house_create', trade_id=trade_id)
-
-            # Save the form data
-            slaughterhouse_record = form.save(commit=False)
-            slaughterhouse_record.trade = trade
-            slaughterhouse_record.save()
-            messages.success(request, 'Record created successfully. Awaiting confirmation from both parties.')
-            return redirect('slaughterhouse_dashboard')
+            if trade.create_slaughter_record(form):
+                messages.success(request, 'Record created successfully. Awaiting confirmation from both parties.')
+                return redirect('slaughterhouse_dashboard')
+            else:
+                messages.error(request, 'Failed to create record. Please try again.')
         else:
             messages.error(request, 'Failed to create record. Please check the form.')
     else:
-        form = SlaughterhouseRecordForm()
+        form = SlaughterhouseRecordForm(trade=trade)
 
     return render(request, 'slaughterhouse.html', {'form': form, 'trade': trade})
 
-# def confirm_trade(request, trade_id):
-#     trade = get_object_or_404(BreaderTrade, id=trade_id)
 
-#     # Check if both parties have confirmed
-#     if trade.first_confirmed_by and trade.last_confirmation_by:
-#         slaughterhouse_record = SlaughterhouseRecord.objects.filter(trade=trade).latest('created_at')
+@login_required
+def confirm_slaughter_record(request, trade_id):
+    trade = get_object_or_404(BreaderTrade, id=trade_id)
 
-#         # Perform the deduction
-#         with transaction.atomic():
-#             trade.breeds_supplied -= slaughterhouse_record.breeds_supplied
-#             trade.weight -= slaughterhouse_record.weight
-#             trade.save()
-#             messages.success(request, 'You have successfully removed an item to be slaughtered.')
+    if request.method == 'POST':
+        # Handle the confirmation based on user role
+        if request.user.role == 'seller' and not trade.first_confirmed_by:
+            trade.confirm_as_seller(request.user)
+            messages.success(request, 'Confirmed as Seller.')
+        elif request.user.role == 'inventory_manager' and trade.first_confirmed_by and not trade.last_confirmation_by:
+            trade.confirm_as_inventory_manager(request.user)
+            messages.success(request, 'Confirmed as Inventory Manager and record updated.')
+            # Mark as completed if both confirmations are done
+            if trade.first_confirmed_by and trade.last_confirmation_by:
+                trade.set_completed()
+        else:
+            messages.error(request, 'Invalid confirmation attempt.')
 
-#         return redirect('slaughterhouse_dashboard')
-#     else:
-#         messages.error(request, 'The trade must be confirmed by both parties before performing deductions.')
-#         return redirect('slaughterhouse_dashboard')
+        return redirect('slaughterhouse_dashboard')
+
+    messages.error(request, 'Invalid request method.')
+    return redirect('slaughterhouse_dashboard')
 
 
 # Templates

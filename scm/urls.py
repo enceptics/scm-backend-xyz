@@ -335,6 +335,7 @@ urlpatterns = [
     path('dashboard/breeder/', views.breeder_dashboard, name='breeder_dashboard'),
     path('dashboard/buyer/', views.buyer_dashboard, name='buyer_dashboard'),
     path('dashboard/stock-shift/', views.stock_shift_dashboard, name='stock_shift_dashboard'),
+
     path('dashboard/bank/', views.bank_dashboard, name='bank_dashboard'),
     path('dashboard/control-centers/', views.control_centers_dashboard, name='control_centers_dashboard'),
     path('dashboard/collateral-manager/<int:collateral_manager_id>/', views.collateral_manager_dashboard, name='collateral_manager_dashboard'),
@@ -393,7 +394,7 @@ urlpatterns = [
     path('assign_collateral_manager/', views.assign_collateral_manager, name='assign_collateral_manager'),
 
     path('inventory-records-list/', slaugher_house_views.inventory_records_list, name='inventory_records_list'),
-    path('confirm_inventory_item_removal/<int:trade_id>/', slaugher_house_views.confirm_slaughterhouse_record, name='inventory_record_confirm'),
+    path('confirm-item/<int:trade_id>/', slaugher_house_views.confirm_slaughter_record, name='confirm_slaughter_record'),
     path('item_confirmation_success/', slaugher_house_views.item_confirmation_success_view, name='item_confirmation_success'),
     path('item_confirmation_error/', slaugher_house_views.item_confirmation_error_view, name='item_confirmation_error'),
     path('create-control_center/', inventory_views.controlcenter_create, name='controlcenter_create'),
@@ -413,6 +414,7 @@ urlpatterns = [
     path('create_finished_products/<int:trade_id>/', slaugher_house_views.create_inventory_breed_sale, name='create_inventory_breed_sale'),
     path('list_exports/', slaugher_house_views.list_exports, name='list_exports'),
     path('list_local_sale_cuts/', slaugher_house_views.list_local_sale_cuts, name='list_local_sale_cuts'),
+
 
     # Create logistics status
     path('create_logistics/', logistics_views.create_logistics_status, name='create_logistics_status'),
