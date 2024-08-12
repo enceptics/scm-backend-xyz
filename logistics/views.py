@@ -278,9 +278,6 @@ def create_multiple_models_for_logistics(request):
                                                                 'package_formset': package_formset,
                                                                 'invoice_formset': invoice_formset})
 
-
-
-    
 @login_required
 def list_logistics_package(request):
     logistics_statuses = LogisticsStatus.objects.all().order_by('-timestamp')

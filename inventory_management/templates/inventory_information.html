@@ -1,111 +1,185 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="row mt-n4 mb-3 rounded" style="background-color: #001b40; color: white;">
+<style>
+    /* CSS file or <style> block */
+
+/* Container for the floating card */
+.cumulative-totals-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    position: relative;
+    padding: 20px;
+}
+
+/* Floating card styling */
+.cumulative-totals-card {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background-color: #ffffff;
+    color: #004d40;
+    border-radius: 15px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 300px;
+    padding: 15px;
+    text-align: center;
+    border-radius: 100%;
+    width: 100px;
+    height: 100px;
+}
+
+/* Card icon styling */
+.cumulative-totals-card i {
+    color: #004d40;
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+/* Card title styling */
+.cumulative-totals-card .card-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+/* Card text styling */
+.cumulative-totals-card .card-text {
+    font-size: 22px;
+    font-weight: bold;
+}
+
+/* Badge styling */
+.cumulative-totals-card .badge {
+    background-color: #004d40;
+    color: #ffffff;
+    font-size: 14px;
+}
+
+</style>
+<!-- Header Section -->
+<div class="row mt-n4 mb-3 rounded" style="background-color: #003366; color: white;">
     <div class="col-6">
         <a class="nav-link" id="quotation-tab" style="color: #d9d9d9; text-decoration: none; text-transform: capitalize;">
             Hello, {{ request.user.username }}
         </a>
     </div>
-    <div class="col-6 text-center">
+    <div class="col-6 " style="right: 0 !important;">
         <span style="font-size: 20px; color: #fff; letter-spacing: 2px; font-weight: bold;">Inventory</span>
     </div>
 </div>
 
 <!-- Inventory Information Section -->
 <div class="row mb-4">
-    <div class="col-md-4">
-        <div class="card mb-3 p-3 text-center" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); background-color: #f5f5f5;">
-            <div class="card-body">
-                <h3 class="card-title" style="font-size: 22px; font-weight: bold;">Cumulative Totals</h3>
-                <h2 class="card-text" style="font-size: 32px; font-weight: bold; color: #001b42;">{{ cumulative_total_remaining }}</h2>
-            </div>
-        </div>
-        <div class="d-flex justify-content-between">
-            <a href="{% url 'control_centers_dashboard' %}" class="text-decoration-none">
-                <div class="card p-3 text-center" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); background-color: #f5f5f5; color: #001b42;">
+    <div class="container-fluid">
+        <div class="row mb-4">
+            <a href="{% url 'control_centers_dashboard' %}" class="text-decoration-none col-md-4 mb-3">
+                <div class="card p-4 text-center" style="border-radius: 15px; box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); background-color: #d1c4e9; color: #4a148c;">
+                    <div class="d-flex justify-content-center align-items-center mb-3">
+                        <i class="fas fa-box-open fa-3x" style="color: #6a1b9a;"></i>
+                    </div>
                     <h6 class="card-title mb-2">Inventory</h6>
-                    <i class="fas fa-box" style="font-size: 24px; color: #001b42;"></i>
+                    <span class="badge badge-primary" style="background-color: #4a148c;">Manage Inventory</span>
                 </div>
             </a>
-            <a href="{% url 'list_exports' %}" class="text-decoration-none">
-                <div class="card p-3 text-center" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); background-color: #f5f5f5; color: #001b42;">
+            <a href="{% url 'list_exports' %}" class="text-decoration-none col-md-4 mb-3">
+                <div class="card p-4 text-center" style="border-radius: 15px; box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); background-color: #b2dfdb; color: #004d40;">
+                    <div class="d-flex justify-content-center align-items-center mb-3">
+                        <i class="fas fa-truck-loading fa-3x" style="color: #00796b;"></i>
+                    </div>
                     <h6 class="card-title mb-2">Export Store</h6>
-                    <i class="fas fa-arrow-right" style="font-size: 24px; color: #001b42;"></i>
+                    <span class="badge badge-success" style="background-color: #004d40;">View Exports</span>
                 </div>
             </a>
-            <a href="{% url 'list_local_sale_cuts' %}" class="text-decoration-none">
-                <div class="card p-3 text-center" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); background-color: #f5f5f5; color: #001b42;">
+            <a href="{% url 'list_local_sale_cuts' %}" class="text-decoration-none col-md-4 mb-3">
+                <div class="card p-4 text-center" style="border-radius: 15px; box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); background-color: #ffecb3; color: #f57f17;">
+                    <div class="d-flex justify-content-center align-items-center mb-3">
+                        <i class="fas fa-store-alt fa-3x" style="color: #f57f17;"></i>
+                    </div>
                     <h6 class="card-title mb-2">Local Sale Store</h6>
-                    <i class="fas fa-store" style="font-size: 24px; color: #001b42;"></i>
+                    <span class="badge badge-warning" style="background-color: #f57f17;">Local Sales</span>
                 </div>
             </a>
         </div>
+        <!-- <div class="cumulative-totals-container">
+            <div class="cumulative-totals-card">
+                <div class="d-flex justify-content-center align-items-center mb-3">
+                    <i class="fas fa-calculator"></i>
+                </div>
+                <h4 class="card-title">Cumulative Totals</h4>
+                <h3 class="card-text">{{ cumulative_total_remaining }} kg</h3>
+                <span class="badge">Total Weight</span>
+            </div>
+        </div> -->
     </div>
-    <div class="col-md-8">
-        <!-- Comparison Results Section -->
-        <div class="card mt-1" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
-            <div class="card-header" style="background-color: #001b42; color: white;">
-                <h5 class="m-0">Comparison Results</h5>
+    
+
+    <!-- Weight Comparison Card -->
+    <div class="col-md-12">
+        <div class="card mt-1" style="border-radius: 15px; box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); background-color: #ffffff;">
+            <div class="card-header" style="background-color: #004d40; color: white;">
+                <h5 class="m-0">Trade vs. Processed Weight Analysis</h5>
             </div>
             <div class="card-body">
+                {% if comparison_results %}
                 <table class="table table-striped table-bordered table-responsive" style="font-size: 14px;">
                     <thead class="thead-dark">
-                        <tr style="font-size: 10px;">
+                        <tr style="font-size: 12px;">
                             <th>#</th>
                             <th>Reference</th>
                             <th>Breed</th>
-                            <th>Trade Weight</th>
-                            <th>Slaughtered Weight</th>
-                            <th>Quantity</th>
+                            <th>Weight Before <br> Processing (kg)</th>
+                            <th>Weight After <br> Processing (kg)</th>
+                            <th>Quantity Left</th>
                             <th>% Weight Loss</th>
                             <th>Classification</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for comparison_result in comparison_results %}
-                        <tr style="font-size: 12px;">
-                            <td>{{ forloop.counter }}</td>
-                            <td>{{ comparison_result.reference }}</td>
-                            <td>{{ comparison_result.breed }}</td>
-                            <td><span class="badge badge-primary">{{ comparison_result.trade_weight }}</span></td>
-                            <td><span class="badge badge-secondary">{{ comparison_result.slauhtered_weight }}</span></td>
-                            <td><span class="badge badge-success">{{ comparison_result.breeds_supplied }}</span></td>
-                            <td><span class="badge badge-warning">{{ comparison_result.weight_loss_percentage }}%</span></td>
-                            <td><span class="badge badge-info">{{ comparison_result.classification }}</span></td>
-                        </tr>
+                            <tr style="font-size: 14px;">
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ comparison_result.reference }}</td>
+                                <td>{{ comparison_result.breed }}</td>
+                                <td><span class="badge badge-primary">{{ comparison_result.initial_weight|floatformat:1 }} Kg</span></td>
+                                <td><span class="badge badge-secondary">{{ comparison_result.part_weight|floatformat:1 }} Kg</span></td>
+                                <td><span class="badge badge-success">{{ comparison_result.breeds_supplied }} {{ comparison_result.breed }} </span></td>
+                                <td><span class="badge badge-warning">{{ comparison_result.weight_loss_percentage|floatformat:1 }}%</span></td>
+                                <td><span class="badge badge-info">{{ comparison_result.classification }}</span></td>
+                            </tr>
                         {% endfor %}
                     </tbody>
                 </table>
+                {% else %}
+                <div class="text-center my-5">
+                    <i class="fas fa-exclamation-circle" style="font-size: 48px; color: #999;"></i>
+                    <p style="font-size: 18px; color: #666; margin-top: 15px;">
+                        No data available for comparison yet.
+                    </p>
+                </div>
+                {% endif %}
+
                 {% if comparison_results.has_other_pages %}
                 <nav aria-label="Page navigation">
                     <ul class="pagination justify-content-center">
                         {% if comparison_results.has_previous %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page=1" aria-label="First">
-                                <span aria-hidden="true">&laquo;&laquo;</span>
-                            </a>
-                        </li>
                         <li class="page-item">
                             <a class="page-link" href="?page={{ comparison_results.previous_page_number }}" aria-label="Previous">
                                 <span aria-hidden="true">&laquo;</span>
                             </a>
                         </li>
                         {% endif %}
-                        {% for i in comparison_results.paginator.page_range %}
-                        <li class="page-item {% if comparison_results.number == i %}active{% endif %}">
-                            <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                        {% for num in comparison_results.paginator.page_range %}
+                        <li class="page-item {% if comparison_results.number == num %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
                         </li>
                         {% endfor %}
                         {% if comparison_results.has_next %}
                         <li class="page-item">
                             <a class="page-link" href="?page={{ comparison_results.next_page_number }}" aria-label="Next">
                                 <span aria-hidden="true">&raquo;</span>
-                            </a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ comparison_results.paginator.num_pages }}" aria-label="Last">
-                                <span aria-hidden="true">&raquo;&raquo;</span>
                             </a>
                         </li>
                         {% endif %}
@@ -116,5 +190,16 @@
         </div>
     </div>
 </div>
+
+<!-- Floating Weight Comparison Card -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050;">
+    <div class="card rounded-circle p-3" style="background-color: #004d40; color: white; width: 150px; height: 150px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); text-align: center;">
+        <h5 class="text-center">Weight</h5>
+        <h6 class="text-center" style="font-size: 16px;">{{ cumulative_total_remaining }} kg</h6>
+    </div>
+</div>
+
+<!-- Cumulative Totals Card at Bottom -->
+
 
 {% endblock %}

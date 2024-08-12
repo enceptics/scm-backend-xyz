@@ -13,6 +13,7 @@ from django.utils import timezone
 from django.core.exceptions import ValidationError
 from django.db.models import F, Func
 from invoice_generator.models import LetterOfCredit
+from decimal import Decimal
 
 class Breader(models.Model):    
     breeder = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
@@ -74,6 +75,9 @@ class BreaderTrade(models.Model):
     # Fields for temporary deduction values
     temp_breeds_supplied = models.PositiveIntegerField(default=0)
     temp_weight = models.PositiveIntegerField(default=0)
+
+    initial_weight = models.PositiveIntegerField(default=0)
+    slauhtered_weight = models.PositiveIntegerField(default=0)
     
     def create_slaughter_record(self, form):
         if self.first_confirmed_by or self.last_confirmation_by:
@@ -110,8 +114,83 @@ class BreaderTrade(models.Model):
 
             self.save()
 
+    def update_slaughtered_weight(self):
+        from inventory_management.models import InventoryBreedSales
+
+        breed_cuts = InventoryBreedSales.objects.filter(reference=self.reference, breed=self.breed)
+        total_cut_weight = Decimal(0)
+        for breed_cut in breed_cuts:
+            total_cut_weight += breed_cut.weight * breed_cut.quantity
+        self.slaughtered_weight = total_cut_weight
+        self.save()
+
+# update slaughter 
+    def update_slaughtered_weight(self):
+
+        breed_cuts = BreaderTrade.objects.filter(reference=self.reference, breed=self.breed)
+        total_cut_weight = Decimal(0)
+        for breed_cut in breed_cuts:
+            total_cut_weight += breed_cut.weight * breed_cut.quantity
+        self.slaughtered_weight = total_cut_weight
+        self.save()
+
+    def deduct_part_from_inventory(self, part_weight, part_quantity):
+        # Handle None values and ensure proper types
+        if self.part_quantity is None:
+            self.part_quantity = 0
+        if self.part_weight is None:
+            self.part_weight = Decimal('0.0')
+
+        if part_weight is None:
+            part_weight = Decimal('0.0')
+        if part_quantity is None:
+            part_quantity = 0
+
+        # Convert to appropriate types
+        if not isinstance(part_weight, Decimal):
+            part_weight = Decimal(part_weight)
+        if not isinstance(part_quantity, int):
+            part_quantity = int(part_quantity)
+
+        # Ensure the values are non-negative
+        if part_weight < Decimal('0.0') or part_quantity < 0:
+            raise ValueError("part_weight and part_quantity must be non-negative.")
+
+        # Check if deduction is possible
+        if part_quantity > self.part_quantity or part_weight > self.part_weight:
+            raise ValueError("Cannot deduct more than available inventory.")
+
+        # Deduct the parts from inventory
+        self.part_quantity -= part_quantity
+        self.part_weight -= part_weight
+        self.save()
+
+    def add_part_to_inventory(self, part_weight, part_quantity):
+        if part_weight is None:
+            part_weight = Decimal('0.0')
+        if part_quantity is None:
+            part_quantity = 0
+
+        # Convert to appropriate types
+        if not isinstance(part_weight, Decimal):
+            part_weight = Decimal(part_weight)
+        if not isinstance(part_quantity, int):
+            part_quantity = int(part_quantity)
+
+        # Ensure the values are non-negative
+        if part_weight < Decimal('0.0') or part_quantity < 0:
+            raise ValueError("part_weight and part_quantity must be non-negative.")
+
+        # Add the parts to inventory
+        self.part_quantity += part_quantity
+        self.part_weight += part_weight
+        self.save()
 
     def save(self, *args, **kwargs):
+        if not self.pk:  # If the instance is being created
+            self.initial_weight = self.weight  # Set initial_weight to the weight provided during creation
+        super().save(*args, **kwargs)
+
         if not self.reference:
             self.reference = f"{timezone.now().strftime('%y%m%d%H%M%S')}_{uuid.uuid4().hex[:6]}"
         super().save(*args, **kwargs)

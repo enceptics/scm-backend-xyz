@@ -1,13 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<style>
-    /* Styles for closed trades */
-.closed-trade {
-    opacity: 1;
-}
 
-</style>
 <div class="container mt-4">
 
     <!-- Navigation Bar -->
@@ -44,7 +38,7 @@
                 <th>Weight</th>
                 <th>Date</th>
                 <th>Tag Number</th>
-                <th>Confirmation Status</th>
+                <th>Status</th>
                 {% if request.user.role == 'slaughterhouse_manager' %}
                 <th>Action</th>
                 {% endif %}
@@ -55,25 +49,17 @@
                 <tr {% if trade.breeds_supplied == 0 %}class="table-secondary closed-trade"{% endif %}>
                     <td>{{ trade.breeder }}</td>
                     <td>
-                        {% if trade.breeds_supplied == 0 %}
-                            <span class="badge badge-pill badge-danger">Closed</span>
-                        {% else %}
                             <span class="badge badge-pill badge-success">{{ trade.breeds_supplied }}</span>
-                        {% endif %}
                     </td>
                     <td>{{ trade.breed }}</td>
                     <td>
-                        {% if trade.breeds_supplied == 0 %}
-                            <span class="badge badge-pill badge-danger">Closed</span>
-                        {% else %}
                             <span class="badge badge-pill badge-warning">{{ trade.weight }} Kg</span>
-                        {% endif %}
                     </td>
                     <td>{{ trade.transaction_date }}</td>
                     <td>{{ trade.reference }}</td>
                     <td>
                         {% if trade.breeds_supplied == 0 %}
-                            <span class="badge badge-pill badge-danger">Closed</span>
+                            <span class="badge badge-pill badge-danger">Slaughter closed</span>
                         {% else %}
                             {% if trade.record_created %}
                                 {% if trade.first_confirmed_by and trade.last_confirmation_by %}
@@ -97,7 +83,7 @@
                         <div class="btn-group">
                             <a class="btn btn-info btn-sm" href="{% url 'slaughter_house_create' trade_id=trade.id %}">Slaughter</a>
                             {% endif %}
-                            <a class="btn btn-success btn-sm" href="{% url 'create_inventory_breed_sale' trade_id=trade.id %}">Record Parts</a>
+                            <a class="btn btn-success btn-sm" style="opacity: 1 !important;z-index: 2 !important;" href="{% url 'create_inventory_breed_sale' trade_id=trade.id %}">Record Parts</a>
                         </div>
                        
                     </td>
