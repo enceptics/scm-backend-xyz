@@ -136,11 +136,10 @@ from django.urls import reverse
 
 class LogisticsStatus(models.Model):
     STATUS_CHOICES = [
-        ('ordered', 'Ordered'),
-        ('dispatched', 'Dispatched'),
+        ('pending', 'Pending'),
+        ('processed', 'Processed'),
         ('shipped', 'Shipped'),
-        ('arrived', 'Arrival'),
-        ('received', 'Received'),
+        ('delivered', 'Delivered'),
     ]
     
     buyer = models.ForeignKey(Buyer, on_delete=models.CASCADE, null=True, blank=True)

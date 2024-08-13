@@ -18,9 +18,10 @@
 {% if breed_part_exports %}
     <div class="row">
         {% for export in breed_part_exports %}
+        
         <div class="col-md-4 mb-4">
             <div class="card border-0 shadow">
-                <div class="card">
+                <div class="card{% if export.total_quantity == 0 %} bg-info{% endif %}">
                     <div class="card-header" style="background-color: #f8f9fa;">
                         <div class="row">
                             <div class="col">
@@ -52,7 +53,7 @@
                                 <p class="card-text" style="color: #001b40;">
                                     <i class="fas fa-tags mr-2" style="color: #001b42; font-weight: bold;"></i>
                                     <span style="font-weight: bold;">Quantity: <br></span>
-                                    <span style="color: #001b40; font-weight: bold; font-size: 22px; text-align: center;">{{ export.total_quantity }} items</span>
+                                    <span style="{% if export.total_quantity == 0 %}color: gray;{% else %}color: #001b40;{% endif %} font-weight: bold; font-size: 22px; text-align: center;">{{ export.total_quantity }} items</span>
                                 </p>
                             </div>
                             <div class="col-6">

@@ -472,26 +472,31 @@ def create_inventory_breed_sale(request, trade_id):
 from django.db.models import Sum
 
 from django.db.models import Max
-
 @login_required
 def list_exports(request):
-    breed_part_exports = BreaderTrade.objects.filter(sale_type='export').values('breed', 'part_name').annotate(
+    # Assuming there's a foreign key 'user' in BreaderTrade model
+    breed_part_exports = BreaderTrade.objects.filter(
+        sale_type='export',
+        seller=request.user  # Filter by the currently logged-in user
+    ).values('breed', 'part_name').annotate(
         total_quantity=Sum('part_quantity'),
         total_weight=Sum('part_weight'),
         last_updated=Max('updated_at')
-
     )
     return render(request, 'list_exports.html', {'breed_part_exports': breed_part_exports})
 
 @login_required
 def list_local_sale_cuts(request):
-    breed_part_local_sales = BreaderTrade.objects.filter(sale_type='local_sale_cut').values('breed', 'part_name').annotate(
+    # Assuming there's a foreign key 'user' in BreaderTrade model
+    breed_part_local_sales = BreaderTrade.objects.filter(
+        sale_type='local_sale_cut',
+        seller=request.user  # Filter by the currently logged-in user
+    ).values('breed', 'part_name').annotate(
         total_quantity=Sum('part_quantity'),
         total_weight=Sum('part_weight'),
         last_updated=Max('updated_at')
     )
     return render(request, 'list_local_sale_cuts.html', {'breed_part_local_sales': breed_part_local_sales})
-
 
 
 

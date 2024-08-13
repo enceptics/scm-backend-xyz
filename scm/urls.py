@@ -418,6 +418,8 @@ urlpatterns = [
 
     # Create logistics status
     path('create_logistics/', logistics_views.create_logistics_status, name='create_logistics_status'),
+    path('create_exports/', logistics_views.create_export, name='create_export'),
+
     path('list_logistics_status/', logistics_views.logistics_status_list, name='logistics_status_list'),
     path('bank_list_bill_of_lading/', logistics_views.bank_list_bill_of_lading, name='bank_list_bill_of_lading'),
     path('seller_list_bill_of_lading/', logistics_views.seller_list_bill_of_lading, name='seller_list_bill_of_lading'),

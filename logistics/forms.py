@@ -1,5 +1,6 @@
 from django import forms
 from .models import PackageInfo, LogisticsStatus
+from transaction.models import BreaderTrade
 
 class PackageInfoForm(forms.ModelForm):
     class Meta:
@@ -25,3 +26,13 @@ class LogisticsStatusForm(forms.ModelForm):
         if commit:
             instance.save()
         return instance
+
+# UPDATEDEXPORT FORM FOR SELECTING MULTIPLE
+from django import forms
+
+class ExportPartsForm(forms.Form):
+    breed = forms.CharField(max_length=255)
+    parts = forms.ModelMultipleChoiceField(
+        queryset=BreaderTrade.objects.filter(sale_type='export').exclude(part_name__isnull=True).exclude(part_name=''),
+        widget=forms.CheckboxSelectMultiple,
+    )

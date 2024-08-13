@@ -28,14 +28,12 @@
 <div class="card mb-4 mt-3" style="width: 100%; margin: auto; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); border-radius: 10px;">
     <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #f8f9fa;">
         <h6 class="card-title" style="color: #001b40;">Shipment Overview</h6>
-        {% if request.user.role == 'export_manager' %}
 
-        <a class="nav-link" href="{% url 'create_multiple_models_for_logistics'%}">
+        <a class="nav-link" href="{% url 'create_export'%}">
             <button type="button" class="btn btn-sm" style="background-color: #001b40; color: #f8f9fa; font-size: small;">
                 <i class="fas fa-plus mr-1"></i> Create New Shipment
             </button>
         </a>
-        {% endif %}
 
     </div>
 

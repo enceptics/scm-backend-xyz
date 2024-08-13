@@ -394,6 +394,40 @@ def seller_download_bill_of_lading(request, pk):
 #         return response
 
 
+# UPDATED EXPORTSELECTING MULTIPLE
+from .forms import ExportPartsForm
+from transaction.models import BreaderTrade
 
+@login_required
+def create_export(request):
+    if request.method == 'POST':
+        form = ExportPartsForm(request.POST)
+        if form.is_valid():
+            breed = form.cleaned_data['breed']
+            selected_parts = form.cleaned_data['parts']
+
+            total_quantity = sum(part.part_quantity for part in selected_parts)
+            total_weight = sum(part.part_weight for part in selected_parts)
+
+            # Create a new BreaderTrade instance for the export
+            export_instance = BreaderTrade.objects.create(
+                breed=breed,
+                breeds_supplied=total_quantity,
+                weight=total_weight,
+                sale_type='export',
+                part_name=",".join(part.part_name for part in selected_parts),
+                part_quantity=total_quantity,
+                part_weight=total_weight,
+            )
+
+            # Deduct parts from inventory
+            for part in selected_parts:
+                part.deduct_part_from_inventory(part.part_weight, part.part_quantity)
+
+            return redirect('logistics_status_list')
+    else:
+        form = ExportPartsForm()
+
+    return render(request, 'create_multiple_exports.html', {'form': form})
 
 

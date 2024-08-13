@@ -254,7 +254,14 @@ class BreaderTrade(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.id} supplied {self.breeds_supplied} to {self.control_center} on {self.created_at}"
+        return (f"BreaderTrade ID: {self.id}, "
+                f"Breed: {self.breed}, "
+                f"Part: {self.part_name}, "
+                f"Part Weight: {self.part_weight} kg, "
+                f"Part Quantity: {self.part_quantity}, "
+                f"Supplied: {self.breeds_supplied} to {self.control_center} "
+                f"on {self.created_at.strftime('%Y-%m-%d %H:%M:%S')}")
+
 
 class Inventory(models.Model):
     name = models.CharField(max_length=255, blank=True, null=True)
