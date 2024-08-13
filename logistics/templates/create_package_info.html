@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Create Package Information{% endblock %}
+
+{% block content %}
+<style>
+    .form-container {
+        max-width: 600px;
+        margin: auto;
+        padding: 20px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    .form-group label {
+        font-weight: bold;
+        color: #001b40;
+    }
+    .form-control {
+        border-radius: 4px;
+        border: 1px solid #ced4da;
+    }
+    .form-control:focus {
+        border-color: #001b40;
+        box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.25);
+    }
+    .btn-primary {
+        background-color: #001b40;
+        border-color: #001b40;
+    }
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #004085;
+    }
+</style>
+
+<div class="form-container">
+    <h2 class="text-center" style="color: #001b40;">Create Package Information</h2>
+    <hr>
+
+    <form method="post"">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="form-group text-center">
+            <button type="submit" class="btn btn-primary">Create Package</button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

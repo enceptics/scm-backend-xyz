@@ -458,9 +458,13 @@ def create_inventory_breed_sale(request, trade_id):
 
             # Check the sale type and redirect accordingly
             if new_trade.sale_type == 'export':
-                return redirect('list_exports')
+                messages.success(request, "Export items successfully added to the chilled warehouse")
+
+                return redirect('slaughterhouse_dashboard')
             elif new_trade.sale_type == 'local_sale_cut':
-                return redirect('list_local_sale_cuts')
+                messages.success(request, "Local sale items successfully added to the chilled warehouse")
+
+                return redirect('slaughterhouse_dashboard')
 
     else:
         form = InventoryBreedSalesForm(initial={'breed': trade.breed})

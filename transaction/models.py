@@ -51,7 +51,7 @@ class BreaderTrade(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, null=True, blank=True)
     reference = models.CharField(max_length=20, unique=False)
     letter_of_credit = models.ForeignKey(LetterOfCredit, on_delete=models.CASCADE, null=True, blank=True)
-
+    
     received_weight = models.PositiveIntegerField( null=True, blank=True)
     good_condition = models.PositiveIntegerField( null=True, blank=True)
     destroyed_condition = models.PositiveIntegerField( null=True, blank=True)

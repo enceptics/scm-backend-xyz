@@ -3,11 +3,99 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h2>Create Export</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
+    <div class="card shadow">
+        <div class="card-header" style="background-color: #001b40; color: white;">
+            <h2>Create Export</h2>
+        </div>
+        <div class="card-body">
+            {% if messages %}
+                <div class="alert alert-success">
+                    {% for message in messages %}
+                        {{ message }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="{{ form.parts.id_for_label }}">{{ form.parts.label }}</label>
+                    <div class="checkbox-group">
+                        <div class="form-check mb-2">
+                            <input type="checkbox" id="select-all" class="form-check-input">
+                            <label for="select-all" class="form-check-label">Select All</label>
+                        </div>
+                        {{ form.parts }}
+                        {% if form.parts.errors %}
+                            <div class="text-danger">{{ form.parts.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.control_center.id_for_label }}">{{ form.seller.label }}</label>
+                    {{ form.seller }}
+                    {% if form.seller.errors %}
+                        <div class="text-danger">{{ form.seller.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.control_center.id_for_label }}">{{ form.buyer.label }}</label>
+                    {{ form.buyer }}
+                    {% if form.buyer.errors %}
+                        <div class="text-danger">{{ form.buyer.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.control_center.id_for_label }}">{{ form.control_center.label }}</label>
+                    {{ form.control_center }}
+                    {% if form.control_center.errors %}
+                        <div class="text-danger">{{ form.control_center.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.logistics_company.id_for_label }}">{{ form.logistics_company.label }}</label>
+                    {{ form.logistics_company }}
+                    {% if form.logistics_company.errors %}
+                        <div class="text-danger">{{ form.logistics_company.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.shipping_mode.id_for_label }}">{{ form.shipping_mode.label }}</label>
+                    {{ form.shipping_mode }}
+                    {% if form.shipping_mode.errors %}
+                        <div class="text-danger">{{ form.shipping_mode.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.bill_of_lading.id_for_label }}">{{ form.bill_of_lading.label }}</label>
+                    {{ form.bill_of_lading }}
+                    {% if form.bill_of_lading.errors %}
+                        <div class="text-danger">{{ form.bill_of_lading.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <div class="btn btn-sm btn-info">
+                        <a href="{% url 'create_logistics_package' %}"> Add New</a>
+                       
+                    </div>
+                    <label for="{{ form.package_info.id_for_label }}">{{ form.package_info.label }}</label>
+                    {{ form.package_info }}
+                    {% if form.package_info.errors %}
+                        <div class="text-danger">{{ form.package_info.errors }}</div>
+                    {% endif %}
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+    </div>
 </div>
+
+<script>
+// JavaScript for Select All functionality
+document.getElementById('select-all').addEventListener('click', function(event) {
+    var checkboxes = document.querySelectorAll('input[name="{{ form.parts.name }}"]');
+    for (var i = 0; i < checkboxes.length; i++) {
+        checkboxes[i].checked = event.target.checked;
+    }
+});
+</script>
 {% endblock %}

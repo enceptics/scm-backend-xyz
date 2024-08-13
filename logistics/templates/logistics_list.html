@@ -11,6 +11,10 @@
       width: 100% !important;  /* Adjust the width */
       height: 300px !important; /* Adjust the height */
     }
+      .status-delivered { background-color: #28a745; } /* Success */
+  .status-processed { background-color: #ffc107; } /* Warning */
+  .status-shipped { background-color: #007bff; } /* Primary */
+  .status-pending { background-color: #6c757d; } /* Secondary */
 </style>
 
 <div class="row mt-n4 mb-3 rounded" style="font-size: 15px; background-color: #001b40; color: white;">
@@ -37,27 +41,54 @@
 
     </div>
 
-    <!-- Charts Section -->
-    <div class="card-body">
-        <div class="row">
-            <!-- Shipment Status Pie Chart -->
-            <div class="col-md-6 mb-4">
-                <h6 class="text-center" style="color: #001b40;">Shipment Status Distribution</h6>
+<!-- Charts Section -->
+<div class="card-body">
+    <div class="row">
+        <!-- Shipment Status Pie Chart -->
+        <div class="col-md-6 mb-4">
+            <h6 class="text-center" style="color: #001b40;">Shipment Status Distribution</h6>
+            <div class="card"
+                style="background-color: 
+                        {% if shipment_status == 'delivered' %} #28a745
+                        {% elif shipment_status == 'processed' %} #ffc107
+                        {% elif shipment_status == 'shipped' %} #007bff
+                        {% elif shipment_status == 'pending' %} #6c757d
+                        {% else %} #ffffff
+                        {% endif %}; 
+                        color: white; 
+                        padding: 15px; 
+                        border-radius: 10px;">
                 <canvas id="shipmentStatusChart" width="200" height="200"></canvas>
-              </div>
-            <!-- Shipping Mode Bar Chart -->
-            <div class="col-md-6 mb-4">
-                <h6 class="text-center" style="color: #001b40;">Shipping Mode Distribution</h6>
+            </div>
+        </div>
+
+        <!-- Shipping Mode Bar Chart -->
+        <div class="col-md-6 mb-4">
+            <h6 class="text-center" style="color: #001b40;">Shipping Mode Distribution</h6>
+            <div class="card"
+                style="background-color: 
+                        {% if shipping_mode == 'air' %} #007bff
+                        {% elif shipping_mode == 'sea' %} #28a745
+                        {% elif shipping_mode == 'land' %} #ffc107
+                        {% else %} #ffffff
+                        {% endif %}; 
+                        color: white; 
+                        padding: 15px; 
+                        border-radius: 10px;">
                 <canvas id="shippingModeChart"></canvas>
             </div>
         </div>
     </div>
+</div>
+
 
     <!-- Table Section -->
     <div class="table-responsive p-3">
-        <table class="table table-bordered table-striped" style="font-size: 14px;">
+        <table class="table table-bordered table-striped" style="font-size: 18px;">
             <thead style="background-color: #001b40; color: white;">
                 <tr>
+                    <th>Date</th>
+
                     <th>Status</th>
                     <th>Buyer</th>
                     <th>Seller</th>
@@ -66,33 +97,44 @@
                     <th>B/Lading</th>
                     {% if request.user.role == 'seller' or request.user.role == 'export_manager' %}
 
-                    <th>Invoice</th>
+                    <!-- <th>Invoice</th> -->
                     {%endif %}
 
                     <th>Package Info</th>
-                    <th>Date</th>
                 </tr>
             </thead>
             <tbody>
                 {% for logistics_status in logistics_statuses %}
                 <tr>
+                    <td>{{ logistics_status.timestamp }}</td>
                     <td>
-                        <span class="badge 
-                            {% if logistics_status.status == 'Pending' %}badge-warning
-                            {% elif logistics_status.status == 'In Transit' %}badge-info
-                            {% elif logistics_status.status == 'Delivered' %}badge-success
-                            {% else %}badge-secondary{% endif %}
+                        <form method="post" action="{% url 'update_logistics_status' logistics_status.id %}">
+                            {% csrf_token %}
+                            <span class="badge 
+                                {% if logistics_status.status == 'pending' %}badge-secondary
+                                {% elif logistics_status.status == 'processed' %}badge-info
+                                {% elif logistics_status.status == 'shipped' %}badge-primary
+                                {% elif logistics_status.status == 'delivered' %}badge-success
+                                {% endif %}
                             ">
-                            {{ logistics_status.status }}
-                        </span>
+                                {{ logistics_status.get_status_display }}
+                            </span>
+                            {{ form.status }}
+                            <button type="submit" class="btn btn-primary btn-sm mt-2">Update </button>
+                        </form> 
                     </td>
-                    <td>{{ logistics_status.buyer }}</td>
-                    <td>{{ logistics_status.seller }}</td>
+                    
+                    
+
+                    <td>{{ logistics_status.buyer.buyer.first_name }} {{ logistics_status.buyer.buyer.last_name }}</td>
+                    <td>{{ logistics_status.seller.seller.first_name }} {{ logistics_status.seller.seller.last_name }}</td>
                     <td>
                         <span class="badge 
                             {% if logistics_status.shipping_mode == 'Air' %}badge-primary
                             {% elif logistics_status.shipping_mode == 'Sea' %}badge-info
-                            {% elif logistics_status.shipping_mode == 'Land' %}badge-success
+                            {% elif logistics_status.shipping_mode == 'Rail' %}badge-success
+                            {% elif logistics_status.shipping_mode == 'Road' %}badge-secondary
+
                             {% else %}badge-secondary{% endif %}
                             ">
                             {{ logistics_status.shipping_mode }}
@@ -107,65 +149,127 @@
                         {% endif %}
                     </td>
 
-                    {% if request.user.role == 'seller' or request.user.role == 'export_manager' %}
 
                     <td style="font-size: 14px;">
-
-                        {% if logistics_status.invoice %}
-                            <a href="#" class="btn btn-sm btn-outline-info" data-toggle="modal" data-target="#invoiceModal{{ logistics_status.id }}">View</a>
-                            <!-- Invoice Modal -->
-                            <div class="modal fade" id="invoiceModal{{ logistics_status.id }}" tabindex="-1" role="dialog" aria-labelledby="invoiceModalLabel{{ logistics_status.id }}" aria-hidden="true">
-                                <div class="modal-dialog modal-lg" role="document">
+                        {% if logistics_status %}
+                            <a href="#" class="btn btn-sm btn-outline-info" data-toggle="modal" data-target="#packageModal{{ logistics_status.id }}">View</a>
+                            <!-- Package Info Modal -->
+                            <div class="modal fade" id="packageModal{{ logistics_status.id }}" tabindex="-1" role="dialog" aria-labelledby="packageModalLabel{{ logistics_status.id }}" aria-hidden="true">
+                                <div class="modal-dialog modal-xl" role="document">
                                     <div class="modal-content">
                                         <div class="modal-header">
-                                            <h5 class="modal-title" id="invoiceModalLabel{{ logistics_status.id }}">Invoice Details</h5>
+                                            <h5 class="modal-title" id="packageModalLabel{{ logistics_status.id }}">Buyer and Seller Info</h5>
                                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                 <span aria-hidden="true">&times;</span>
                                             </button>
                                         </div>
-                                        <div class="modal-body">
+                                        <div class="modal-body ">
                                             <!-- Buyer & Seller Details -->
-                                            <div class="row">
+                                            <div class="row mb-4">
                                                 <div class="col-md-6">
-                                                    <h6><strong>Buyer:</strong></h6>
-                                                    <p>{{ logistics_status.invoice.buyer.buyer.first_name }} {{ logistics_status.invoice.buyer.buyer.last_name }}</p>
-                                                    <p><strong>Email:</strong> {{ logistics_status.invoice.buyer.buyer.email }}</p>
-                                                    <p><strong>Address:</strong> {{ logistics_status.invoice.buyer.buyer.address }}</p>
-                                                    <p><strong>Country:</strong> {{ logistics_status.invoice.buyer.buyer.country }}</p>
+                                                    <h6 class="text-primary">
+                                                        <i class="fas fa-user-tag"></i> <strong>Buyer Information</strong>
+                                                    </h6>
+                                                    <div class="p-2 border rounded bg-light">
+                                                        <p>
+                                                            <span class="badge badge-info">Name:</span>
+                                                            {{ logistics_status.buyer.buyer.first_name }} {{ logistics_status.buyer.buyer.last_name }}
+                                                        </p>
+                                                        <p>
+                                                            <span class="badge badge-info">Email:</span>
+                                                            <i class="fas fa-envelope"></i> {{ logistics_status.buyer.buyer.email }}
+                                                        </p>
+                                                        <p>
+                                                            <span class="badge badge-info">Address:</span>
+                                                            <i class="fas fa-map-marker-alt"></i> {{ logistics_status.buyer.buyer.address }}
+                                                        </p>
+                                                        <p>
+                                                            <span class="badge badge-info">Country:</span>
+                                                            <i class="fas fa-flag"></i> {{ logistics_status.buyer.buyer.country }}
+                                                        </p>
+                                                    </div>
                                                 </div>
                                                 <div class="col-md-6">
-                                                    <h6><strong>Seller:</strong></h6>
-                                                    <p>{{ logistics_status.invoice.seller.seller.first_name }} {{ logistics_status.invoice.seller.seller.last_name }}</p>
-                                                    <p><strong>Email:</strong> {{ logistics_status.invoice.seller.seller.email }}</p>
-                                                    <p><strong>Address:</strong> {{ logistics_status.invoice.seller.seller.address }}</p>
-                                                    <p><strong>Country:</strong> {{ logistics_status.invoice.seller.seller.country }}</p>
+                                                    <h6 class="text-success">
+                                                        <i class="fas fa-store"></i> <strong>Seller Information</strong>
+                                                    </h6>
+                                                    <div class="p-2 border rounded bg-light">
+                                                        <p>
+                                                            <span class="badge badge-success">Name:</span>
+                                                            {{ logistics_status.seller.seller.first_name }} {{ logistics_status.seller.seller.last_name }}
+                                                        </p>
+                                                        <p>
+                                                            <span class="badge badge-success">Email:</span>
+                                                            <i class="fas fa-envelope"></i> {{ logistics_status.seller.seller.email }}
+                                                        </p>
+                                                        <p>
+                                                            <span class="badge badge-success">Address:</span>
+                                                            <i class="fas fa-map-marker-alt"></i> {{ logistics_status.seller.seller.address }}
+                                                        </p>
+                                                        <p>
+                                                            <span class="badge badge-success">Country:</span>
+                                                            <i class="fas fa-flag"></i> {{ logistics_status.seller.seller.country }}
+                                                        </p>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <hr>
                                             <!-- Product Details -->
-                                            <h6><strong>Product Details</strong></h6>
-                                            <table class="table table-sm">
-                                                <thead>
+                                            <h6 class="text-dark">
+                                                <i class="fas fa-box-open"></i> <strong>Product Details</strong>
+                                            </h6>
+                                            <table class="table table-sm table-bordered">
+                                                <thead class="thead-light">
                                                     <tr>
                                                         <th>Product</th>
                                                         <th>Quantity</th>
-                                                        <th>Unit Price</th>
-                                                        <th>Total</th>
+                                                        <th>Weight</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     <tr>
-                                                        <td>{{ logistics_status.invoice.part_name }}</td>
-                                                        <td>{{ logistics_status.invoice.quantity }}</td>
-                                                        <td>${{ logistics_status.invoice.unit_price }}</td>
-                                                        <td>${{ logistics_status.invoice.total_price }}</td>
+                                                        <td>
+                                                            <span class="badge badge-secondary">{{ logistics_status.part_names }}</span>
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge badge-warning">{{ logistics_status.total_quantity }}</span> Items
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge badge-primary">{{ logistics_status.total_weight }}</span> 
+                                                        </td>
                                                     </tr>
                                                 </tbody>
                                             </table>
+                                            <div class="card mb-3" style="max-width: 540px; margin: auto; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); border-radius: 8px;">
+                                                <div class="card-header bg-primary text-white">
+                                                    <h5 class="mb-0">Package Information</h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <h6 class="card-title">
+                                                        <i class="fas fa-box"></i> Package Name
+                                                        <span class="badge badge-info ml-2">{{ logistics_status.package_info.package_name }}</span>
+                                                    </h6>
+                                                    <p class="card-text">
+                                                        <i class="fas fa-info-circle"></i> Description
+                                                        <span class="badge badge-secondary ml-2">{{ logistics_status.package_info.package_description }}</span>
+                                                    </p>
+                                                    <p class="card-text">
+                                                        <i class="fas fa-weight"></i> Weight
+                                                        <span class="badge badge-warning ml-2">{{ logistics_status.package_info.weight }} </span>
+                                                    </p>
+                                                    <p class="card-text">
+                                                        <i class="fas fa-ruler-combined"></i> Dimensions
+                                                        <span class="badge badge-success ml-2">{{ logistics_status.package_info.height }} x {{ logistics_status.package_info.length }}</span>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            
                                         </div>
+                                        
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Close</button>
                                         </div>
+                                       
                                     </div>
                                 </div>
                             </div>
@@ -173,40 +277,6 @@
                             <span class="badge badge-secondary">N/A</span>
                         {% endif %}
                     </td>
-                    {% endif %}
-
-                    <td style="font-size: 14px;">
-                        {% if logistics_status.package_info %}
-                            <a href="#" class="btn btn-sm btn-outline-info" data-toggle="modal" data-target="#packageModal{{ logistics_status.id }}">View</a>
-                            <!-- Package Info Modal -->
-                            <div class="modal fade" id="packageModal{{ logistics_status.id }}" tabindex="-1" role="dialog" aria-labelledby="packageModalLabel{{ logistics_status.id }}" aria-hidden="true">
-                                <div class="modal-dialog" role="document">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="packageModalLabel{{ logistics_status.id }}">Package Info</h5>
-                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                <span aria-hidden="true">&times;</span>
-                                            </button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <p><strong>Package Name:</strong> {{ logistics_status.package_info.package_name }}</p>
-                                            <p><strong>Date:</strong> {{ logistics_status.package_info.timestamp }}</p>
-                                            <p><strong>Description:</strong> {{ logistics_status.package_info.description }}</p>
-                                            <p><strong>Weight:</strong> {{ logistics_status.package_info.weight }}</p>
-                                            <p><strong>Dimension:</strong> {{ logistics_status.package_info.dimension }}</p>
-                                            <p><strong>Type:</strong> {{ logistics_status.package_info.package_type }}</p>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Close</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        {% else %}
-                            <span class="badge badge-secondary">N/A</span>
-                        {% endif %}
-                    </td>
-                    <td>{{ logistics_status.date }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -216,29 +286,40 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Dummy Data for Shipment Status Pie Chart
+    // Data from Django context
+    var shipmentStatusData = {{ shipment_status_data|safe }};
+    var shippingModeData = {{ shipping_mode_data|safe }};
+
+    // Convert data into arrays for Chart.js
+    var shipmentStatusLabels = Object.keys(shipmentStatusData);
+    var shipmentStatusValues = Object.values(shipmentStatusData);
+
+    var shippingModeLabels = Object.keys(shippingModeData);
+    var shippingModeValues = Object.values(shippingModeData);
+
+    // Shipment Status Pie Chart
     var ctx1 = document.getElementById('shipmentStatusChart').getContext('2d');
     var shipmentStatusChart = new Chart(ctx1, {
         type: 'pie',
         data: {
-            labels: ['Pending', 'In Transit', 'Delivered'],
+            labels: shipmentStatusLabels,
             datasets: [{
                 label: 'Shipment Status',
-                data: [30, 50, 20],  // Dummy data
+                data: shipmentStatusValues,
                 backgroundColor: ['#FF6384', '#36A2EB', '#4BC0C0'],
             }]
         }
     });
 
-    // Dummy Data for Shipping Mode Bar Chart
+    // Shipping Mode Bar Chart
     var ctx2 = document.getElementById('shippingModeChart').getContext('2d');
     var shippingModeChart = new Chart(ctx2, {
         type: 'bar',
         data: {
-            labels: ['Air', 'Sea', 'Land'],
+            labels: shippingModeLabels,
             datasets: [{
                 label: 'Shipping Mode',
-                data: [45, 25, 30],  // Dummy data
+                data: shippingModeValues,
                 backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
             }]
         }

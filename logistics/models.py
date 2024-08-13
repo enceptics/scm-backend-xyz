@@ -50,6 +50,7 @@ class ControlCenter(models.Model):
     location = models.CharField(max_length=100, null=True, blank=True)
     address = models.CharField(max_length=255, null=True, blank=True)
     contact = models.CharField(max_length=255, null=True, blank=True)
+    buyer = models.ForeignKey(Buyer, on_delete=models.CASCADE, null=True, blank=True)
     seller = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)
     assigned_collateral_agent = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True, related_name='collateral_managers')
     net_breed_supply = models.PositiveIntegerField(default=0, null=True, blank=True)  # Add this field
@@ -128,8 +129,6 @@ class PackageInfo(models.Model):
     bill_of_lading=models.FileField(upload_to='bill_of_landings', null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
-    def __str__(self):
-        return self.package_name
 
 from django.urls import reverse
 
@@ -144,17 +143,25 @@ class LogisticsStatus(models.Model):
     
     buyer = models.ForeignKey(Buyer, on_delete=models.CASCADE, null=True, blank=True)
     seller = models.ForeignKey(Seller, on_delete=models.CASCADE, null=True, blank=True)
-    # time_of_delivery = models.DateField(null=True, blank=True)
     shipping_mode = models.CharField(max_length=255, null=True, blank=True)
     logistics_company = models.CharField(max_length=255, null=True, blank=True)
-    bill_of_lading=models.FileField(upload_to='bill_of_landings', null=True, blank=True)
+    bill_of_lading = models.FileField(upload_to='bill_of_landings', null=True, blank=True)
     associated_control_center = models.ForeignKey(ControlCenter, on_delete=models.CASCADE, null=True, blank=True)
     invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, null=True, blank=True)
     status = models.CharField(max_length=255, choices=STATUS_CHOICES, default="Dispatched")
     package_info = models.ForeignKey(PackageInfo, on_delete=models.CASCADE, blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     is_status_updated = models.BooleanField(default=False)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    
+    # New fields for aggregated data
+    part_names = models.TextField(null=True, blank=True)  # To store the names of parts as a comma-separated string
+    total_weight = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # Total weight of parts
+    total_quantity = models.IntegerField(null=True, blank=True)  # Total quantity of parts
+    
+    def get_bill_of_lading_url(self):
+        if self.bill_of_lading:
+            return reverse('download_bill_of_lading', kwargs={'pk': self.pk})
+        return ''
 
     def get_bill_of_lading_url(self):
         if self.bill_of_lading:

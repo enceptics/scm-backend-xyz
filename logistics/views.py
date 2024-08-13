@@ -178,10 +178,10 @@ def package_info_create(request):
         form = PackageInfoForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
-            return redirect('package_info_list')
+            return redirect('create_export')
     else:
         form = PackageInfoForm()
-    return render(request, 'package_info_create.html', {'form': form})
+    return render(request, 'create_package_info.html', {'form': form})
 
 def package_info_list(request):
     package_infos = PackageInfo.objects.all()
@@ -200,13 +200,42 @@ def create_logistics_status(request):
             form.save()
             return redirect('logistics_status_list')
     else:
-        form = LogisticsStatusForm()
+        form = LogisticsPackageForm()
     return render(request, 'create_logistics.html', {'form': form})
     
-@login_required
+from django.db.models import Count
+
+from django.shortcuts import render
+from .models import LogisticsStatus
+
 def logistics_status_list(request):
-    logistics_statuses = LogisticsStatus.objects.all().order_by('-timestamp')
-    return render(request, 'logistics_list.html', {'logistics_statuses': logistics_statuses})
+    logistics_statuses = LogisticsStatus.objects.all()
+    
+    # Calculate data for charts
+    shipment_status_data = {
+        'Pending': logistics_statuses.filter(status='pending').count(),
+        'Processed': logistics_statuses.filter(status='processed').count(),
+        'Shipped': logistics_statuses.filter(status='shipped').count(),
+
+        'Delivered': logistics_statuses.filter(status='delivered').count(),
+    }
+    
+    shipping_mode_data = {
+        'Air': logistics_statuses.filter(shipping_mode='air').count(),
+        'Sea': logistics_statuses.filter(shipping_mode='sea').count(),
+        'Road': logistics_statuses.filter(shipping_mode='road').count(),
+        'Rail': logistics_statuses.filter(shipping_mode='rail').count(),
+
+    }
+
+    context = {
+        'logistics_statuses': logistics_statuses,
+        'shipment_status_data': shipment_status_data,
+        'shipping_mode_data': shipping_mode_data,
+    }
+    
+    return render(request, 'logistics_list.html', context)
+
 
 @login_required
 def create_logistics_package(request):
@@ -371,63 +400,95 @@ def seller_download_bill_of_lading(request, pk):
         return HttpResponse("Bill of lading file not found.", status=404)
 
 
-# # Read BOL
-
-# @login_required
-# def bank_download_bill_of_lading(request, pk):
-#     # Ensure the user has permission to download the bill of lading
-#     if request.user.role != 'bank' and not request.user.is_superuser:
-#         return redirect('unauthorized')
-    
-#     # Retrieve the LogisticsStatus instance
-#     logistics_status = get_object_or_404(LogisticsStatus, pk=pk)
-    
-#     # Check if the bill of lading file exists
-#     if not logistics_status.bill_of_lading:
-#         return HttpResponse("Bill of lading file not found.", status=404)
-    
-#     # Serve the bill of lading file for download
-#     file_path = logistics_status.bill_of_lading.path
-#     with open(file_path, 'rb') as file:
-#         response = HttpResponse(file.read(), content_type='application/pdf')
-#         response['Content-Disposition'] = f'attachment; filename="{logistics_status.bill_of_lading.name}"'
-#         return response
-
-
 # UPDATED EXPORTSELECTING MULTIPLE
 from .forms import ExportPartsForm
 from transaction.models import BreaderTrade
+from django.contrib import messages
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .forms import ExportPartsForm
 
 @login_required
 def create_export(request):
     if request.method == 'POST':
-        form = ExportPartsForm(request.POST)
+        form = ExportPartsForm(request.POST, request.FILES)  # Include request.FILES for file uploads
         if form.is_valid():
-            breed = form.cleaned_data['breed']
             selected_parts = form.cleaned_data['parts']
+            control_center = form.cleaned_data['control_center']
+            logistics_company = form.cleaned_data['logistics_company']
+            shipping_mode = form.cleaned_data['shipping_mode']
+            bill_of_lading = form.cleaned_data.get('bill_of_lading')  # Handle file upload
+            package_info = form.cleaned_data.get('package_info')
+            buyer = form.cleaned_data['buyer']
+            seller = form.cleaned_data['seller']
 
-            total_quantity = sum(part.part_quantity for part in selected_parts)
-            total_weight = sum(part.part_weight for part in selected_parts)
-
-            # Create a new BreaderTrade instance for the export
-            export_instance = BreaderTrade.objects.create(
-                breed=breed,
-                breeds_supplied=total_quantity,
-                weight=total_weight,
+            # Fetch relevant BreaderTrade records
+            part_records = BreaderTrade.objects.filter(
                 sale_type='export',
-                part_name=",".join(part.part_name for part in selected_parts),
-                part_quantity=total_quantity,
-                part_weight=total_weight,
+                part_name__in=selected_parts
             )
+            
+            if not part_records.exists():
+                messages.error(request, "No valid records found for the selected parts.")
+                return redirect('create_export')
 
-            # Deduct parts from inventory
-            for part in selected_parts:
-                part.deduct_part_from_inventory(part.part_weight, part.part_quantity)
+            total_weight = sum([part.part_weight or 0 for part in part_records])
+            total_quantity = sum([part.part_quantity or 0 for part in part_records])
+            part_names = ", ".join([part.part_name for part in part_records])
+            
+            first_record = part_records.first()
+           
+            # Create or update package_info
+            if package_info is None:
+                package_info = PackageInfo.objects.create(
+                    package_name="Example Package",
+                    description="Package description",
+                    weight=total_weight,
+                    dimension="20x20x20 cm",
+                    package_type="Box"
+                )
+            
+            # Create LogisticsStatus record
+            logistics_status = LogisticsStatus(
+                buyer=buyer,
+                seller=seller,
+                shipping_mode=shipping_mode,
+                logistics_company=logistics_company,
+                associated_control_center=control_center,
+                status="pending",
+                part_names=part_names,
+                total_weight=total_weight,
+                total_quantity=total_quantity,
+                package_info=package_info,
+                bill_of_lading=bill_of_lading  # Save the file
+            )
+            logistics_status.save()
 
+            # Deduct part_quantity and part_weight from BreaderTrade
+            for part in part_records:
+                part.part_weight -= part.part_weight  # Deduct weight
+                part.part_quantity -= part.part_quantity  # Deduct quantity
+                part.save()
+            
             return redirect('logistics_status_list')
     else:
         form = ExportPartsForm()
-
+    
     return render(request, 'create_multiple_exports.html', {'form': form})
+
+from.forms import UpdateStatusForm
+
+@login_required
+def update_logistics_status(request, pk):
+    logistics_status = get_object_or_404(LogisticsStatus, pk=pk)
+    if request.method == 'POST':
+        form = UpdateStatusForm(request.POST, instance=logistics_status)
+        if form.is_valid():
+            form.save()
+            return redirect('logistics_status_list')
+    else:
+        form = UpdateStatusForm(instance=logistics_status)
+    return render(request, 'update_logistics_status.html', {'form': form})
 
 

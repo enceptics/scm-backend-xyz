@@ -890,6 +890,8 @@ def login_view(request):
                     return redirect('/slaughterhouse_dashboard/') 
                 elif user.role == CustomUser.COLLATERAL_MANAGER:
                     return redirect('/dashboard/control-centers/') 
+                elif user.role == CustomUser.EXPORT_MANAGER:
+                    return redirect('/list_logistics_status/') 
                     
                 else:
                     # Handle other roles or scenarios
@@ -939,9 +941,9 @@ def bank_dashboard(request):
     return render(request, 'bank_dashboard.html')
 
 def export_management_dashboard(request):
-    if request.user.role != 'seller' and not request.user.is_superuser:
+    if request.user.role != 'export_manager' and not request.user.is_superuser:
         return redirect('unauthorized')
-    return render(request, 'export_management.html')
+    return render(request, 'logistics_list.html')
 
 def stock_shift_dashboard(request):
     # Add logic to retrieve data for the seller dashboard

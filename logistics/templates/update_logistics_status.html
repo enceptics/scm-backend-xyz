@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}List of Logistics Status{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Update Logistics Status</h2>
+    
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form method="post" class="form-inline">
+                {% csrf_token %}
+                
+                <div class="form-group mb-2">
+                    <label for="status" class="sr-only">Status</label>
+                    {{ form.status }}
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-sm ml-2 mb-2">Update Status</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
