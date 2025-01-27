@@ -42,7 +42,7 @@ SECRET_KEY = 'django-insecure-$d8&01e=mjlo33y+47z0fm^1(0rj@l&s5lyus!97mbuufp%r#%
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost:8000', 'api.intellima.tech', 'https://xyz-m.vercel.app', 'http://127.0.0.1:5173', 'scm-backend-f55v.onrender.com']
 
@@ -157,10 +157,10 @@ EMAIL_HOST_PASSWORD = 'txqerssmxheiyruz'
 #EMAIL_HOST_PASSWORD = 'ymxllqbalildvjri'
 EMAIL_USE_SSL = False
 
-BASE_URL = '127.0.0.1:8000'
+BASE_URL = 'scm-backend-f55v.onrender.com'
 
-PROTOCOL = 'http'
-DOMAIN = '127.0.0.1:8000'
+PROTOCOL = 'https'
+DOMAIN = 'scm-backend-f55v.onrender.com'
 
 SITE_NAME = 'Intellima'
 
