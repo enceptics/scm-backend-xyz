@@ -3,6 +3,7 @@
 <style>
 /* Logo Styles */
 .sidebar-brand {
+
     background-color: #001b42; /* Navy blue background */
     border-radius: 8px; /* Rounded corners */
     box-shadow: 0 4px 8px rgba(255, 255, 0, 0.4); /* Box shadow for depth */
@@ -33,11 +34,7 @@
     color: #fff;
 }
 
-/* Styles for the sidebar */
-.sidebar {
-    display: block; 
-    transition: transform 0.3s ease; /* Smooth transition for hiding */
-}
+
 </style>
 
 <ul class="navbar-nav bg-gradient sidebar sidebar-dark accordion" id="accordionSidebar" style="background-color: #001b42;">
@@ -49,27 +46,208 @@
         </div>
         <div class="sidebar-brand-text mx-3" style="letter-spacing: 5px;">Intellima</div>
     </a>
+   
 
-    <!-- Other sidebar items go here -->
+    <!-- Divider -->
+    <hr class="sidebar-divider  mb-0">
+
+    <!-- Nav Item - Dashboard -->
+    <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
+        <a class="nav-link" href="{% url 'home' %}">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Home</span></a>
+    </li>
+    <hr class="sidebar-divider my-0">
+
+    {% if request.user.is_superuser %}
+    <!-- Nav Item - Sellers -->
+    <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
+        <a class="nav-link" href="{% url 'superuser' %}">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Registraion</span></a>
+    </li>
+    <hr class="sidebar-divider my-0">
+    {% endif %}
+
+    {% if request.user.role == 'seller' or request.user.is_superuser %}
+    <!-- Nav Item - Sellers -->
+    <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
+        <a class="nav-link" href="{% url 'supply_demand_statistics' %}">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Dashboard (Seller)</span></a>
+    </li>
+
+<hr class="sidebar-divider my-0">
+
+    {% endif %}
+
+    {% if request.user.role == 'buyer' or request.user.is_superuser %}
+    <!-- Nav Item - Buyers -->
+    <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
+        <a class="nav-link" href="{% url 'buyer_quotation_list' %}">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Buyers</span></a>
+    </li>
+    <hr class="sidebar-divider my-0">
+    {% endif %}
+
+    {% if request.user.role == 'inventory_manager' or request.user.role == 'seller' or request.user.role == 'slaughterhouse_manager' or request.user.is_superuser %}
+   <!-- Nav Item - Stock Shift -->
+   <li class="{% if 'dashboard' in active_icon %} nav-item active {% else %} nav-item {% endif %}">
+    <a class="nav-link" href="{% url 'list_breader_trades' %}">
+        <i class="fas fa-fw fa-tachometer-alt"></i>
+        <span>Item reception</span>
+    </a>
+</li>
+
+<hr class="sidebar-divider my-0">
+<!-- <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
+    <a class="nav-link" href="inventory_records_list">
+        <i class="fas fa-fw fa-tachometer-alt"></i>
+        <span>Stock Shift</span>
+    </a>
+</li>
+<hr class="sidebar-divider my-0"> -->
+
+<hr class="sidebar-divider my-0">
+    <hr class="sidebar-divider my-0">
+    {% endif %}
+
+    {% if request.user.role == 'breeder' or request.user.is_superuser %}
+    <!-- Nav Item - Suppliers -->
+    <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
+        <a class="nav-link" href="{% url 'breeder_dashboard' %}">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Breeder</span></a>
+    </li>
+    <hr class="sidebar-divider my-0">
+    {% endif %}
+
+    {% if request.user.role == 'bank' or request.user.is_superuser %}
+    <!-- Nav Item - Bank -->
+    <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
+        <a class="nav-link" href="{% url 'bank_dashboard' %}">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Bank</span></a>
+    </li>
+    <hr class="sidebar-divider my-0">
+    {% endif %}
+
+    {% if request.user.role == 'bank'  %}
+    <li class="{% if 'dashboard' in active_icon %} nav-item active {% else %} nav-item {% endif %}">
+        <a class="nav-link" href="{% url 'list_breader_trades' %}">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Item reception</span>
+        </a>
+    </li>
+    
+    <hr class="sidebar-divider my-0">
+    {% endif %}
+
+    {% if request.user.role == 'inventory_manager' or request.user.role == 'seller' or request.user.role == 'slaughterhouse_manager' or request.user.is_superuser  %}
+    <!-- Nav Item - Bank -->
+    <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
+        <a class="nav-link" href="{% url 'slaughterhouse_dashboard' %}">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Slaughter House</span></a>
+    </li>
+    <hr class="sidebar-divider my-0">
+    {% endif %}
+
+    {% if request.user.role == 'seller' or request.user.is_superuser %}
+    <!-- Nav Item - Bank -->
+
+    <li class="nav-item">
+        <a class="nav-link" data-toggle="collapse" href="#client-basic" aria-expanded="false" aria-controls="client-basic">
+            <i class="fa fa-folder "></i>
+            <span class="menu-title ">&emsp;Chilled Warehouse</span>
+            <i class="menu-arrow "></i>
+        </a>
+    </li>
+    <div class="collapse mx-1 mt-1" id="client-basic" >
+        <ul class="nav flex-column sub-menu" style="border-radius: 30px;">
+            <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
+                <a class="nav-link" href="{% url 'list_exports' %}">
+                    <i class="fas fa-fw fa-tachometer-alt"></i>
+                    <span>Available for Export</span></a>
+            </li>
+            <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
+                <a class="nav-link" href="{% url 'list_local_sale_cuts' %}">
+                    <i class="fas fa-fw fa-tachometer-alt"></i>
+                    <span>Available for Local Sale</span></a>
+            </li>
+            <hr class="sidebar-divider my-0">
+        </ul>
+
+    </div>
+
+
+    <hr class="sidebar-divider my-0">
+    {% endif %}
+
+    {% if request.user.role == 'seller' or request.user.is_superuser %}
+    <!-- Nav Item - Bank -->
+
+    {% endif %}
+
+    {% if request.user.role == 'seller' or request.user.is_superuser %}
+    <!-- Nav Item - Bank -->
+    <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
+        <a class="nav-link" href="{% url 'logistics_status_list' %}">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Export Management</span></a>
+    </li>
+    <hr class="sidebar-divider my-0">
+    {% endif %}
+
+    {% if request.user.role == 'bank' or request.user.role == 'seller' or request.user.is_superuser %}
+    <!-- Nav Item - Control Centers -->
+    <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
+        <a class="nav-link" href="{% url 'control_centers_dashboard' %}">
+            <i class="fas fa-fw fa-users"></i>
+            <span>Control Centers</span></a>
+    </li>
+    <hr class="sidebar-divider my-0">
+    {% endif %}
+
+    {% if request.user.role == 'collateral_manager' or request.user.is_superuser %}
+    <!-- Nav Item - Control Centers -->
+    <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
+        <a class="nav-link" href="{% url 'control_centers_dashboard' %}">
+            <i class="fas fa-fw fa-users"></i>
+            <span>Inventory Info</span>
+        </a>
+    </li>
+    
+<hr class="sidebar-divider my-0">
+
+
+    {% endif %}
+
+    {% if request.user.role == 'bank' or request.user.is_superuser %}
+    <!-- Nav Item - Export Management -->
+    <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
+        <a class="nav-link" href="{% url 'all_letter_of_credit_list' %}">
+            <i class="fas fa-fw fa-cart-plus"></i>
+            <span>Letters of credit</span></a>
+    </li>
+    <hr class="sidebar-divider my-0">
+    {% endif %}
+    {% if request.user.role == 'bank' or request.user.is_superuser %}
+    <!-- Nav Item - Export Management -->
+    <li class="{% if "dashboard" in active_icon %} nav-item active {% else %} nav-item {% endif %}">
+        <a class="nav-link" href="{% url 'bank_list_bill_of_lading' %}">
+            <i class="fas fa-fw fa-cart-plus"></i>
+            <span>Bills of lading</span></a>
+    </li>
+    <hr class="sidebar-divider my-0">
+    {% endif %}
+<p></p>
+<p></p>
 
     <!-- Sidebar Toggler (Sidebar) -->
     <div class="text-center d-none d-md-inline">
-        <button class="rounded-circle border-0" id="sidebarToggl"></button>
+        <button class="rounded-circle border-0" id="sidebarToggle"></button>
     </div>
+
 </ul>
-
-<script>
-    // JavaScript to hide the sidebar on scroll
-    let lastScrollTop = 0;
-    const sidebar = document.getElementById('accordionSidebar');
-
-    window.addEventListener('scroll', function() {
-        let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        if (scrollTop > lastScrollTop) {
-            sidebar.style.transform = 'translateX(-100%)'; // Hide sidebar
-        } else {
-            sidebar.style.transform = 'translateX(0)'; // Show sidebar
-        }
-        lastScrollTop = scrollTop <= 0 ? 0 : scrollTop; // For Mobile or negative scrolling
-    });
-</script>
