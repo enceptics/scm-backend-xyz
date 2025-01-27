@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quotation</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
+   
+    <style>
+        /* Apply your CSS styles here */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
+            font-size: medium;
+        }
+        .header {
+            background-color: #001b42;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+        .footer {
+            background-color: #001b42;
+            color: #fff;
+            padding: 10px 20px;
+            text-align: center;
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px;
+            margin: 5px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .seller-info, .buyer-info {
+            flex: 1;
+            padding: 10px;
+        }
+        .quotation-table {
+            flex: 2;
+            padding: 10px;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .logo {
+            position: absolute; /* Position the logo absolutely */
+            bottom: 10px; /* Distance from the bottom */
+            left: 10px; /* Distance from the left */
+            font-size: 24px; /* Adjust font size as needed */
+            font-weight: bold; /* Make text bold */
+            text-transform: uppercase; /* Convert text to uppercase */
+            color: #333; /* Logo text color */
+            font-family: 'Montserrat', sans-serif; /* Use Google Font */
+        }
+    </style>
+</head>
+<body>
+    <div class="header bg-primary text-white d-flex justify-content-between align-items-center p-4">
+        <h3 class="m-0 text-uppercase">Quotation for supply of {{quotation.product}}</h3>
+    </div>
+    
+
+    <div class="container">
+        <div class="d-flex">
+            <div class="seller-info">
+                <h2>Seller Info</h2>
+                <span><strong>Name:</strong> {{ quotation.seller.seller.first_name }} {{ quotation.seller.seller.last_name }}</span><br>
+                <span><strong>Email:</strong> {{ quotation.seller.seller.email }}</span><br>
+                <span><strong>Address:</strong> {{ quotation.seller.seller.address }}</span><br>
+                <span><strong>Country:</strong> {{ quotation.seller.seller.country }}</span><br>
+                <!-- Add more seller info here if needed -->
+            </div>
+            
+            <div class="buyer-info">
+                <h2>Buyer Info</h2>
+                <span><strong>Name:</strong> {{ quotation.buyer.buyer.first_name }} {{ quotation.buyer.buyer.last_name }}</span><br>
+                <span><strong>Email:</strong> {{ quotation.buyer.buyer.email }}</span><br>
+                <span><strong>Address:</strong> {{ quotation.buyer.buyer.address }}</span><br>
+                <span><strong>Country:</strong> {{ quotation.buyer.buyer.country }}</span><br>
+                <!-- Add more buyer info here if needed -->
+            </div>
+        </div>
+        
+    
+        <div class="quotation-table">
+            <h2>Quotation Details</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th>Delivery Time</th>
+                        <th>Unit Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{ quotation.product }}</td>
+                        <td>{{ quotation.quantity }}</td>
+                        <td>{{ quotation.delivery_time }}</td>
+                        <td>{{ quotation.unit_price }}</td>
+                        <!-- Add more table cells with quotation details here -->
+                    </tr>
+                </tbody>
+            </table>
+            {% if quotation.message %}
+            <div style="background-color: rgba(255, 255, 255, 0.9); border-radius: 10px; padding: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); margin-top: 20px;">
+                <p style="margin-bottom: 5px;">Message</p>
+                <p style="text-indent: 20px; margin: 0;">{{ quotation.message }}</p>
+            </div>
+            {% endif %}
+            
+        </div>
+    </div>
+
+    <div class="footer text-white mt-5">
+        <div class="logo">Intellima</div>
+    </div>
+</body>
+</html>

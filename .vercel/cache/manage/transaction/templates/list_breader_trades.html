@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% block title %}Confirm Item Reception{% endblock title %}
+
+{% block content %}
+<style>
+    .btn:disabled,
+    .btn[disabled] {
+        cursor: not-allowed;
+        opacity: 0.65;
+        background-color: #6c757d; /* Change to a color to indicate the button is disabled */
+        border-color: #6c757d;
+    }
+
+    .header-container {
+        background-color: #f8f9fa;
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+    .header-container h1 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+        margin: 0;
+    }
+    .header-container p {
+        font-size: 14px;
+        color: #555;
+        margin: 5px 0 0;
+    }
+
+    .aggregate-data {
+        margin-bottom: 20px;
+        padding: 15px;
+        background-color: #e9ecef;
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    .aggregate-data .badge {
+        font-size: 14px;
+    }
+
+    table {
+        font-size: 14px;
+    }
+
+</style>
+
+<div class="header-container">
+    <h1>Confirm Reception of Items</h1>
+    <p>Inventory Information</p>
+</div>
+
+<!-- Aggregate Data Section -->
+<div class="aggregate-data">
+    <p>
+        <span class="badge bg-primary text-light">Total Received Weight:</span> {{ total_received_weight }} Kg &nbsp;
+        <span class="badge bg-success text-light">Total Good Condition:</span> {{ total_good_condition }} &nbsp;
+        <span class="badge bg-danger text-light">Total Destroyed Condition:</span> {{ total_destroyed_condition }} &nbsp;
+        <span class="badge bg-warning text-dark">Total Poor Condition:</span> {{ total_poor_condition }}
+    </p>
+</div>
+
+{% for trade in trades %}
+
+<table class="table table-responsive">
+    <thead>
+        <tr>
+            <th>Date Created</th>
+            <th>Breeder</th>
+            <th>Seller</th>
+            <th>Items Supplied</th>
+            <th>Weight</th>
+            <th>Control Center</th>
+            <th>Reception Status</th>
+            <th>Weight Status</th>
+            <th>Payment Status</th>
+            <th>See More</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>{{ trade.transaction_date }}</td>
+            <td>{{ trade.breeder }}</td>
+            <td>{{ trade.seller }}</td>
+            <td>{{ trade.breeds_supplied }} {{ trade.breed }} </td>
+            <td>{{ trade.weight }} Kg</td>
+            <td>{{ trade.control_center }}</td>
+            
+            <td>
+                {% if trade.reception_confirmed %}
+                    <span class="badge bg-success" style="font-size: 12px;">Confirmed</span>
+                {% else %}
+                    {% if request.user.role == 'inventory_manager' %}
+                        <a class="btn btn-sm" href="{% url 'confirm_reception' trade.id %}" style="background-color: #001b42; color: #f8f9fa;">
+                            <span style="font-size: 12px;">Confirm Reception</span>
+                        </a>
+                    {% else %}
+                        <span class="badge bg-warning" style="font-size: 12px;">Not Confirmed</span>
+                    {% endif %}
+                {% endif %}
+            </td>
+            
+            <td>
+                {% if trade.weight %}
+                    <span class="badge bg-success" style="font-size: 12px;">Confirmed</span>
+                {% else %}
+                    {% if request.user.role == 'slaughterhouse_manager' %}
+                        <a class="btn btn-sm" href="{% url 'record_weight' trade.id %}" style="background-color: #001b42; color: #f8f9fa;">
+                            <span style="font-size: 12px;">Record Weight</span>
+                        </a>
+                    {% else %}
+                        <span class="badge bg-warning" style="font-size: 12px;">Not Confirmed</span>
+                    {% endif %}
+                {% endif %}
+            </td>
+        
+            <td>
+                {% if trade.payment_status %}
+                    <span class="badge bg-success" style="font-size: 12px;">Paid</span>
+                {% else %}
+                    <span class="badge bg-warning" style="font-size: 12px;">Pending</span>
+                {% endif %}
+            </td>
+            <td>
+                <a class="btn btn-info btn-sm" href="{% url 'trade_detail' trade.id %}" style="font-size: 12px;">See More</a>
+            </td>
+
+    </tbody>
+</table>
+{% empty %}
+<div class="text-center my-5">
+    <i class="fas fa-exclamation-circle fa-5x text-muted"></i>
+    <p class="mt-3">No supplies available</p>
+</div>
+
+{% endfor %}
+
+{% endblock %}

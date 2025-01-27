@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mt-n4 mb-3" style="font-size: 15px; background-color: #001b40; color: white;">
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="home-tab" data-toggle="tab" href="#dashboard" role="tab" aria-controls="dashboard" aria-selected="true"">Dashboard</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="quotation-tab" href="{% url 'buyer_letter_of_credit_list' %}" style="color: #d9d9d9; text-decoration: none;">L.Cs List</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="quotation-tab" href="{% url 'buyer_letter_of_credit_list' %}" style="color: #d9d9d9; text-decoration: none;">Bill of lading</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="quotation-tab" href="{% url 'logistics_status_list' %}" style="color: #d9d9d9; text-decoration: none;">Shipment</a>
+        </li>
+    </ul>
+    <span class="nav-item ml-auto"> <!-- Apply ml-auto class here -->
+        <div class="mx-2 mt-2 font-italic"> <!-- Wrap the Control Centers tab in a div -->
+           Hello, {{ request.user.first_name }} {{ request.user.last_name }}
+        </div>
+    </span>
+</div>
+
+        <h5 class="mb-3">Quotations</h5>
+        <hr style="border: 5px solid #f5f5f5; border-radius: 30px;">
+
+    {% if quotations %}
+    <div class="table-responsive">
+
+        <table  mt-3">
+            <thead>
+                <tr style="color: #666666;">
+                    <th>Seller</th>
+                    <th>Product</th>
+                    <th>Date</th>
+                    <th>Quantity</th>
+                    <th>Unit Price</th>
+                    <th>Status</th>
+                    <th>Confirmation</th>
+                    {% if not quotations.0.confirm and not quotations.0.rejected %}
+                        <th>Actions</th>
+                    {% endif %}
+                    <th>View PDF</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for quotation in quotations %}
+                    <tr>
+                        <td >{{ quotation.seller }}</td>
+                        <td >{{ quotation.product }}</td>
+                        <td >{{ quotation.created_at }}</td>
+                        <td >{{ quotation.quantity }}</td>
+                        <td >{{ quotation.unit_price }}</td>
+                        <td >{{ quotation.status }}</td>
+                        <td >
+                            {% if quotation.confirm %}
+                                <span class=" btn-sm btn-succes text-succes" style="font-weight: bold;color: #001b40;">Confirmed</span>
+                            {% elif quotation.rejected %}
+                                <span class=" btn-sm btn-dan" style="color: red;font-weight: bold;">Rejected</span>
+                            {% else %}
+                                <span style="font-size: 12px;" class=" btn-sm btn-warning">Not Confirmed</span>
+                            {% endif %}
+                        </td>
+                        {% if not quotation.confirm and not quotation.rejected %}
+                        <td>
+                            <div class="d-flex" style="display: flex; align-items: center;">
+                                <form action="{% url 'confirm_quotation' quotation.id %}" method="post" style="margin-right: 10px;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm" style="background-color: #001b42; color: wheat;font-size: 12px;">Confirm</button>
+                                </form>
+                                <form action="{% url 'reject_quotation' quotation.id %}" method="post">
+                                    {% csrf_token %}
+                                    <div style="display: flex; align-items: center;">
+                                        <button type="submit" class="btn btn-sm btn-danger" style="font-size: 12px;">Reject</button>
+                                        <textarea name="explanation" placeholder="Explanation for rejection" style="flex-grow: 1; margin-left: 10px; height: 50px;font-size: 13px;" required></textarea>
+                                    </div>
+                                </form>
+                            </div>
+                        </td>
+                    {% endif %}
+                        <td style="font-size: 14px;">
+                            <a href="{{ quotation.pdf_url }}">View PDF</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% else %}
+        <div class="alert alert-warning mt-3" role="alert">
+            <i class="fas fa-exclamation-circle"></i> Quotation list is empty.
+        </div>
+    {% endif %}
+{% endblock %}

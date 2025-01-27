@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h4>Letter of Credit List</h4>
+    {% if letters %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Buyer</th>
+                        <th>Seller</th>
+                        <th>Issue Date</th>
+                        <th>Status</th>
+                        <th>Reason</th> 
+                        <th>L.C Document</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for letter_of_credit in letters %}
+                        <tr>
+                            <td>{{ letter_of_credit.get_buyer_full_name }}</td>
+                            <td>{{ letter_of_credit.get_seller_full_name }}</td>
+                            <td>{{ letter_of_credit.issue_date }}</td>
+                            <td>{{ letter_of_credit.status }}</td>
+                            <td>
+                                {% if letter_of_credit.status == 'rejected' %}
+                                    <!-- Button/link to show rejection reason modal -->
+                                    <button class="btn btn-link btn-sm" onclick="showRejectionModal('{{ letter_of_credit.rejection_reason }}')">See why</button>
+                                {% endif %}
+                            </td>
+                            <td style="font-size: 14px;">
+                                {% if letter_of_credit.lc_document %}
+                                    <a href="{{ letter_of_credit.lc_document.url }}">View/Download</a>
+                                {% else %}
+                                    Not available
+                                {% endif %}
+                            </td>
+                          
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>No letters of credit available.</p>
+    {% endif %}
+
+    <!-- Rejection Message Modal -->
+    <div class="modal fade" id="rejectionModal" tabindex="-1" role="dialog" aria-labelledby="rejectionModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="rejectionModalLabel">Reason for Rejection</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p id="rejectionMessage"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ block.super }}
+    <!-- JavaScript for rejectionModal -->
+    <script>
+        function showRejectionModal(message) {
+            var modal = $('#rejectionModal');
+            modal.find('#rejectionMessage').text(message);
+            modal.modal('show');
+        }
+    </script>
+{% endblock %}

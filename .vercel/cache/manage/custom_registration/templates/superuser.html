@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    h2{
+        font-size: 16px;
+    }
+</style>
+
+<div class="row mt-n4 mb-3" style="font-size: 15px; background-color: #001b40; color: white;">
+    <ul class="nav nav-tabs " id="myTab" role="tablist">
+       
+        <li class="nav-item">
+            <a class="nav-link" id="quotation-tab" style="color: #d9d9d9; text-decoration: none;">Register users</a>
+    </ul>
+    <span class="ml-auto mx-2 mt-2">Hello, {{request.user.username}}</span>
+
+</div>
+<hr style="height: 20px;background-color: wheat;border-radius: 30px;">
+<main class="container " style="height: 70vh;">
+    <div class="row">
+        <div class="col-md-3">
+            <section id="seller">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Seller </h2>
+                    </div>
+                    <a href="{% url 'seller_register' %}" class="card-body card-body-link">
+                        <div class="card-body">
+                            Register seller.
+                        </div>
+                    </a>
+                </div>
+            </section>
+        </div>
+        <div class="col-md-3">
+            <section id="buyer">
+                <div class="card">
+                    <div class="card-header">
+                        <h2> Buyer </h2>
+                    </div>
+                    <a href="{% url 'buyer_register' %}" class="card-body card-body-link">
+                        <div class="card-body">
+                            Register Buyer.
+                        </div>
+                    </a>
+                </div>
+            </section>
+        </div>
+      
+        <div class="col-md-3">
+            <section id="bank">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Bank</h2>
+                    </div>
+                    <a href="{% url 'bank_register' %}" class="card-body card-body-link">
+                        <div class="card-body">
+                            Register bank.
+                        </div>
+                    </a>
+                </div>
+            </section>
+        </div>
+        <div class="col-md-3">
+            <section id="bank">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Collateral Manager</h2>
+                    </div>
+                    <a href="{% url 'collateral_manager_register' %}" class="card-body card-body-link">
+                        <div class="card-body">
+                            Register Collateral manager.
+                        </div>
+                    </a>
+                </div>
+            </section>
+        </div>
+        <div class="col-md-3">
+            <section id="breeder">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Breeder Registration</h2>
+                    </div>
+                    <a href="{% url 'breeder_register' %}" class="card-body card-body-link">
+                        <div class="card-body">
+                           Register breeder.
+                        </div>
+                    </a>
+                </div>
+            </section>
+        </div>
+        <div class="col-md-3">
+            <section id="bank">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Collateral Manager</h2>
+                    </div>
+                    <a href="{% url 'collateral_manager_register' %}" class="card-body card-body-link">
+                        <div class="card-body">
+                            Register Collateral manager.
+                        </div>
+                    </a>
+                </div>
+            </section>
+        </div>
+        <div class="col-md-3">
+            <section id="breeder">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Slaughter House</h2>
+                    </div>
+                    <a href="{% url 'slaughter_house_register' %}" class="card-body card-body-link">
+                        <div class="card-body">
+                           Register SlaughterHouse.
+                        </div>
+                    </a>
+                </div>
+            </section>
+        </div>
+        <div class="col-md-3">
+            <section id="breeder">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Export Manager</h2>
+                    </div>
+                    <a href="{% url 'export_manager_register' %}" class="card-body card-body-link">
+                        <div class="card-body">
+                            Register Export Manager.
+                        </div>
+                    </a>
+                </div>
+            </section>
+        </div>
+
+    </div>
+</main>
+        {% endblock %}
+

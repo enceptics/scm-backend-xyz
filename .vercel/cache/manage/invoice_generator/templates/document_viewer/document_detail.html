@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+{% block title %} Active Orders {% endblock title %}
+
+{% block content %}
+<style>
+  .notification-tag {
+    background-color: #001b42;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  }
+
+  .disabled-card {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  .position-relative {
+    position: relative;
+  }
+
+  .top-right {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  }
+
+  .disabled {
+    pointer-events: none;
+    opacity: 0.5;
+  }
+
+  .card-text {
+    font-size: 16px;  /* Increased the text size */
+    width: 100%;
+  }
+
+  .info-icon {
+    font-size: 18px;
+    margin-left: 10px;
+    cursor: pointer;
+  }
+
+  .modal-content {
+    padding: 20px;
+    background-color: #f9f9f9;
+    color: #333;
+  }
+
+  .modal-header {
+    border-bottom: none;
+  }
+
+  .modal-title {
+    font-weight: bold;
+  }
+
+  .modal-body {
+    font-size: 14px;
+  }
+
+  .btn-info {
+    font-size: 14px;
+  }
+</style>
+
+<div class="row mt-n3 mb-3 rounded" style="font-size: 15px; background-color: #001b40; color: white;">
+    <div class="">
+        <a class="nav-link" id="quotation-tab" style="color: #d9d9d9; text-decoration: none;text-transform: capitalize;">Hello, {{request.user.username}}</a>
+    </div>
+    <div class="col mt-1 text-center d-flex justify-content-end align-items-center">
+        <span class="" style="margin-right: 5px; color: #fff; letter-spacing: 2px; font-size: 15px;">Active orders</span>
+    </div>
+</div>
+<h5>List of Active Orders</h5>
+
+<hr style="border: 5px solid #f5f5f5; border-radius: 30px;">
+
+{% if open_orders %}
+  {% for extracted_data in open_orders %}
+  <div class="col-md-12 mb-2">
+    <div class="card shadow-sm">
+      <div class="card-body position-relative">
+        <h5 class="card-title text-primary">{{ extracted_data.item }}</h5>
+        <div class="status-badge position-absolute top-right">
+          <span class="badge badge-success badge-lg">
+            <i class="fas fa-check-circle"></i> Open
+          </span>
+        </div>
+        <p class="card-text">
+          <span style="color: #007bff; font-weight: bold;">We are in the market for organic quarantined and chilled</span> 
+          <span class="badge badge-primary badge-lg " style="color: #fff; font-weight: bold;">{{ extracted_data.quantity }} Kg</span> <span style="color: #007bff; font-weight: bold;"> of</span> <span class="badge badge-primary badge-lg" style="color: #fff; font-weight: bold;"> {{ extracted_data.item }}</span> 
+          <span style="color: #007bff; font-weight: bold;">to be collected on</span> 
+          <span class="badge badge-primary badge-lg" style="color: #fff; font-weight: bold;">{{ extracted_data.collection_date }}</span>. 
+          <span style="color: #007bff; font-weight: bold;">We will be collecting from</span> 
+          <span class="badge badge-secondary badge-lg" style="color: #fff; font-weight: bold;">{{ extracted_data.collection_market }}</span> 
+          <span style="color: #007bff; font-weight: bold;">market.</span>
+          {% if extracted_data.status == 'new' %}
+            <span class="notification-tag badge badge-danger" style="margin-left: 10px;">New</span> <!-- Notification tag -->
+          {% endif %}
+        </p>
+        <a href="{% url 'create_breader_trade' extracted_data.id %}" class="btn btn-success btn-sm"> Add Trade</a>
+        <i class="fas fa-info-circle secondary-icon" data-toggle="modal" data-target="#infoModal"></i>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+{% else %}
+  <div class="text-center mt-5">
+    <i class="fas fa-exclamation-circle fa-4x" style="color: #001b40;"></i>
+    <p class="mt-3" style="font-size: 24px; font-weight: 500;">There are currently no active orders.</p>
+  </div>
+{% endif %}
+
+{% if closed_orders %}
+  <h5>List of Closed Orders</h5>
+  <hr style="border: 5px solid #f5f5f5; border-radius: 30px;">
+  {% for extracted_data in closed_orders %}
+  <div class="col-md-12 mb-2">
+    <div class="card shadow-sm disabled-card">
+      <div class="card-body position-relative">
+        <h5 class="card-title text-primary">{{ extracted_data.item }}</h5>
+        <div class="status-badge position-absolute top-right">
+          <span class="badge badge-danger badge-lg">
+            <i class="fas fa-times-circle"></i> Closed
+          </span>
+        </div>
+        <p class="card-text">
+          <span style="color: #007bff; font-weight: bold;">We were in the market for organic quarantined and chilled</span> 
+          <span class="badge badge-info badge-lg" style="color: #fff; font-weight: bold;">{{ extracted_data.quantity }} {{ extracted_data.item }}(s)</span> 
+          <span style="color: #007bff; font-weight: bold;">which was supposed to be collected on</span> 
+          <span class="badge badge-info badge-lg" style="color: #fff; font-weight: bold;">{{ extracted_data.collection_date }}</span>. 
+          <span style="color: #007bff; font-weight: bold;">However, this order is now closed. Collection was set from</span> 
+          <span class="badge badge-info badge-lg" style="color: #fff; font-weight: bold;">{{ extracted_data.collection_market }}</span> 
+          <span style="color: #007bff; font-weight: bold;">market.</span>
+          {% if extracted_data.status == 'new' %}
+            <span class="notification-tag badge badge-danger" style="margin-left: 10px;">New</span> <!-- Notification tag -->
+          {% endif %}
+        </p>
+        <a href="#" class="btn btn-info btn-sm disabled">Add Trade</a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+{% endif %}
+
+{% if open_orders.has_other_pages or closed_orders.has_other_pages %}
+  <div class="container mt-3">
+    <ul class="pagination justify-content-center">
+      {% if open_orders.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page=1">&laquo;</a></li>
+        <li class="page-item"><a class="page-link" href="?page={{ open_orders.previous_page_number }}">{{ open_orders.previous_page_number }}</a></li>
+      {% endif %}
+      <li class="page-item active"><a class="page-link" href="#">{{ open_orders.number }}</a></li>
+      {% if open_orders.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ open_orders.next_page_number }}">{{ open_orders.next_page_number }}</a></li>
+        <li class="page-item"><a class="page-link" href="?page={{ open_orders.paginator.num_pages }}">&raquo;</a></li>
+      {% endif %}
+    </ul>
+  </div>
+{% endif %}
+
+<!-- Modal -->
+<div class="modal fade" id="infoModal" tabindex="-1" role="dialog" aria-labelledby="infoModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="infoModalLabel">Trade Information</h5>
+        <button type="button" class="close btn-sm" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>To add a trade, specify the number of Kilograms you will supply. Ensure the quantity matches your current stock and delivery capabilities.</p>
+        <ul>
+          <li><strong>Control center:</strong> Select the control center specified as the collection market.</li>
+          <li><strong>Quantity:</strong> The number of items you are providing.</li>
+        </ul>
+        <p>Click "Add Trade" to proceed with entering the supply details.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button " class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

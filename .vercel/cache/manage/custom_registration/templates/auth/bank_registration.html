@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <!-- Outer Row -->
+    <div class="row justify-content-center mt-n5">
+
+        <div class="col-lg-12 col-md-12">
+
+            <div class="card o-hidden border-0 shadow-lg my-5">
+                <div class="card-body p-0">
+                    <!-- Nested Row within Card Body -->
+                    <div class="row">
+                        <!-- Image Column -->
+                        <div class="col-lg-6 d-none d-lg-block bg-login-image"></div>
+                        <!-- Form Column -->
+                        <div class="col-lg-6 p-5">
+                            <div class="text-center">
+                                <h1 class="h4 text-gray-900 mb-4">Bank Registration</h1>
+                            </div>
+                            <form class="user mt-n3" method="post" action="{% url 'bank_register' %}">
+                                {% csrf_token %}
+                                <div class="row">
+                                    <!-- First Column -->
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="username">Bank Name</label>
+                                            {{ form.username }}
+                                            {% for error in form.username.errors %}
+                                                <p class="text-danger">{{ error }}</p>
+                                            {% endfor %}
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="email">Email</label>
+                                            {{ form.email }}
+                                            {% for error in form.email.errors %}
+                                                <p class="text-danger">{{ error }}</p>
+                                            {% endfor %}
+                                        </div>
+                                       
+                                        <div class="form-group">
+                                            <label for="country">Country</label>
+                                            {{ form.country }}
+                                            {% for error in form.country.errors %}
+                                                <p class="text-danger">{{ error }}</p>
+                                            {% endfor %}
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="location">Location</label>
+                                            {{ form.location }}
+                                            {% for error in form.location.errors %}
+                                                <p class="text-danger">{{ error }}</p>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    <!-- Second Column -->
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="address">Address</label>
+                                            {{ form.address }}
+                                            {% for error in form.address.errors %}
+                                                <p class="text-danger">{{ error }}</p>
+                                            {% endfor %}
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="county">County</label>
+                                            {{ form.county }}
+                                            {% for error in form.county.errors %}
+                                                <p class="text-danger">{{ error }}</p>
+                                            {% endfor %}
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="password">Password</label>
+                                            {{ form.password1 }}
+                                            {% for error in form.password1.errors %}
+                                                <p class="text-danger">{{ error }}</p>
+                                            {% endfor %}
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="confirm_password">Confirm password</label>
+                                            {{ form.password2 }}
+                                            {% for error in form.password2.errors %}
+                                                <p class="text-danger">{{ error }}</p>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-user btn-block">Register Bank</button>
+                            </form>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+{% endblock content %}

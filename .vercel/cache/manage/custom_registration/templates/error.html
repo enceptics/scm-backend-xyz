@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}
+    Form submitted successfully
+{% endblock %}
+{% block content %}
+<div class="row mt-n4 mb-3 rounded" style="font-size: 15px; background-color: #001b40; color: white;">
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+      
+    </ul>
+    <div class="">
+        <a class="nav-link" id="quotation-tab" style="color: #d9d9d9; text-decoration: none;">Hello, {{request.user.username}}</a>
+    </div>
+</div>
+<hr style="border: 5px solid #f5f5f5; border-radius: 30px;">
+
+<div class="alert alert-warning mt-3" role="alert">
+    <span class="fa fa-exclamation-circle mr-2"></span>
+    Your LC list is empty.
+</div>
+{% endblock %}
+

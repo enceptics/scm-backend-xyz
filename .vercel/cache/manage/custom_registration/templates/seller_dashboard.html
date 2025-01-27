@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+{% load static %}
+<!-- Page title  -->
+{% block title %}Intellima{% endblock title %}
+
+<!-- Specific Page CSS goes HERE  -->
+
+<!-- Page Heading -->
+
+<!-- Page content  -->
+{% block content %}
+<!-- Content Row -->
+
+<div class="row mt-n3 mb-3" style="font-size: 15px; background-color: #001b40; color: white;">
+    <ul class="nav nav-tabs " id="myTab" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="home-tab" data-toggle="tab" href="#dashboard" role="tab" aria-controls="dashboard" aria-selected="true"">Dashboard</a>
+        </li>
+        <a class="nav-link" id="quotation-tab" href="{% url 'create_quotation' %}" style="color: #d9d9d9; text-decoration: none;">
+
+        <li class="nav-item">
+            Send quotation
+        </li>
+    </a>
+    </ul>
+
+    <div class="tab-content" id="myTabContent">
+        <div class="tab-pane fade show active" id="dashboard" role="tabpanel" aria-labelledby="home-tab">
+            <!-- Dashboard content here -->
+        </div>
+        <div class="tab-pane fade" id="quotation" role="tabpanel" aria-labelledby="quotation-tab">
+            <!-- Send quotation content here -->
+        </div>
+        <div class="tab-pane fade" id="control-centers" role="tabpanel" aria-labelledby="control-centers-tab">
+            <!-- Control centers content here -->
+        </div>
+    </div>
+</div>
+
+<div class="row mb-3" style="font-size: 15px; color: white;">
+    <div class="col-auto mb-3 mt-" style="position: relative;">
+        <h5 class="mb-0 font-weight-bold text-dark" style="margin-left: 10px;"> <i class='fas fa-tachometer-alt'></i> Seller Dashboard</h5>
+    </div>
+
+    <div class="col-auto ml-auto  mt-" style="position: relative;">
+        <div class="d-flex">
+            <div class="col-auto  mt-" style="position: relative;">
+                <a href="{% url 'breeder_register' %}" style="color: #d9d9d9; text-decoration: none;">
+                <button class="btn btn-sm bg-light" style="margin-left: 5px;"> <i class='fas fa-user-plus'></i> Register Breeder</button>
+                </a>
+            </div>
+            
+            <div class="col-auto  mt-" style="position: relative;">
+                <a  href="{% url 'buyer_register' %}" style="color: #d9d9d9; text-decoration: none;">
+                <button class="btn btn-sm bg-light" style="margin-left: 5px;"> <i class='fas fa-user-plus'></i> Register Buyer</button>
+                </a>
+            </div>
+            <div class="col-auto  mt-" style="position: relative;">
+                <a  href="{% url 'inventory_manager_register' %}" style="color: #d9d9d9; text-decoration: none;">
+                <button class="btn btn-sm bg-light" style="margin-left: 5px;"> <i class='fas fa-user-plus'></i> Inventory manager</button>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Earnings (Monthly) Card  -->
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{% url 'inventory_information' %}" style="text-decoration: none;">
+
+        <div class="card border-left-primary shadow h-100 py-">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class=" font-weight-bold text-gray-700  " style="font-size: 20px;">Inventory </div>
+
+                        <div class="text-md font-weight-bold " style="color: #999999">
+                            Information </div>
+                    </div>
+                    <div class="col-auto " >
+                        <i class="fas fa-archive fa-2x text-gray-300 "></i> 
+                    </div>
+                </div>
+            </div>
+        </div>
+        </a>
+    </div>
+
+    <!-- Earnings (Annua) Card  -->
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{% url 'seller_supply_history' %}" style="text-decoration: none;">
+
+        <div class="card border-left-primary shadow h-100 py-">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class=" font-weight-bold text-gray-700  " style="font-size: 20px;">Suppliers </div>
+                        <div class="text-md font-weight-bold " style="color: #999999">
+                            List 
+                        </div>
+                    </div>
+                    <div class="col-auto " >
+                        <i class="fas fa-list fa-2x text-gray-300 "></i> 
+                    </div>
+                </div>
+            </div>
+        </div>
+    </a>
+
+    </div>
+    <!-- Products Card -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{% url 'quotation_list' %}" style="text-decoration: none;">
+
+        <div class="card border-left-primary shadow h-100 py-">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class=" font-weight-bold text-gray-700" style="font-size: 20px;">Quotation </div>
+
+                        <div class="text-md font-weight-bold " style="color: #999999">
+                            List history </div>
+                    </div>
+                    <div class="col-auto " >
+                        <i class="fas fa-money-bill-alt fa-2x text-gray-300 "></i> 
+                    </div>
+                </div>
+            </div>
+        </div>
+        </a>
+    </div>
+
+    <!-- Categories Card -->
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{% url 'seller_letter_of_credit_list' %}" style="text-decoration: none;">
+
+        <div class="card border-left-primary shadow h-100 py-">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class=" font-weight-bold text-gray-700  " style="font-size: 20px;">L.C</div>
+                        <div class="text-md font-weight-bold " style="color: #999999">
+                            List </div>
+                    </div>
+                    <div class="col-auto " >
+                        <i class="fas fa-file-invoice fa-2x text-gray-300 "></i> 
+                    </div>
+                </div>
+            </div>
+        </div>
+        </a>
+    </div>
+</div>
+
+
+<div class="row">
+        <!-- Supply vs Demand Statistics Chart -->
+        <div class="col-md-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Supply vs Demand Statistics</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="supplyDemandChart" style="height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+
+    <!-- Products available by category Chart -->
+<!-- Products available by category Chart -->
+<div class="col-md-5">
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Products available by name</h6>
+        </div>
+        <div class="card-body">
+            <ul class="list-group">
+                {% for breed_data in supply_vs_demand_data %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ breed_data.breed }}
+                        <span class="badge badge-primary badge-pill">{{ breed_data.total_bred }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var ctx = document.getElementById('supplyDemandChart').getContext('2d');
+        var supplyVsDemandData = {{ supply_vs_demand_data|safe }};
+
+        var breeds = supplyVsDemandData.map(function (item) {
+            return item.breed;
+        });
+
+        var supplyData = supplyVsDemandData.map(function (item) {
+            return item.total_bred;
+        });
+
+        var demandData = supplyVsDemandData.map(function (item) {
+            return item.total_slaughtered;
+        });
+
+        var chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: breeds,
+                datasets: [{
+                    label: 'Supply',
+                    backgroundColor: 'rgba(0, 27, 66, 0.7)',
+                    borderColor: 'rgba(0, 27, 66, 1)',
+                    borderWidth: 1,
+                    data: supplyData
+                }, {
+                    label: 'Demand',
+                    backgroundColor: 'rgba(0, 255, 0, 0.5)',
+                    borderColor: 'green',
+                    borderWidth: 1,
+                    data: demandData
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        labels: {
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        },
+                        ticks: {
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock content %}

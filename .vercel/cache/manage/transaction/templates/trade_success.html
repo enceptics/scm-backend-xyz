@@ -1,0 +1,27 @@
+<!-- quotation_created.html -->
+{% extends 'base.html' %}
+{% block title %}
+    Form submitted successfully
+{% endblock %}
+{% block content %}
+<div class="container">
+
+        <div class="icon-container">
+            <span class="icon"><i class="fas fa-check-circle" style="font-size: 30px; color: #5C6AC4;"></i></span>
+            <div class="message-container">
+                <h2 class="message-title" style="color: #666666;">Form Submitted Successfully!</h2>
+                <p></p>
+                <p><a href="#" onclick="goBack()">Go back dashboard</a></p>
+
+            </div>
+    </div>
+    
+</div>
+
+<script>
+    function goBack() {
+      // Go back two pages in the browser history
+      window.history.go(-2);
+    }
+  </script>
+{% endblock %}

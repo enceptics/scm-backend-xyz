@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} 404 {% endblock %}
+
+{% block content %}
+        <div class="row">
+            <div class="col-md-12">
+                <div class="error-template">
+                    <h1>
+                        Oops!</h1>
+                    <h2>
+                        404 </h2>
+                    <div class="error-details">
+                        This route has never been discovered before. Feeling lost?
+                    </div>
+                    <div class="error-actions">
+                      Don't worry we'll take you back home 
+                      <br><br>
+                        <a href="javascript:history.back()" class="btn  btn-sm" style="background-color: #001b42;"><span class="glyphicon glyphicon-home"></span>
+                            Take me home </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endblock %}

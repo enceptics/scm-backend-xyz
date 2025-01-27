@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    All Letters of Credit
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+            <div class="row mt-n4 mb-3" style="font-size: 15px; background-color: #001b40; color: white;">
+                <ul class="nav nav-tabs " id="myTab" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="home-tab" data-toggle="tab" href="#dashboard" role="tab" aria-controls="dashboard" aria-selected="true"">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="quotation-tab" href="{% url 'letter_of_credit_create' %}" style="color: #d9d9d9; text-decoration: none;">Create L.C</a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" id="control-centers-tab" data-toggle="tab" href="#control-centers" role="tab" aria-controls="control-centers" aria-selected="false" style="color: #d9d9d9;">Control centers</a>
+                    </li>
+                </ul>
+            
+                <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade show active" id="dashboard" role="tabpanel" aria-labelledby="home-tab">
+                        <!-- Dashboard content here -->
+                    </div>
+                    <div class="tab-pane fade" id="quotation" role="tabpanel" aria-labelledby="quotation-tab">
+                        <!-- Send quotation content here -->
+                    </div>
+                    <div class="tab-pane fade" id="control-centers" role="tabpanel" aria-labelledby="control-centers-tab">
+                        <!-- Control centers content here -->
+                    </div>
+                </div>
+            </div>
+            <h4>All Letters of Credit</h4>
+            {% if letters %}
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Buyer</th>
+                                <th>Seller</th>
+                                <th>Issue Date</th>
+                                <th>Status</th>
+                                <th>L.C Document</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for letter in letters %}
+                                <tr>
+                                    <td>{{ letter.buyer }}</td>
+                                    <td>{{ letter.seller }}</td>
+                                    <td>{{ letter.issue_date }}</td>
+                                    <td>{{ letter.status }}</td>
+                                    <td>
+                                        {% if letter.lc_document %}
+                                            <a href="{{ letter.lc_document.url }}" target="_blank">View/Download</a>
+                                        {% else %}
+                                            Not available
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p>No letters of credit available.</p>
+            {% endif %}
+        {% else %}
+            <div class="alert alert-danger" role="alert">
+                You don't have permission to access this page.
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

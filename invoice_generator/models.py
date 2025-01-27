@@ -290,7 +290,7 @@ def generate_quotation_pdf(sender, instance, created, **kwargs):
 class LetterOfCredit(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
-        ('sent_to_bank', 'Sent to bank'),
+        ('sent_to_seller', 'Sent to seller'),
         ('approved', 'Approved'),
         ('rejected', 'Rejected'),
     ]
@@ -315,6 +315,9 @@ class LetterOfCredit(models.Model):
     total_amount = models.FloatField(blank=True, null=True)
     delivery_date = models.DateField(blank=True, null=True)
     
+    # New Boolean field to track if the buyer has confirmed the LC
+    buyer_confirmed = models.BooleanField(default=False)
+
     def get_buyer_full_name(self):
         if self.buyer:
             return f'{self.buyer.buyer.first_name} {self.buyer.buyer.last_name} '

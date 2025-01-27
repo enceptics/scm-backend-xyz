@@ -1,0 +1,69 @@
+{% load static %}  <!-- Add this line at the beginning of your template -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supply vs Demand Statistics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Supply vs Demand Statistics</h1>
+
+    <canvas id="supplyDemandChart" width="400" height="400"></canvas>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var supplyVsDemandData = JSON.parse('{{ supply_vs_demand_data|escapejs|safe }}');
+    
+            var breeds = supplyVsDemandData.map(function(item) {
+                return item.breed;
+            });
+    
+            var totalBred = supplyVsDemandData.map(function(item) {
+                return item.total_bred;
+            });
+    
+            var totalSlaughtered = supplyVsDemandData.map(function(item) {
+                return item.total_slaughtered;
+            });
+    
+            var ctx = document.getElementById('supplyDemandChart').getContext('2d');
+            var myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: breeds,
+                    datasets: [{
+                        label: 'Total Bred',
+                        data: totalBred,
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: 'Total Slaughtered',
+                        data: totalSlaughtered,
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true
+                            }
+                        }]
+                    }
+                }
+            });
+        });
+    </script>
+    <script src="{% static 'js/chart-area.js' %}"></script>
+    <!--Chart pie-->
+    <script src="{% static 'js/chart-pie.js' %}"></script>
+    <script src="{% static 'vendor/chart.js/Chart.min.js' %}"></script>
+</body>
+</html>

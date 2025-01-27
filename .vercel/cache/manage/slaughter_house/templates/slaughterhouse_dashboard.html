@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <!-- Navigation Bar -->
+    <div class="row mb-3" style="font-size: 15px; background-color: #001b40; color: white;">
+        <ul class="nav nav-tabs justify-content-center" id="myTab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link" id="user-tab" style="color: #d9d9d9; text-decoration: none;">
+                    <i class="fas fa-user" style="color: #fff;"></i> &nbsp; Hello, {{ request.user.username }}
+                </a>
+            </li>
+        </ul>
+        <span class="ml-auto mx-2 mt-2" style="letter-spacing: 3px;">
+            <i class="fas fa-warehouse mr-2" style="color: #fff;"></i> Slaughter House
+        </span>
+    </div>
+
+    <!-- Display list of trades -->
+    {% if trades %}
+    <h4 class="mb-3">List of Items Available <span class="badge badge-info">{{ trades.count }} Items</span></h4>
+    <hr style="border: 5px solid #f5f5f5; border-radius: 30px;">
+    {% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-danger alert-{{ message.tags }}" role="alert">
+            {{ message }}
+        </div>
+    {% endfor %}
+    {% endif %}
+    <table class="table table-hover table-responsive-md">
+        <thead class="thead-dark">
+            <tr>
+                <th>Breeder</th>
+                <th>Items Available</th>
+                <th>Breed</th>
+                <th>Weight</th>
+                <th>Date</th>
+                <th>Tag Number</th>
+                <th>Status</th>
+                {% if request.user.role == 'slaughterhouse_manager' %}
+                <th>Action</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for trade in trades|dictsort:"breeds_supplied" %}
+                <tr {% if trade.breeds_supplied == 0 %}class="table-secondary closed-trade"{% endif %}>
+                    <td>{{ trade.breeder }}</td>
+                    <td>
+                            <span class="badge badge-pill badge-success">{{ trade.breeds_supplied }}</span>
+                    </td>
+                    <td>{{ trade.breed }}</td>
+                    <td>
+                            <span class="badge badge-pill badge-warning">{{ trade.weight }} Kg</span>
+                    </td>
+                    <td>{{ trade.transaction_date }}</td>
+                    <td>{{ trade.reference }}</td>
+                    <td>
+                        {% if trade.breeds_supplied == 0 %}
+                            <span class="badge badge-pill badge-danger">Slaughter closed</span>
+                        {% else %}
+                            {% if trade.record_created %}
+                                {% if trade.first_confirmed_by and trade.last_confirmation_by %}
+                                    <span class="badge badge-pill badge-success">Confirmed by both</span><br>
+                                    <strong>Seller:</strong> {{ trade.first_confirmed_by }}<br>
+                                    <strong>Inventory Manager:</strong> {{ trade.last_confirmation_by }}
+                                {% elif trade.first_confirmed_by %}
+                                    <span class="badge badge-pill badge-warning">Awaiting Inventory Manager</span><br>
+                                    <strong>Confirmed by Seller:</strong> {{ trade.first_confirmed_by }}
+                                {% else %}
+                                    <span class="badge badge-pill badge-secondary">Awaiting Seller Confirmation</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="badge badge-pill badge-secondary">New record not yet created</span>
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                    {% if request.user.role == 'slaughterhouse_manager' %}
+                    <td>
+                        {% if trade.breeds_supplied > 0 %}
+                        <div class="btn-group">
+                            <a class="btn btn-info btn-sm" href="{% url 'slaughter_house_create' trade_id=trade.id %}">Slaughter</a>
+                            {% endif %}
+                            <a class="btn btn-success btn-sm" style="opacity: 1 !important;z-index: 2 !important;" href="{% url 'create_inventory_breed_sale' trade_id=trade.id %}">Record Parts</a>
+                        </div>
+                       
+                    </td>
+                    {% endif %}
+                </tr>
+        
+                {% if trade.record_created %}
+                    {% if request.user.role == 'seller' and not trade.first_confirmed_by %}
+                    <tr>
+                        <td colspan="7">
+                            <form method="post" action="{% url 'confirm_slaughter_record' trade.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-primary">Confirm as Seller</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% elif request.user.role == 'inventory_manager' and trade.first_confirmed_by and not trade.last_confirmation_by %}
+                    <tr>
+                        <td colspan="7">
+                            <form method="post" action="{% url 'confirm_slaughter_record' trade.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-success">Confirm as Inventory Manager</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+        </tbody>
+        
+    </table>
+    
+    {% else %}
+    <div class="text-center my-5">
+        <i class="fas fa-box-open fa-3x" style="color: #888;"></i>
+        <p class="mt-3">No items received yet</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal for Weight Record Form -->
+{% for trade in trades %}
+<div class="modal fade" id="recordWeightModal-{{ trade.id }}" tabindex="-1" aria-labelledby="recordWeightModalLabel-{{ trade.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="recordWeightModalLabel-{{ trade.id }}">Record Weight for Trade #{{ trade.id }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'record_weight' trade.id %}">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}

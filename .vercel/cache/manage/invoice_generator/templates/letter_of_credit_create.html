@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <title>Create Letter of Credit</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        form {
+            margin-bottom: 10rem;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="date"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+        }
+        button[type="submit"] {
+            background-color: #001b42;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button[type="submit"]:hover {
+            background-color: #001b82;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+            <div class="row mt-n4 mb-3" style="font-size: 15px; background-color: #001b40; color: white;">
+                <ul class="nav nav-tabs " id="myTab" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="home-tab" data-toggle="tab" href="#dashboard" role="tab" aria-controls="dashboard" aria-selected="true"">Create L.C </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="quotation-tab" href="{% url 'all_letter_of_credit_list' %}" style="color: #d9d9d9; text-decoration: none;">List of L.Cs</a>
+                    </li>
+                    
+                
+                </ul>
+                <span class="ml-auto mx-2 mt-2">{{request.user.username}} Bank</span>
+            
+                <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade show active" id="dashboard" role="tabpanel" aria-labelledby="home-tab">
+                        <!-- Dashboard content here -->
+                    </div>
+                    <div class="tab-pane fade" id="quotation" role="tabpanel" aria-labelledby="quotation-tab">
+                        <!-- Send quotation content here -->
+                    </div>
+                    <div class="tab-pane fade" id="control-centers" role="tabpanel" aria-labelledby="control-centers-tab">
+                        <!-- Control centers content here -->
+                    </div>
+                </div>
+            </div>
+
+    <h5>Create Letter of Credit</h5>
+    <hr>
+    <div class="col-md-8">
+    {% if form.non_field_errors %}
+  <div class="alert alert-danger" role="alert">
+    {{ form.non_field_errors }}
+  </div>
+{% endif %}
+
+    <form class="mb-4 " method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Create</button>
+    </form>
+</div>
+<div class="col-md-4"></div>
+</body>
+
+{% endblock %}
+

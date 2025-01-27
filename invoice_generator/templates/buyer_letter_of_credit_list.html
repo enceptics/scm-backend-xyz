@@ -4,31 +4,27 @@
     <h4>Letter of Credit List</h4>
     {% if letters %}
         <div class="table-responsive">
-            <table class="table">
-                <thead>
+            <table class="table" style="font-size: small;">
+                <thead style="font-size: small;">
                     <tr>
+                        <th>Issue Date</th>
                         <th>Buyer</th>
                         <th>Seller</th>
-                        <th>Issue Date</th>
                         <th>Status</th>
-                        <th>Reason</th> 
                         <th>L.C Document</th>
+                        <th>Actions</th>
+                        <th>Reason</th> 
 
                     </tr>
                 </thead>
                 <tbody>
                     {% for letter_of_credit in letters %}
                         <tr>
+                            <td>{{ letter_of_credit.issue_date }}</td>
                             <td>{{ letter_of_credit.get_buyer_full_name }}</td>
                             <td>{{ letter_of_credit.get_seller_full_name }}</td>
-                            <td>{{ letter_of_credit.issue_date }}</td>
                             <td>{{ letter_of_credit.status }}</td>
-                            <td>
-                                {% if letter_of_credit.status == 'rejected' %}
-                                    <!-- Button/link to show rejection reason modal -->
-                                    <button class="btn btn-link btn-sm" onclick="showRejectionModal('{{ letter_of_credit.rejection_reason }}')">See why</button>
-                                {% endif %}
-                            </td>
+                           
                             <td style="font-size: 14px;">
                                 {% if letter_of_credit.lc_document %}
                                     <a href="{{ letter_of_credit.lc_document.url }}">View/Download</a>
@@ -36,7 +32,36 @@
                                     Not available
                                 {% endif %}
                             </td>
-                          
+                            <td>
+                                <div class="d-flex">
+                                    <form method="POST" action="{% url 'update_letter_of_credit_status' letter_of_credit.id %}" class="ml-2">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="status" value="approved">
+                                        <div class="input-group">
+                                            <input class="form-control form-control-sm" name="collection_market" placeholder="Market to collect from"  rows="1" required></input>
+                                            <input type="date" class="form-control form-control-sm" name="collection_date" required>
+                                            <button class="btn btn-sm btn-success btn-smaller" type="submit">Approve</button>
+                                        </div>
+                                    </form>
+                                    <form method="POST" action="{% url 'update_letter_of_credit_status' letter_of_credit.id %}" class="ml-2">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="status" value="rejected">
+                                        <div class="input-group">
+                                            <input class="form-control form-control-sm" name="reason" placeholder="Reason for rejection" rows="1" required></input>
+                                            <button class="btn btn-sm btn-danger btn-smaller" type="submit">Reject</button>
+                                        </div>
+                                    </form>
+                                </div>
+                                
+                            </td>
+                            {% if letter_of_credit.status == 'rejected' %}
+
+                            <td>
+                                    <!-- Button/link to show rejection reason modal -->
+                                    <button class="btn btn-link btn-sm" onclick="showRejectionModal('{{ letter_of_credit.rejection_reason }}')">See why</button>
+                            </td>
+                            {% endif %}
+
                         </tr>
                     {% endfor %}
                 </tbody>

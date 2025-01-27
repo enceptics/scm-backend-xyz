@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="row mt-n4 mb-3" style="font-size: 15px; background-color: #001b40; color: white;">
+    <ul class="nav nav-tabs " id="myTab" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="home-tab" data-toggle="tab" href="#dashboard" role="tab" aria-controls="dashboard" aria-selected="true"">All L.Cs</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="quotation-tab" href="{% url 'letter_of_credit_create' %}" style="color: #d9d9d9; text-decoration: none;">Create Letter of credit</a>
+    </ul>
+    <span class="ml-auto mx-2 mt-2">{{request.user.username}} Bank</span>
+
+</div>
+
+
+    <h6>All Letters of Credit</h6>
+<hr>
+    <table class="table mt-3">
+        <thead>
+            <tr>
+                <th>L.C ID</th>
+                <th>Buyer</th>
+                <th>Seller</th>
+                <th>Issue Date</th>
+                <th>Expiry Date</th>
+                <th>Status</th>
+                <th>View Document</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for lc in letters_of_credit %}
+            <tr>
+                <td>{{ lc.id }}</td>
+                <td>{{ lc.get_buyer_full_name }}</td>
+                <td>{{ lc.get_seller_full_name }}</td>
+                <td>{{ lc.issue_date }}</td>
+                <td>{{ lc.expiry_date }}</td>
+                <td>{{ lc.status }}</td>
+                <td style="font-size: 14px;">
+                    {% if lc.lc_document %}
+                        <a href="{{ lc.lc_document.url }}">View/Download</a>
+                    {% else %}
+                        Not available
+                    {% endif %}
+                </td>
+                
+               
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7">No letters of credit available.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ block.super }}
+    <!-- JavaScript for rejectionModal -->
+    {% block rejection_modal_scripts %}
+    <script>
+        function showRejectionModal(message) {
+            var modal = $('#rejectionModal');
+            modal.find('#rejectionMessage').text(message);
+            modal.modal('show');
+        }
+    </script>
+    {% endblock %}
+{% endblock %}

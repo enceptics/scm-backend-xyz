@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row mt-n4 mb-3 rounded" style="font-size: 15px; background-color: #001b40; color: white;">
+  <ul class="nav nav-tabs" id="myTab" role="tablist">
+  </ul>
+  <div class="">
+      <a class="nav-link" id="quotation-tab" style="color: #d9d9d9; text-decoration: none;">Hello, {{request.user.username}}</a>
+  </div>
+  <div class="col mt-1 text-center d-flex justify-content-end align-items-center">
+      
+      <span class="" style="margin-right: 5px; color: #fff;letter-spacing: 5px;font-size: 15px;">Bank Dashboard</span>
+  </div>
+</div>
+<hr>
+<!-- Place this code inside your Django template file -->
+{% if show %}
+<div class="modal" tabindex="-1" role="dialog" style="display: block;">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Bill of Lading Document</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="{{ handleClose }}">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        {% if selectedPackageInfo %}
+          <p style="margin-bottom: 8px; font-size: 16px; font-weight: bold;"></p>
+          <p style="margin-bottom: 8px; font-weight: bold;">Bill of Lading (BOL): <br />
+            <span style="cursor: pointer;" onclick="window.open('{{ selectedPackageInfo.bill_of_lading }}', '_blank')">
+              <span style="color: #001b42; font-weight: 400; text-decoration: underline; font-style: italic;">View document</span>
+            </span>
+          </p>
+        {% endif %}
+      </div>
+      <div class="modal-footer">
+        <!-- Add footer content if needed -->
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Place this code inside your Django template file -->
+<div class="container-fluid">
+
+  <div class="row">
+
+    <div class="col-md-3">
+      <div class="shadow p-1 mb-4 bg-white rounded">
+          <a style="text-decoration: none;" href="{% url 'sellers_list'%}">
+              <div class="card-body">
+                  <p style="color:#666666;"><i class="fas fa-user" style="font-size: 30px; color: #666666;"></i> Sellers</p>
+                  <p style="color:#666666; font-size: 20px; font-weight: bold;">{{seller_count}}</p> <!-- Fetch seller count dynamically -->
+                </div>
+          </a>
+      </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="shadow p-1 mb-4 bg-white rounded">
+        <a style="text-decoration: none;" href="{% url 'breeders_list'%}">
+            <div class="card-body">
+                <p style="color:#666666;"><i class="fas fa-user" style="font-size: 30px; color: #666666;"></i> Breeders</p>
+                <p style="color:#666666; font-size: 20px; font-weight: bold;">{{seller_count}}</p> <!-- Fetch seller count dynamically -->
+              </div>
+        </a>
+    </div>
+</div>
+  
+    <div class="col-md-3">
+      <div class="shadow shadow-white p-1 bg-white rounded">
+        <a style="text-decoration: none;" href="{% url 'collateral_managers_list'%}">
+          <div class="card-body">
+            <p style="color:#666666;"><i class="fas fa-user-shield" style="font-size: 30px; color: #666666;"></i>&nbsp; Collateral Managers</p>
+            <p style="color:#666666; font-size: 20px; font-weight: bold;">{{seller_count}}</p> <!-- Fetch collateral manager count dynamically -->
+          </div>
+        </a>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="shadow p-1  bg-white rounded">
+        <a style="text-decoration: none;" href="{% url 'buyers_list'%}">
+          <div class="card-body">
+            <p style="color:#666666;"><i class="fas fa-shopping-bag" style="font-size: 30px; color: #666666;"></i> Buyers</p>
+            <p style="color:#666666; font-size: 20px; font-weight: bold;">{{seller_count}}</p> <!-- Fetch buyer count dynamically -->
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+      <div class="row">
+        <div class="col-md-8">
+          <div class="shadow p-1 mb-5 bg-white rounded">
+            <div class="card-body ">
+              <h5 class="card-title" style="color: #999999;">Transaction Overview</h5>
+              <canvas id="transactionOverviewChart" style="height: 350px;"></canvas>
+            </div>
+          </div>
+        </div>
+      
+        <div class="col-md-4"> <!-- Adjusted column width from col to col-md-4 -->
+          <div class="shadow p-1 mb-5 bg-white rounded">
+            <div class="card-body ">
+              <h5 class="card-title" style="color: #999999;">Today</h5>
+              <canvas id="todayChart" style="height: 300px;"></canvas> <!-- Reduced chart height -->
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div class="shadow p-1 mb-5 bg-white rounded">
+            <div class="card-body">
+              <h5 class="card-title" style="color: #999999;">Last month</h5>
+              <canvas id="lastMonthChart" style="height: 350px;"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+  </div>
+
+
+    <!-- Include Bootstrap and other JavaScript libraries -->
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <!-- Add other JS imports as needed -->
+    <!-- Add your custom JavaScript code here -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+      // Dummy data for charts
+      const transactionOverviewData = {
+        labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+        datasets: [{
+          label: 'Transaction Overview',
+          data: [65, 59, 80, 81, 56, 55, 40],
+          fill: false,
+          borderColor: 'rgb(75, 192, 192)',
+          tension: 0.1
+        }]
+      };
+      
+      // Dummy data for charts
+      const todayData = {
+        // labels: ['Morning', 'Afternoon', 'Evening'],
+        datasets: [{
+          label: 'Products',
+          data: [20, 35, 45],
+          backgroundColor: ['rgb(255, 99, 132)', 'rgb(54, 162, 235)', 'rgb(255, 205, 86)'],
+          hoverOffset: 8,
+          weight: 2 // Adjust the weight to make the doughnut thinner
+        }]
+      };
+      
+      // Dummy data for charts
+      const lastMonthData = {
+        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+        datasets: [{
+          label: 'Last month',
+          data: [120, 150, 180, 200],
+          backgroundColor: 'rgba(255, 99, 132, 0.2)',
+          borderColor: 'rgb(255, 99, 132)',
+          borderWidth: 1
+        }]
+      };
+      
+      // Create charts
+      const transactionOverviewChart = new Chart(document.getElementById('transactionOverviewChart'), {
+        type: 'line',
+        data: transactionOverviewData
+      });
+      
+      const todayChart = new Chart(document.getElementById('todayChart'), {
+        type: 'doughnut',
+        data: todayData,
+        options: {
+          plugins: {
+            legend: {
+              display: false // Hide the legend
+            },
+            tooltip: {
+              enabled: false // Disable tooltips
+            }
+          }
+        }
+      });
+      
+      const lastMonthChart = new Chart(document.getElementById('lastMonthChart'), {
+        type: 'bar',
+        data: lastMonthData
+      });
+      </script>
+            
+{% endblock %}
+

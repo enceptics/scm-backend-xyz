@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mt-n4 mb-3 rounded" style="font-size: 15px; background-color: #001b40; color: white;">
+
+    <div class="">
+        <a class="nav-link" id="quotation-tab" style="color: #d9d9d9; text-decoration: none;">Hello, {{request.user.username}}</a>
+    </div>
+
+    <div class="col mt-1 text-center d-flex justify-content-end align-items-center">
+        <span class="" style="margin-right: 5px; color: #fff; letter-spacing: 2px; font-size: 15px;">Inventory Information</span>
+    </div>
+</div>
+<hr style="border: 5px solid #f5f5f5; border-radius: 30px;">
+
+<span class="mr-2 clickable-icon" style="cursor: pointer; font-size: 20px;" data-toggle="popover" title="Help" data-content=""><i class="fas fa-question-circle" id="modalParagraph"></i></span>
+
+<!-- Itemremoval confirmation modal -->
+<div class="modal fade" id="customModal" tabindex="-1" role="dialog" aria-labelledby="customModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="customModalLabel">Stock shift information</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="modalContent">Modal content goes here</p>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mt-1">
+            <div class="card-header">
+                <h5 class="card-title" style="color: #666666;">Confirm inventory item removal</h5>
+            </div>
+            <div class="card-body table-responsive">
+                {% if messages %}
+                <div class="alert alert-danger">
+                    <ul>
+                        {% for message in messages %}
+                        <li> {{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                {% if records %}
+                    <table class="table">
+                        <thead style="color: #666666;">
+                            <tr>
+                                <th>#</th>
+                                <th>Requested by</th>
+                                <th>Control Center</th>
+                                <th>Date</th>
+                                <th>Item</th>
+                                <th>Quantity</th>
+                                <th>Weight (Kg)</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in records %}
+                            <tr>
+                                <td style="font-size: 14px;">{{ forloop.counter }}</td>
+                                <td style="font-size: 14px;">{{ record.user }}</td>
+                                <td style="font-size: 14px;">{{ record.control_center }}</td>
+                                <td style="font-size: 14px;">{{ record.created_at }}</td>
+                                <td style="font-size: 14px;">{{ record.breed }}</td>
+                                <td style="font-size: 14px;">{{ record.breeds_supplied }}</td>
+                                <td style="font-size: 14px;">{{ record.weight }} Kg</td>
+                                <td>
+                                    {% if record.last_confirmation_by and record.first_confirmed_by %}
+                                        Confirmed
+                                        <span class="text-muted" style="font-size: 14px;color: #001b40 !important;opacity: 0.6;"><br>
+                                            By: 
+                                             {{ record.first_confirmed_by }} & {{ record.last_confirmation_by }}
+
+                                        </span>
+                                    {% else %}
+                                        Pending
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if not record.last_confirmation_by and not record.first_confirmed_by %}
+                                        <form method="post" action="{% url 'inventory_record_confirm' record.id %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm" style="background-color: #001b42; color: white; font-size: 12px;">First Confirmation</button>
+                                        </form>
+                                    {% elif record.first_confirmed_by and not record.last_confirmation_by %}
+                                        <form method="post" action="{% url 'inventory_record_confirm' record.id %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm" style="background-color: #001b42; color: white; font-size: 12px;">Last Confirmation</button>
+                                        </form>
+                                        <div style="font-family: verdana; font-weight: bold; font-size: 14px;">
+                                            Confirmed by: <br> {{ record.first_confirmed_by }}
+                                        </div>
+                                    {% elif record.last_confirmation_by and not record.first_confirmed_by %}
+                                        <form method="post" action="{% url 'inventory_record_confirm' record.id %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm" style="background-color: #001b42; color: white; font-size: 12px;">Last Confirmation</button>
+                                        </form>
+                                        <div style="font-family: verdana; font-weight: bold; font-size: 14px;">
+                                            Confirmed by: <br> {{ record.last_confirmation_by }}
+                                        </div>
+                                    {% elif record.confirmed_by and record.last_confirmation_by %}
+                                        <div style="font-family: verdana; font-weight: bold; font-size: 14px;">
+                                            Confirmed by: <br> {{ record.last_confirmation_by }} and {{ record.first_confirmed_by }}
+                                        </div>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <!-- Pagination links -->
+                    <div class="pagination">
+                        <span class="step-links">
+                            {% if records.has_previous %}
+                                <a href="?page=1">&laquo; first</a>
+                                <a href="?page={{ records.previous_page_number }}">previous</a>
+                            {% endif %}
+                            <span class="current">
+                                Page {{ records.number }} of {{ records.paginator.num_pages }}.
+                            </span>
+                            {% if records.has_next %}
+                                <a href="?page={{ records.next_page_number }}">next</a>
+                                <a href="?page={{ records.paginator.num_pages }}">last &raquo;</a>
+                            {% endif %}
+                        </span>
+                    </div>
+                {% else %}
+                    <div class="text-center mt-5">
+                        <i class="fas fa-exclamation-circle fa-4x" style="color: #001b40;"></i>
+                        <p class="mt-3" style="font-size: 24px; font-weight: 500;">No items to confirm</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ block.super }}
+    <!-- JavaScript for customModal -->
+    <script>
+        $(document).ready(function() {
+            // Function to handle modal display
+            function showModal(message) {
+                $('#modalContent').text(message);
+                $('#customModal').modal('show');
+            }
+
+            // Click event listener for triggering modal
+            $('#modalParagraph').click(function() {
+                var message = " You will be asked to confirm every time an item is being removed from the inventory. So keep an eye out for notifications";
+                showModal(message);
+            });
+        });
+    </script>
+{% endblock %}

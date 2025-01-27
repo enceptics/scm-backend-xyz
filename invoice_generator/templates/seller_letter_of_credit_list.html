@@ -19,7 +19,7 @@
         <hr style="background-color: white;height: 10px;border-radius: 30px;">
 
         {% if letters %}
-            <table class="table">
+            <table class="table table-responsive table-hover">
                 <thead>
                     <tr>
                         <th>Buyer</th>
@@ -43,13 +43,13 @@
                                 {% endif %}
                             </td>
                             <td>
-                                {% if letter.status == 'sent_to_bank' %}
+                                {% if letter.status == 'sent_to_seller' %}
                                 <div class="d-flex">
                                     <form method="POST" action="{% url 'update_letter_of_credit_status' letter.id %}" class="ml-2">
                                         {% csrf_token %}
                                         <input type="hidden" name="status" value="approved">
                                         <div class="input-group">
-                                            <textarea class="form-control form-control-sm" name="collection_market" placeholder="Market to collect from" style="font-size: 10px;" rows="1" required></textarea>
+                                            <input class="form-control form-control-sm" name="collection_market" placeholder="Market to collect from"  rows="1" required></input>
                                             <input type="date" class="form-control form-control-sm" name="collection_date" required>
                                             <button class="btn btn-sm btn-success btn-smaller" type="submit">Approve</button>
                                         </div>
@@ -58,14 +58,12 @@
                                         {% csrf_token %}
                                         <input type="hidden" name="status" value="rejected">
                                         <div class="input-group">
-                                            <textarea class="form-control form-control-sm" name="reason" placeholder="Reason for rejection" style="font-size: 10px;" rows="1" required></textarea>
+                                            <input class="form-control form-control-sm" name="reason" placeholder="Reason for rejection" rows="1" required></input>
                                             <button class="btn btn-sm btn-danger btn-smaller" type="submit">Reject</button>
                                         </div>
                                     </form>
                                 </div>
                                 
-                                
-                                   
                                 {% endif %}
                             </td>
                         </tr>

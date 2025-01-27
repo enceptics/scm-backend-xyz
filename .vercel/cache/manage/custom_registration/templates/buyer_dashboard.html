@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h4 class="" style="color: #001b42;">Quotations list for {{ request.user }}</h4>
+
+    {% if quotations %}
+        <table class="table mt-3">
+            <thead>
+                <tr>
+                    <th>Seller</th>
+                    <th>Date</th>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Unit Price</th>
+                    <th>Status</th>
+                    <th>Confirmation status</th>
+                    <th>View PDF</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for quotation in quotations %}
+                    <tr>
+                        <td>{{ quotation.seller }}</td>
+                        <td>{{ quotation.created_at }}</td>
+
+                        <td>{{ quotation.product }}</td>
+                        <td>{{ quotation.quantity }}</td>
+                        <td>{{ quotation.unit_price }}</td>
+                        <td>{{ quotation.status }}</td>
+                        <td>
+                            {% if quotation.confirm %}
+                                <span class="btn btn-sm btn-success">Confirmed</span>
+                            {% else %}
+                                <span class="btn btn-sm btn-danger">Not Confirmed</span>
+                            {% endif %}
+                        </td>
+                        <td style="font-size: 14px;">
+                            <a href="{{ quotation.pdf_url }}">View PDF</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert alert-warning mt-3" role="alert">
+            <i class="fas fa-exclamation-circle"></i> Quotation list is empty.
+        </div>
+    {% endif %}
+{% endblock %}

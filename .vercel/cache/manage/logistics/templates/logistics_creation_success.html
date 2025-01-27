@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-cente">
+        <div class="col-md-6">
+            <div class=" shadow-sm">
+                <div class="card-body text-cente">
+                    <i class="fas fa-check-circle text-success fa-3x mb-4"></i>
+                    <h3 class="mb-4">You have successfully created shipment!</h3>
+                    <a href="{% url 'logistics_status_list' %}" class="btn btn-sm mt-3" style="background-color: #001b42;color: wheat;">Back to Logistics page</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

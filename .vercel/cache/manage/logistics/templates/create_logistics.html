@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Create Logistics Status{% endblock %}
+
+{% block content %}
+<div class="row mt-n4 mb-3 rounded" style="font-size: 15px; background-color: #001b40; color: white;">
+    <div class="">
+        <a class="nav-link" id="quotation-tab" style="color: #d9d9d9; text-decoration: none;text-transform: capitalize;">Hello, {{ request.user.username }}</a>
+    </div>
+    <div class="col mt-1 text-center d-flex justify-content-end align-items-center">
+        <span class="" style="margin-right: 5px; color: #fff; letter-spacing: 2px; font-size: 15px;">Create shipment</span>
+    </div>
+</div>
+<h6 class="card-title" style="color: #999999;">Create shipment</h6>
+
+<hr style="border: 5px solid #f5f5f5; border-radius: 30px;">
+  <div class="container mt-5">
+    <div class="row justify-content-cente">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-body">
+            <h6 class="card-title text-center mb-4">Create Logistics Status</h6>
+            <hr>
+            <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                {% csrf_token %}
+                <div class="row">
+                  <div class="col-md-4">
+                    <div class="form-group">
+                      <label for="buyer">Buyer:</label>
+                      {{ form.buyer }}
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="form-group">
+                      <label for="seller">Seller:</label>
+                      {{ form.seller }}
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="form-group">
+                      <label for="shipping_mode">Shipping Mode:</label>
+                      {{ form.shipping_mode }}
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-4">
+                    <div class="form-group">
+                      <label for="logistics_company">Logistics Company:</label>
+                      {{ form.logistics_company }}
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="form-group">
+                      <label for="bill_of_lading">Bill of Lading:</label>
+                      {{ form.bill_of_lading }}
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="form-group">
+                      <label for="associated_control_center">Control Center:</label>
+                      {{ form.associated_control_center }}
+                    </div>
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Submit</button>
+              </form>
+              
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

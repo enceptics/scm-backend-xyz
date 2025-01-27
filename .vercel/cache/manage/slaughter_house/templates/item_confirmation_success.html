@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirmation Successful{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row justify-content-cente">
+            <div class="col-md-6 text-center">
+                <i class="fas fa-check-circle" style="font-size: 64px; color: #28a745;"></i>
+                <h1 class="mt-3">Confirmation Successful</h1>
+                <p class="lead">Your confirmation was successful.</p>
+                <button class="btn btn-secondary" onclick="goBack()">Go Back</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function goBack() {
+            window.history.back();
+        }
+    </script>
+{% endblock %}
