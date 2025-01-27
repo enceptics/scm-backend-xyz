@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 import json
 from custom_registration.custom_email_backend import OAuthEmailBackend
 
-# import dj_database_url
+import dj_database_url
 # Load environment variables from .env
 load_dotenv()
 
@@ -277,15 +277,19 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 #     }
 # }
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / "db.sqlite3",
+#     }
+# }
+
+
+# DATABASES["default"] = dj_database_url.parse("postgresql://enceptics_database_user:mUrNZ03cmEmJLgu419Rvu65IZnSp2ymN@dpg-cubji95svqrc73c7lgdg-a.oregon-postgres.render.com/enceptics_database")
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / "db.sqlite3",
-    }
+    "default": dj_database_url.parse("postgresql://enceptics_database_user:mUrNZ03cmEmJLgu419Rvu65IZnSp2ymN@dpg-cubji95svqrc73c7lgdg-a.oregon-postgres.render.com/enceptics_database")
 }
-
-
-# DATABASES["default"] = dj_database_url.parse("postgres://scm_hxp4_user:XVYlpiSofsxlM9hYbi9uSABhgm0H8Zsg@dpg-cmodpt6d3nmc739kni6g-a.oregon-postgres.render.com/scm_hxp4")
 
 # AUTHENTICATION_BACKENDS = (
 #     # ...
