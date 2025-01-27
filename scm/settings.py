@@ -42,7 +42,7 @@ SECRET_KEY = 'django-insecure-$d8&01e=mjlo33y+47z0fm^1(0rj@l&s5lyus!97mbuufp%r#%
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost:8000', 'api.intellima.tech', 'https://xyz-m.vercel.app', 'http://127.0.0.1:5173', 'scm-backend-f55v.onrender.com']
 
