@@ -622,6 +622,9 @@ def send_password_reset_email(uidb64, token, email):
     send_mail(subject, message, sender_email, [email])
 
 def register_buyer(request):
+    if request.user.role != 'seller' or not request.user.is_superuser:
+        return redirect('unauthorized')
+
     if request.method == 'POST':
         form = BuyerRegistrationForm(request.POST)
         if form.is_valid():
@@ -652,6 +655,9 @@ def register_buyer(request):
     return render(request, 'auth/buyer_registration.html', {'form': form})
 
 def register_seller(request):
+    if not request.user.is_superuser:
+        return redirect('unauthorized')
+
     if request.method == 'POST':
         form = SellerRegistrationForm(request.POST)
         if form.is_valid():
@@ -674,6 +680,9 @@ def register_seller(request):
     return render(request, 'auth/seller_registration.html', {'form': form})
 
 def register_breeder(request):
+    if not request.user.role != 'seller' or not request.user.is_superuser:
+        return redirect('unauthorized')
+
     if request.method == 'POST':
         form = BreederRegistrationForm(request.POST)
         if form.is_valid():
@@ -696,6 +705,9 @@ def register_breeder(request):
     return render(request, 'auth/breeder_registration.html', {'form': form})
 
 def register_slaughter_house(request):
+    if not request.user.role != 'seller' or not request.user.is_superuser:
+        return redirect('unauthorized')
+
     if request.method == 'POST':
         form = SlaughterHouseRegistrationForm(request.POST)
         if form.is_valid():
@@ -718,6 +730,8 @@ def register_slaughter_house(request):
     return render(request, 'auth/slaughter_house_registration.html', {'form': form})
 
 def register_export_manager(request):
+    if not request.user.role != 'seller' or not request.user.is_superuser:
+        return redirect('unauthorized')
     if request.method == 'POST':
         form = ExportManagerRegistrationForm(request.POST)
         if form.is_valid():
@@ -740,6 +754,9 @@ def register_export_manager(request):
     return render(request, 'auth/export_manager_registration.html', {'form': form})
 
 def register_bank(request):
+    if not request.user.is_superuser:
+        return redirect('unauthorized')
+
     if request.method == 'POST':
         form = BankRegistrationForm(request.POST)
         if form.is_valid():
@@ -760,6 +777,9 @@ def register_bank(request):
     return render(request, 'auth/bank_registration.html', {'form': form})
 
 def register_collateral_manager(request):
+    if not request.user.role != 'seller' or not request.user.is_superuser:
+        return redirect('unauthorized')
+
     if request.method == 'POST':
         form = CollateralManagerRegistrationForm(request.POST)
         if form.is_valid():
@@ -781,6 +801,9 @@ def register_collateral_manager(request):
     return render(request, 'auth/collateral_manager_registration.html', {'form': form})
 
 def register_inventory_manager(request):
+    if not request.user.role != 'seller' or not request.user.is_superuser:
+        return redirect('unauthorized')
+
     if request.method == 'POST':
         form = InventoryManagerRegistrationForm(request.POST)
         if form.is_valid():
