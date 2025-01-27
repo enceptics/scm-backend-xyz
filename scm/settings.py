@@ -232,13 +232,6 @@ AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME')
 # Configure S3 for serving static files.
 STATIC_URL = '/static/'
 
-if not DEBUG:
-    # Tell Django to copy static assets into a path called `staticfiles` (this is specific to Render)
-    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-    # Enable the WhiteNoise storage backend, which compresses static files to reduce disk use
-    # and renames the files with unique names for each version to support long-term caching
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
 # Configure S3 for serving media files.
 
 # Use the default storage for media files.
@@ -246,10 +239,10 @@ if not DEBUG:
 # Set the media URL to the S3 public URL.
 MEDIA_URL = '/media/'
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-    os.path.join(BASE_DIR, 'staticfiles_build', 'static'),  # Corrected directory name
-]
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, 'static'),
+#     os.path.join(BASE_DIR, 'staticfiles_build', 'static'), 
+# ]
 
 # Define the directory where collected static files will be stored
 # STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
@@ -298,6 +291,22 @@ STATICFILES_DIRS = [
 DATABASES = {
     "default": dj_database_url.parse("postgresql://enceptics_database_user:mUrNZ03cmEmJLgu419Rvu65IZnSp2ymN@dpg-cubji95svqrc73c7lgdg-a.oregon-postgres.render.com/enceptics_database")
 }
+
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage", 
+    },
+}
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# if not DEBUG:
+#     # Tell Django to copy static assets into a path called `staticfiles` (this is specific to Render)
+#     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+#     # Enable the WhiteNoise storage backend, which compresses static files to reduce disk use
+#     # and renames the files with unique names for each version to support long-term caching
+#     STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+
 
 # AUTHENTICATION_BACKENDS = (
 #     # ...
