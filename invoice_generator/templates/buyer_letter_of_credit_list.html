@@ -35,13 +35,13 @@
                                 {% if letter_of_credit.status == 'sent_to_bank' %}
                                     <div class="d-flex">
                                         <!-- Approval Form -->
-                                        <form method="POST" action="{% url 'update_letter_of_credit_status' letter_of_credit.id %}" class="ml-2">
+                                        <form method="POST" action="{% url 'update_letter_of_credit_buyer_status' letter_of_credit.id %}" class="ml-2">
                                             {% csrf_token %}
                                             <input type="hidden" name="status" value="approved">
                                             <button class="btn btn-sm btn-success btn-smaller" type="submit">Approve</button>
                                         </form>
                                         <!-- Buyer Rejection Form -->
-                                        <form method="POST" action="{% url 'update_letter_of_credit_status' letter_of_credit.id %}" class="ml-2">
+                                        <form method="POST" action="{% url 'update_letter_of_credit_buyer_status' letter_of_credit.id %}" class="ml-2">
                                             {% csrf_token %}
                                             <input type="hidden" name="status" value="rejected">
                                             <input class="form-control form-control-sm" name="reason" placeholder="Reason for rejection" required>

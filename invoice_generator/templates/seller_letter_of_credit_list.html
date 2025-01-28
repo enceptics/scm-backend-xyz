@@ -43,7 +43,6 @@
                                 {% endif %}
                             </td>
                             <td>
-                                {% if letter.status == 'sent_to_bank' %}
                                 <div class="d-flex">
                                     <form method="POST" action="{% url 'update_letter_of_credit_status' letter.id %}" class="ml-2">
                                         {% csrf_token %}
@@ -63,7 +62,6 @@
                                         </div>
                                     </form>
                                 </div>
-                            {% endif %}
 
                             {% if letter.status == 'approved' or letter.status == 'rejected' %}
                                 <!-- No forms shown if status is approved or rejected -->

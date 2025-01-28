@@ -689,81 +689,48 @@ from django.http import JsonResponse
 def update_letter_of_credit_status(request, pk):
     if request.method == 'POST':
         new_status = request.POST.get('status')
-        rejection_reason = request.POST.get('reason', '')
         collection_market = request.POST.get('collection_market', '')
         collection_date = request.POST.get('collection_date', '')
+        quantity = request.POST.get('quantity')  # Assuming the quantity is passed in the POST request
 
         if new_status:
             try:
                 letter_of_credit = get_object_or_404(LetterOfCredit, pk=pk)
                 letter_of_credit.status = new_status
 
-                extracted_data = {}  # Initialize extracted_data to store extracted values
-                login_url = f"{settings.PROTOCOL}://{settings.DOMAIN}/login/"
-
-                if new_status == 'rejected':
-                    letter_of_credit.rejection_reason = rejection_reason
-
-                    # Send email notification for rejection
-                    subject = 'Letter of Credit Rejection'
-                    sender_email = settings.DEFAULT_FROM_EMAIL
-                    receiver_email = letter_of_credit.buyer.buyer.email
-
-                    buyer_name = letter_of_credit.buyer.buyer.first_name + " " + letter_of_credit.buyer.buyer.last_name
-                    seller_name = letter_of_credit.seller.seller.first_name + " " + letter_of_credit.seller.seller.last_name
-
-                    email_context = {
-                        'buyer_name': buyer_name,
-                        'seller_name': seller_name,
-                        'rejection_reason': rejection_reason,
-                        'login_url': f"{settings.PROTOCOL}://{settings.DOMAIN}/login/",
-                    }
-                    email_body = render_to_string('lc_rejection_email_template.html', email_context)
-                    plain_email_body = strip_tags(email_body)
-                    send_mail(subject, plain_email_body, sender_email, [receiver_email], html_message=email_body)
-
-                elif new_status == 'approved':
+                if new_status == 'approved':
+                    # Update collection market and collection date
                     letter_of_credit.collection_market = collection_market
                     letter_of_credit.collection_date = collection_date
+                    if quantity is not None:
+                        letter_of_credit.quantity = float(quantity)  # Convert to float if necessary
 
-                    # Extract data from the PDF
-                    pdf_path = letter_of_credit.lc_document.path
-                    extracted_data = extract_lc_data(pdf_path)
+                letter_of_credit.save()
 
-                    letter_of_credit.item = extracted_data.get('item', 'Unknown')
-                    letter_of_credit.weight = extracted_data.get('weight', 0.0)
-                    letter_of_credit.quantity = extracted_data.get('quantity', 0)
-                    letter_of_credit.delivery_date = extracted_data.get('delivery_date', None)
+                # Send email after updating collection details
+                subject = f'Letter of Credit Status Updated - {new_status.capitalize()}'
+                sender_email = settings.DEFAULT_FROM_EMAIL
 
-
-                    # Send email notification for approval
-                    subject = 'Letter of Credit Approval'
-                    sender_email = settings.DEFAULT_FROM_EMAIL
-                    receiver_email = letter_of_credit.seller.seller.email
-
-                    buyer_name = letter_of_credit.buyer.buyer.first_name + " " + letter_of_credit.buyer.buyer.last_name
-                    seller_name = letter_of_credit.seller.seller.first_name + " " + letter_of_credit.seller.seller.last_name
-
+                if letter_of_credit.buyer:
+                    receiver_email = letter_of_credit.buyer.buyer.email
+                    buyer_name = f"{letter_of_credit.buyer.buyer.first_name} {letter_of_credit.buyer.buyer.last_name}"
                     email_context = {
                         'buyer_name': buyer_name,
-                        'seller_name': seller_name,
+                        'letter': letter_of_credit,
+                        'status': new_status,
+                        'collection_market': collection_market,
+                        'collection_date': collection_date,
                         'login_url': f"{settings.PROTOCOL}://{settings.DOMAIN}/login/",
-
                     }
                     email_body = render_to_string('lc_approval_email_template.html', email_context)
                     plain_email_body = strip_tags(email_body)
                     send_mail(subject, plain_email_body, sender_email, [receiver_email], html_message=email_body)
 
-                letter_of_credit.save()
-
                 # Prepare context for the template
                 context = {
                     'letter': letter_of_credit,
-                    'extracted_data': extracted_data,
-                    'new_data': True,  # Set this based on your actual logic if needed
                     'login_url': f"{settings.PROTOCOL}://{settings.DOMAIN}/login/",
                 }
-
                 return render(request, 'lc_success.html', context)
             except LetterOfCredit.DoesNotExist:
                 return render(request, 'lc_error.html', {'message': 'Letter of Credit not found'})
@@ -772,21 +739,31 @@ def update_letter_of_credit_status(request, pk):
     else:
         return HttpResponse('Only POST requests are allowed', status=405)
 
+
 @login_required
 def update_letter_of_credit_buyer_status(request, pk):
     if request.method == 'POST':
         new_status = request.POST.get('status')
-        buyer_approval = request.POST.get('buyer_approval', '')  # Added field for buyer approval
-        rejection_reason = request.POST.get('reason', '')
+        rejection_reason = request.POST.get('reason', '')  # Optional field for rejection reason
+        collection_market = request.POST.get('collection_market', '')
+        collection_date = request.POST.get('collection_date', '')
 
         if new_status:
             try:
                 letter_of_credit = get_object_or_404(LetterOfCredit, pk=pk)
-                letter_of_credit.status = new_status
+
+                # Ensure collection_market and collection_date are updated before proceeding
+                if not letter_of_credit.collection_market or not letter_of_credit.collection_date:
+                    return HttpResponse(
+                        'Collection market and collection date must be updated before proceeding with data extraction.',
+                        status=400
+                    )
 
                 extracted_data = {}  # Initialize extracted_data to store extracted values
 
+                # Update status and handle the buyer rejection case
                 if new_status == 'buyer_rejected':
+                    letter_of_credit.status = 'buyer_rejected'  # Set status to 'buyer_rejected'
                     letter_of_credit.rejection_reason = rejection_reason
 
                     # Send email notification for rejection
@@ -807,8 +784,9 @@ def update_letter_of_credit_buyer_status(request, pk):
                     plain_email_body = strip_tags(email_body)
                     send_mail(subject, plain_email_body, sender_email, [receiver_email], html_message=email_body)
 
+                # Handle buyer approval
                 elif new_status == 'buyer_approved':
-                    # Extract data from the PDF if available
+                    # Extract data from the PDF
                     pdf_path = letter_of_credit.lc_document.path
                     extracted_data = extract_lc_data(pdf_path)
 
@@ -817,29 +795,26 @@ def update_letter_of_credit_buyer_status(request, pk):
                     letter_of_credit.quantity = extracted_data.get('quantity', 0)
                     letter_of_credit.delivery_date = extracted_data.get('delivery_date', None)
 
-                    # Handle buyer approval
-                    if buyer_approval == 'buyer_approved':
-                        letter_of_credit.buyer_approval = True
+                    # Set status to buyer_approved
+                    letter_of_credit.status = 'buyer_approved'
 
-                        # Send email notification for buyer approval
-                        subject = 'Buyer Approved Letter of Credit'
-                        sender_email = settings.DEFAULT_FROM_EMAIL
-                        receiver_email = letter_of_credit.seller.seller.email
+                    # Send email notification for buyer approval
+                    subject = 'Buyer Approved Letter of Credit'
+                    sender_email = settings.DEFAULT_FROM_EMAIL
+                    receiver_email = letter_of_credit.seller.seller.email
 
-                        buyer_name = f"{letter_of_credit.buyer.buyer.first_name} {letter_of_credit.buyer.buyer.last_name}"
-                        seller_name = f"{letter_of_credit.seller.seller.first_name} {letter_of_credit.seller.seller.last_name}"
+                    buyer_name = f"{letter_of_credit.buyer.buyer.first_name} {letter_of_credit.buyer.buyer.last_name}"
+                    seller_name = f"{letter_of_credit.seller.seller.first_name} {letter_of_credit.seller.seller.last_name}"
 
-                        email_context = {
-                            'buyer_name': buyer_name,
-                            'seller_name': seller_name,
-                            'letter': letter_of_credit,
-                            'login_url': f"{settings.PROTOCOL}://{settings.DOMAIN}/login/",
-                        }
-                        email_body = render_to_string('lc_buyer_approval_email_template.html', email_context)
-                        plain_email_body = strip_tags(email_body)
-                        send_mail(subject, plain_email_body, sender_email, [receiver_email], html_message=email_body)
-                    else:
-                        letter_of_credit.buyer_approval = False
+                    email_context = {
+                        'buyer_name': buyer_name,
+                        'seller_name': seller_name,
+                        'letter': letter_of_credit,
+                        'login_url': f"{settings.PROTOCOL}://{settings.DOMAIN}/login/",
+                    }
+                    email_body = render_to_string('lc_buyer_approval_email_template.html', email_context)
+                    plain_email_body = strip_tags(email_body)
+                    send_mail(subject, plain_email_body, sender_email, [receiver_email], html_message=email_body)
 
                 letter_of_credit.save()
 
@@ -847,7 +822,6 @@ def update_letter_of_credit_buyer_status(request, pk):
                 context = {
                     'letter': letter_of_credit,
                     'extracted_data': extracted_data,
-                    'buyer_approval': letter_of_credit.buyer_approval,
                 }
 
                 return render(request, 'lc_success.html', context)
@@ -979,7 +953,9 @@ def extracted_data_list(request):
             'delivery_date': lc_document.delivery_date,
             'status': lc_document.status,
         }
-        if lc_document.quantity > 0:
+
+        # Check if quantity is not None before performing the comparison
+        if lc_document.quantity is not None and lc_document.quantity > 0:
             open_orders.append(extracted_data)
         else:
             closed_orders.append(extracted_data)
@@ -988,6 +964,7 @@ def extracted_data_list(request):
         'open_orders': open_orders,
         'closed_orders': closed_orders
     })
+
 
 @login_required
 def lc_document_extracted_content_detail(request, lc_document_id):
@@ -1000,12 +977,22 @@ import re
 from django.utils.dateparse import parse_date
 from .models import LetterOfCredit
 
+@login_required
+def lc_document_extracted_content_detail(request, lc_document_id):
+    lc_document = LetterOfCredit.objects.get(pk=lc_document_id)
+    extracted_data = extract_lc_data(lc_document.lc_document.path)
+    return render(request, 'document_viewer/active_orders.html', {'lc_document': lc_document, 'extracted_data': extracted_data})
+
+import pdfplumber
+import re
+from .models import LetterOfCredit
+
+@login_required
 def extract_lc_data(pdf_path):
     extracted_data = {
         'item': 'Unknown',
-        'weight': 'Unknown',
+        'weight': 'Unknown',  # Store the extracted weight directly
         'delivery_date': 'Unknown',
-        'quantity': 'Unknown',
     }
 
     with pdfplumber.open(pdf_path) as pdf:
@@ -1026,22 +1013,5 @@ def extract_lc_data(pdf_path):
             date_match = re.search(r'Delivery Date:\s*(\d{4}-\d{2}-\d{2})', text)
             if date_match:
                 extracted_data['delivery_date'] = date_match.group(1).strip()
-
-    # Convert weight to float
-
-    try:
-        weight_value = re.match(r'(\d+(\.\d+)?)', extracted_data['weight'])
-        if weight_value:
-            extracted_data['weight'] = float(weight_value.group(1))
-        else:
-            extracted_data['weight'] = 0.0
-    except ValueError:
-        extracted_data['weight'] = 0.0
-
-    # Convert weight to quantity
-    try:
-        extracted_data['quantity'] = int(convert_weight_to_quantity(extracted_data['item'], extracted_data['weight']))
-    except Exception as e:
-        extracted_data['quantity'] = 0
 
     return extracted_data
