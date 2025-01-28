@@ -1,6 +1,7 @@
 # forms.py
 from django import forms
-from .models import Quotation, LetterOfCredit, Invoice
+from .models import Quotation, LetterOfCredit, Invoice, Buyer
+from custom_registration.models import Seller
 
 class QuotationForm(forms.ModelForm):
     class Meta:
@@ -12,16 +13,21 @@ class QuotationForm(forms.ModelForm):
     #     # Set the status field as required
     #     self.fields['status'].required = True
 
-
 class LetterOfCreditForm(forms.ModelForm):
     class Meta:
         model = LetterOfCredit
         fields = ['buyer', 'seller', 'lc_document']
 
+    lc_document = forms.FileField(required=True)
+    # Use ModelChoiceField for buyer and seller to display full names
+    buyer = forms.ModelChoiceField(queryset=Buyer.objects.all(), required=True, label="Buyer")
+    seller = forms.ModelChoiceField(queryset=Seller.objects.all(), required=True, label="Seller")
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Customize form fields here if needed
 
+    
 class InvoiceForm(forms.ModelForm):
     class Meta:
         model = Invoice

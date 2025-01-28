@@ -177,11 +177,9 @@ class Seller(models.Model):
 
     def __str__(self):
         if self.seller:
-            return self.seller.username
+            return f"{self.seller.first_name} {self.seller.last_name}"
         return "Unknown"
 
-    def __str__(self):
-        return f'{self.seller.username}'
 
 class UserProfile(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, null=True,blank=True)

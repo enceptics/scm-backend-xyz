@@ -812,7 +812,7 @@ def register_inventory_manager(request):
             user.save()
             name = InventoryManager.objects.create(name=user)  # Assign the user to the seller_id field
 
-# Generate uidb64 and token for password reset email
+        # Generate uidb64 and token for password reset email
             uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
             token = default_token_generator.make_token(user)
 

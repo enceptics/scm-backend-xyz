@@ -368,10 +368,10 @@ urlpatterns = [
     path('all_lcs/', lc_views.all_letter_of_credit_list, name='all_letter_of_credit_list'),
     path('seller_lcs/', lc_views.seller_letter_of_credit_list, name='seller_letter_of_credit_list'),
     path('buyer_lcs/', lc_views.buyer_letter_of_credit_list, name='buyer_letter_of_credit_list'),
+    path('buyer_lcs/<int:pk>/', lc_views.update_letter_of_credit_buyer_status, name='update_letter_of_credit_status'),
     path('lc_creation_success/', lc_views.lc_creation_success, name='lc_creation_success'),
     path('letters/<int:pk>/',lc_views.letter_of_credit_detail, name='letter_of_credit_detail'),
     path('letters/create/', lc_views.letter_of_credit_create, name='letter_of_credit_create'), # Add this line
-    path('update_letter_of_credit_status/<int:pk>/', lc_views.update_letter_of_credit_status, name='update_letter_of_credit_status'),
 
     # Inventory
     path('inventory/control-center/', slaugher_house_views.inventory_information, name='inventory_information'),

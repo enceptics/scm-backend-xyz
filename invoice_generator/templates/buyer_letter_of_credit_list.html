@@ -14,7 +14,6 @@
                         <th>L.C Document</th>
                         <th>Actions</th>
                         <th>Reason</th> 
-
                     </tr>
                 </thead>
                 <tbody>
@@ -33,35 +32,30 @@
                                 {% endif %}
                             </td>
                             <td>
-                                <div class="d-flex">
-                                    <form method="POST" action="{% url 'update_letter_of_credit_status' letter_of_credit.id %}" class="ml-2">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="status" value="approved">
-                                        <div class="input-group">
-                                            <input class="form-control form-control-sm" name="collection_market" placeholder="Market to collect from"  rows="1" required></input>
-                                            <input type="date" class="form-control form-control-sm" name="collection_date" required>
+                                {% if letter_of_credit.status == 'sent_to_bank' %}
+                                    <div class="d-flex">
+                                        <!-- Approval Form -->
+                                        <form method="POST" action="{% url 'update_letter_of_credit_status' letter_of_credit.id %}" class="ml-2">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="status" value="approved">
                                             <button class="btn btn-sm btn-success btn-smaller" type="submit">Approve</button>
-                                        </div>
-                                    </form>
-                                    <form method="POST" action="{% url 'update_letter_of_credit_status' letter_of_credit.id %}" class="ml-2">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="status" value="rejected">
-                                        <div class="input-group">
-                                            <input class="form-control form-control-sm" name="reason" placeholder="Reason for rejection" rows="1" required></input>
+                                        </form>
+                                        <!-- Buyer Rejection Form -->
+                                        <form method="POST" action="{% url 'update_letter_of_credit_status' letter_of_credit.id %}" class="ml-2">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="status" value="rejected">
+                                            <input class="form-control form-control-sm" name="reason" placeholder="Reason for rejection" required>
                                             <button class="btn btn-sm btn-danger btn-smaller" type="submit">Reject</button>
-                                        </div>
-                                    </form>
-                                </div>
-                                
+                                        </form>
+                                    </div>
+                                {% endif %}
                             </td>
                             {% if letter_of_credit.status == 'rejected' %}
-
-                            <td>
-                                    <!-- Button/link to show rejection reason modal -->
+                                <td>
+                                    <!-- Button to show rejection reason -->
                                     <button class="btn btn-link btn-sm" onclick="showRejectionModal('{{ letter_of_credit.rejection_reason }}')">See why</button>
-                            </td>
+                                </td>
                             {% endif %}
-
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -94,7 +88,7 @@
 
 {% block javascripts %}
     {{ block.super }}
-    <!-- JavaScript for rejectionModal -->
+    <!-- JavaScript for rejection modal -->
     <script>
         function showRejectionModal(message) {
             var modal = $('#rejectionModal');

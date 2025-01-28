@@ -181,7 +181,7 @@ class Buyer(models.Model):
 
     def __str__(self):
         if self.buyer:
-            return self.buyer.username
+            return f"{self.buyer.first_name} {self.buyer.last_name}"
         return "Unknown"
 
 # Buyer and quotation
@@ -292,6 +292,8 @@ class LetterOfCredit(models.Model):
         ('pending', 'Pending'),
         ('sent_to_seller', 'Sent to seller'),
         ('approved', 'Approved'),
+        ('buyer_approval', 'Buyer Approved'),
+        ('buyer_rejected', 'Buyer Rejected'),
         ('rejected', 'Rejected'),
     ]
 

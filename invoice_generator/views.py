@@ -518,6 +518,9 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 import os
 
+# Generate login URL
+login_url = f"{settings.PROTOCOL}://{settings.DOMAIN}/login/"
+
 @login_required
 def create_quotation(request):
     """View to create a new quotation."""
@@ -545,6 +548,8 @@ def create_quotation(request):
                 pdf_output.write(pdf_file)
 
             # Send email to the buyer with PDF attachment
+            login_url = f"{settings.PROTOCOL}://{settings.DOMAIN}/login/"
+
             buyer_email_subject = 'New Quotation Received'
             buyer_email_message = render_to_string('buyer_quotation_email.html', {'quotation': quotation, 'buyer_name': buyer_name})
             buyer_email_text_content = strip_tags(buyer_email_message)
@@ -694,6 +699,7 @@ def update_letter_of_credit_status(request, pk):
                 letter_of_credit.status = new_status
 
                 extracted_data = {}  # Initialize extracted_data to store extracted values
+                login_url = f"{settings.PROTOCOL}://{settings.DOMAIN}/login/"
 
                 if new_status == 'rejected':
                     letter_of_credit.rejection_reason = rejection_reason
@@ -710,6 +716,7 @@ def update_letter_of_credit_status(request, pk):
                         'buyer_name': buyer_name,
                         'seller_name': seller_name,
                         'rejection_reason': rejection_reason,
+                        'login_url': f"{settings.PROTOCOL}://{settings.DOMAIN}/login/",
                     }
                     email_body = render_to_string('lc_rejection_email_template.html', email_context)
                     plain_email_body = strip_tags(email_body)
@@ -740,6 +747,8 @@ def update_letter_of_credit_status(request, pk):
                     email_context = {
                         'buyer_name': buyer_name,
                         'seller_name': seller_name,
+                        'login_url': f"{settings.PROTOCOL}://{settings.DOMAIN}/login/",
+
                     }
                     email_body = render_to_string('lc_approval_email_template.html', email_context)
                     plain_email_body = strip_tags(email_body)
@@ -751,7 +760,8 @@ def update_letter_of_credit_status(request, pk):
                 context = {
                     'letter': letter_of_credit,
                     'extracted_data': extracted_data,
-                    'new_data': True  # Set this based on your actual logic if needed
+                    'new_data': True,  # Set this based on your actual logic if needed
+                    'login_url': f"{settings.PROTOCOL}://{settings.DOMAIN}/login/",
                 }
 
                 return render(request, 'lc_success.html', context)
@@ -761,6 +771,93 @@ def update_letter_of_credit_status(request, pk):
             return HttpResponse('Missing status field in POST data', status=400)
     else:
         return HttpResponse('Only POST requests are allowed', status=405)
+
+@login_required
+def update_letter_of_credit_buyer_status(request, pk):
+    if request.method == 'POST':
+        new_status = request.POST.get('status')
+        buyer_approval = request.POST.get('buyer_approval', '')  # Added field for buyer approval
+        rejection_reason = request.POST.get('reason', '')
+
+        if new_status:
+            try:
+                letter_of_credit = get_object_or_404(LetterOfCredit, pk=pk)
+                letter_of_credit.status = new_status
+
+                extracted_data = {}  # Initialize extracted_data to store extracted values
+
+                if new_status == 'buyer_rejected':
+                    letter_of_credit.rejection_reason = rejection_reason
+
+                    # Send email notification for rejection
+                    subject = 'Letter of Credit Rejection'
+                    sender_email = settings.DEFAULT_FROM_EMAIL
+                    receiver_email = letter_of_credit.buyer.buyer.email
+
+                    buyer_name = f"{letter_of_credit.buyer.buyer.first_name} {letter_of_credit.buyer.buyer.last_name}"
+                    seller_name = f"{letter_of_credit.seller.seller.first_name} {letter_of_credit.seller.seller.last_name}"
+
+                    email_context = {
+                        'buyer_name': buyer_name,
+                        'seller_name': seller_name,
+                        'rejection_reason': rejection_reason,
+                        'login_url': f"{settings.PROTOCOL}://{settings.DOMAIN}/login/",
+                    }
+                    email_body = render_to_string('lc_rejection_email_template.html', email_context)
+                    plain_email_body = strip_tags(email_body)
+                    send_mail(subject, plain_email_body, sender_email, [receiver_email], html_message=email_body)
+
+                elif new_status == 'buyer_approved':
+                    # Extract data from the PDF if available
+                    pdf_path = letter_of_credit.lc_document.path
+                    extracted_data = extract_lc_data(pdf_path)
+
+                    letter_of_credit.item = extracted_data.get('item', 'Unknown')
+                    letter_of_credit.weight = extracted_data.get('weight', 0.0)
+                    letter_of_credit.quantity = extracted_data.get('quantity', 0)
+                    letter_of_credit.delivery_date = extracted_data.get('delivery_date', None)
+
+                    # Handle buyer approval
+                    if buyer_approval == 'buyer_approved':
+                        letter_of_credit.buyer_approval = True
+
+                        # Send email notification for buyer approval
+                        subject = 'Buyer Approved Letter of Credit'
+                        sender_email = settings.DEFAULT_FROM_EMAIL
+                        receiver_email = letter_of_credit.seller.seller.email
+
+                        buyer_name = f"{letter_of_credit.buyer.buyer.first_name} {letter_of_credit.buyer.buyer.last_name}"
+                        seller_name = f"{letter_of_credit.seller.seller.first_name} {letter_of_credit.seller.seller.last_name}"
+
+                        email_context = {
+                            'buyer_name': buyer_name,
+                            'seller_name': seller_name,
+                            'letter': letter_of_credit,
+                            'login_url': f"{settings.PROTOCOL}://{settings.DOMAIN}/login/",
+                        }
+                        email_body = render_to_string('lc_buyer_approval_email_template.html', email_context)
+                        plain_email_body = strip_tags(email_body)
+                        send_mail(subject, plain_email_body, sender_email, [receiver_email], html_message=email_body)
+                    else:
+                        letter_of_credit.buyer_approval = False
+
+                letter_of_credit.save()
+
+                # Prepare context for the template
+                context = {
+                    'letter': letter_of_credit,
+                    'extracted_data': extracted_data,
+                    'buyer_approval': letter_of_credit.buyer_approval,
+                }
+
+                return render(request, 'lc_success.html', context)
+            except LetterOfCredit.DoesNotExist:
+                return render(request, 'lc_error.html', {'message': 'Letter of Credit not found'})
+        else:
+            return HttpResponse('Missing status field in POST data', status=400)
+    else:
+        return HttpResponse('Only POST requests are allowed', status=405)
+
 
 def letter_of_credit_detail(request, pk):
     letter_of_credit = get_object_or_404(LetterOfCredit, pk=pk)

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Buyer Approval for Letter of Credit</title>
+</head>
+<body>
+    <h2>Buyer Approval for Letter of Credit</h2>
+    <p>Dear {{ seller_name }},</p>
+
+    <p>We are pleased to inform you that the buyer has approved the Letter of Credit for the following transaction:</p>
+
+    <table>
+        <tr>
+            <td><strong>Buyer:</strong></td>
+            <td>{{ buyer_name }}</td>
+        </tr>
+        <tr>
+            <td><strong>Item:</strong></td>
+            <td>{{ letter.item }}</td>
+        </tr>
+        <tr>
+            <td><strong>Weight:</strong></td>
+            <td>{{ letter.weight }} kg</td>
+        </tr>
+        <tr>
+            <td><strong>Quantity:</strong></td>
+            <td>{{ letter.quantity }}</td>
+        </tr>
+        <tr>
+            <td><strong>Delivery Date:</strong></td>
+            <td>{{ letter.delivery_date }}</td>
+        </tr>
+    </table>
+
+    <p>If you have any questions or need further clarification, please feel free to contact us.</p>
+
+    <p>Best regards,</p>
+    <p>The Intelima Team</p>
+
+    <p><a href="{{ login_url }}">Login to view details</a></p>
+</body>
+</html>

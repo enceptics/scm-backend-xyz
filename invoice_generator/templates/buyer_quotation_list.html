@@ -48,7 +48,7 @@
             <tbody>
                 {% for quotation in quotations %}
                     <tr>
-                        <td >{{ quotation.seller }}</td>
+                        <td >{{ quotation.seller.seller.first_name }} {{ quotation.seller.seller.last_name }}</td>
                         <td >{{ quotation.product }}</td>
                         <td >{{ quotation.created_at }}</td>
                         <td >{{ quotation.quantity }}</td>

@@ -384,6 +384,17 @@ def create_breader_trade(request, lc_id):
         form = BreaderTradeForm(request.POST)
         if form.is_valid():
             requested_quantity = form.cleaned_data['breeds_supplied']
+
+            # Prevent submission if quantity is 0 or less
+            if requested_quantity <= 0:
+                error_message = "The quantity supplied must be greater than 0. Please enter a valid quantity."
+                return render(request, 'create_breader_trade.html', {
+                    'form': form,
+                    'error_message': error_message,
+                    'available_quantity': lc.quantity
+                })
+
+            # Check if requested quantity exceeds available quantity
             if requested_quantity > lc.quantity:
                 error_message = (
                     f"The quantity you are attempting to supply ({requested_quantity}) exceeds "
@@ -394,6 +405,8 @@ def create_breader_trade(request, lc_id):
                     'error_message': error_message,
                     'available_quantity': lc.quantity
                 })
+
+            # Proceed with saving the form if quantity is valid
             with transaction.atomic():
                 breader_trade = form.save(commit=False)
                 breader_trade.breeder = request.user
@@ -403,6 +416,7 @@ def create_breader_trade(request, lc_id):
                 breader_trade.save()
                 lc.update_quantity(breader_trade.breeds_supplied)
                 breader_trade.control_center.update_net_breed_supply()
+
             return redirect('success_url')
 
         return render(request, 'create_breader_trade.html', {
@@ -410,12 +424,13 @@ def create_breader_trade(request, lc_id):
             'error_messages': form.errors.as_data(),
             'available_quantity': lc.quantity
         })
+    
     form = BreaderTradeForm()
     return render(request, 'create_breader_trade.html', {
         'form': form,
         'available_quantity': lc.quantity
     })
-
+    
 # Reception
 from .forms import ReceptionForm
 @login_required
