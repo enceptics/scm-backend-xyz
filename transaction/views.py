@@ -383,27 +383,27 @@ def create_breader_trade(request, lc_id):
     if request.method == 'POST':
         form = BreaderTradeForm(request.POST)
         if form.is_valid():
-            requested_quantity = form.cleaned_data['breeds_supplied']
+            requested_weight = form.cleaned_data['breeds_supplied']
 
             # Prevent submission if quantity is 0 or less
-            if requested_quantity <= 0:
-                error_message = "The quantity supplied must be greater than 0. Please enter a valid quantity."
+            if requested_weight <= 0:
+                error_message = "The weight supplied must be greater than 0. Please enter a valid weight."
                 return render(request, 'create_breader_trade.html', {
                     'form': form,
                     'error_message': error_message,
-                    'available_quantity': lc.quantity
+                    'available_weight': lc.weight
                 })
 
             # Check if requested quantity exceeds available quantity
-            if requested_quantity > lc.quantity:
+            if requested_weight > lc.weight:
                 error_message = (
-                    f"The quantity you are attempting to supply ({requested_quantity}) exceeds "
-                    f"the quantity we want ({lc.quantity}). Please adjust the quantity."
+                    f"The weight you are attempting to supply ({requested_weight}) exceeds "
+                    f"the weight we want ({lc.weight}). Please adjust the weight."
                 )
                 return render(request, 'create_breader_trade.html', {
                     'form': form,
                     'error_message': error_message,
-                    'available_quantity': lc.quantity
+                    'available_weight': lc.weight
                 })
 
             # Proceed with saving the form if quantity is valid

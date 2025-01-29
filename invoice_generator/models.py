@@ -306,6 +306,7 @@ class LetterOfCredit(models.Model):
     lc_document = models.FileField(upload_to='lc_documents/', null=True, blank=True)
     quotatation = models.ForeignKey(Quotation, on_delete=models.CASCADE, null=True, blank=True)
     rejection_reason = models.TextField(blank=True, null=True)
+    buyer_rejection_reason = models.TextField(blank=True, null=True)
     collection_market = models.CharField(max_length=100, blank=True, null=True)
     collection_date = models.DateField(blank=True, null=True)
 
@@ -330,9 +331,9 @@ class LetterOfCredit(models.Model):
             return f'{self.seller.seller.first_name} {self.seller.seller.last_name} '
         return "Unknown"
 
-    # update quantity upon fillind breaertrade form
-    def update_quantity(self, supplied_quantity):
-        self.quantity -= supplied_quantity
+    # update weight upon fillind breaertrade form
+    def update_quantity(self, supplied_weight):
+        self.weight -= supplied_weight
         self.save()
 
     def update_breader_trades(self):

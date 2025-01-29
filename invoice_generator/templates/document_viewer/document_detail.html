@@ -82,8 +82,8 @@
 
 {% if open_orders %}
   {% for extracted_data in open_orders %}
-  <div class="col-md-10 mb-4">
-    <div class="card shadow-sm">
+  <div class="col-md-12 mb-4">
+    <div class="card shadow-sm" style="border-radius: 30px;">
       <div class="card-body position-relative">
         <h5 class="card-title text-primary">{{ extracted_data.item }}</h5>
         <div class="status-badge position-absolute top-right">
@@ -92,13 +92,13 @@
           </span>
         </div>
         <p class="card-text">
-          <span style="color: #007bff; font-weight: bold;">We are in the market for organic quarantined and chilled</span> 
-          <span class="badge badge-info badge-lg" style="color: #fff; font-weight: bold;">{{ extracted_data.weight }} {{ extracted_data.item }}(s)</span> 
-          <span style="color: #007bff; font-weight: bold;">on</span> 
-          <span class="badge badge-info badge-lg" style="color: #fff; font-weight: bold;">{{ extracted_data.collection_date }}</span> 
-          <span style="color: #007bff; font-weight: bold;">is active. We will be collecting from</span> 
-          <span class="badge badge-info badge-lg" style="color: #fff; font-weight: bold;letter-spacing: 3px;">{{ extracted_data.collection_market }}</span> 
-          <span style="color: #007bff; font-weight: bold;">market.</span>
+          <span style="color: #007bff; font-weight: ;">We are in the market for organic quarantined and chilled</span> 
+          <span class="badge badge-info badge-lg" style="color: #fff; font-weight: ;">{{ extracted_data.weight }} Kgs</span> of <span class="badge badge-info badge-lg" style="color: #fff; font-weight: ;">{{ extracted_data.item }}</span>
+          <span style="color: #007bff; font-weight: ;">on</span> 
+          <span class="badge badge-info badge-lg" style="color: #fff; font-weight: ;">{{ extracted_data.collection_date }}</span> 
+          <span style="color: #007bff; font-weight: ;">is active. We will be collecting from</span> 
+          <span class="badge badge-info badge-lg" style="color: #fff; font-weight: ;letter-spacing: 3px;">{{ extracted_data.collection_market }}</span> 
+          <span style="color: #007bff; font-weight: ;">market.</span>
           {% if extracted_data.status == 'new' %}
             <span class="notification-tag badge badge-danger" style="margin-left: 10px;">New</span> <!-- Notification tag -->
           {% endif %}

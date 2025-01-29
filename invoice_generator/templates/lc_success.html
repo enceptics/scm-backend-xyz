@@ -1,10 +1,26 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h2><i class="fas fa-check-circle text-success"></i> Success</h2>
-    <p>The status of the letter of credit has been successfully updated.</p>
-    <p>Letter of Credit ID: {{ letter.pk }}</p>
-    <p>Status: {{ letter.status }}</p>
+    <div class="container mt-4 text-center">
+        <h2 class="text-success">
+            <i class="fas fa-check-circle"></i> Success
+        </h2>
+        <p>Your request has been processed successfully.</p>
+        <p>Please stay put for the next steps.</p>
 
-    <p><a href="{% url 'seller_letter_of_credit_list' %}">Go back to LCs</a></p>
+        <button onclick="goBack()" class="btn btn-primary mt-3">
+            <i class="fas fa-arrow-left"></i> Go Back
+        </button>
+    </div>
+
+    <script>
+        function goBack() {
+            if (document.referrer) {
+                window.location.href = document.referrer; // Navigate back to the previous page and reload
+            } else {
+                window.history.back();
+                setTimeout(() => window.location.reload(), 500); // Force reload if history.back() doesn't work
+            }
+        }
+    </script>
 {% endblock %}
