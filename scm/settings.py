@@ -209,8 +209,12 @@ AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME')
 # STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
 
-DATABASES = {
-    "default": dj_database_url.parse("postgresql://enceptics_database_user:mUrNZ03cmEmJLgu419Rvu65IZnSp2ymN@dpg-cubji95svqrc73c7lgdg-a.oregon-postgres.render.com/enceptics_database")
+# DATABASES = {
+#     "default": dj_database_url.parse("postgresql://enceptics_database_user:mUrNZ03cmEmJLgu419Rvu65IZnSp2ymN@dpg-cubji95svqrc73c7lgdg-a.oregon-postgres.render.com/enceptics_database")
+# }
+
+DATABASES = { 
+    "default": dj_database_url.parse("postgresql://primecuts_user:qHsjWvgrehlQFk9anUH9K1xzTwgBY35I@dpg-cvj29o9r0fns73easu80-a.oregon-postgres.render.com/primecuts")
 }
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
