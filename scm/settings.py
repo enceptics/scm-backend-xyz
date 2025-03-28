@@ -38,7 +38,7 @@ SECRET_KEY = 'django-insecure-$d8&01e=mjlo33y+47z0fm^1(0rj@l&s5lyus!97mbuufp%r#%
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost:8000', 'api.intellima.tech', 'https://xyz-m.vercel.app', 'http://127.0.0.1:5173', 'scm-backend-f55v.onrender.com']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost:8000', 'api.intellima.tech', 'http://127.0.0.1:5173', 'https://primecuts-logistics.onrender.com']
 
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORIGIN_TRUSTED_ORIGINS = ['http://localhost:5173', 'api.intellima.tech']
@@ -209,8 +209,12 @@ AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME')
 # STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
 
-DATABASES = {
-    "default": dj_database_url.parse("postgresql://enceptics_database_user:mUrNZ03cmEmJLgu419Rvu65IZnSp2ymN@dpg-cubji95svqrc73c7lgdg-a.oregon-postgres.render.com/enceptics_database")
+# DATABASES = {
+#     "default": dj_database_url.parse("postgresql://enceptics_database_user:mUrNZ03cmEmJLgu419Rvu65IZnSp2ymN@dpg-cubji95svqrc73c7lgdg-a.oregon-postgres.render.com/enceptics_database")
+# }
+
+DATABASES = { 
+    "default": dj_database_url.parse("postgresql://primecuts_user:qHsjWvgrehlQFk9anUH9K1xzTwgBY35I@dpg-cvj29o9r0fns73easu80-a.oregon-postgres.render.com/primecuts")
 }
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
