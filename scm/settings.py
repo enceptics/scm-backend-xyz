@@ -38,7 +38,7 @@ SECRET_KEY = 'django-insecure-$d8&01e=mjlo33y+47z0fm^1(0rj@l&s5lyus!97mbuufp%r#%
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost:8000', 'api.intellima.tech', 'https://xyz-m.vercel.app', 'http://127.0.0.1:5173', 'scm-backend-f55v.onrender.com']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost:8000', 'api.intellima.tech', 'https://xyz-m.vercel.app', 'http://127.0.0.1:5173', 'primecuts-logistics.onrender.com']
 
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORIGIN_TRUSTED_ORIGINS = ['http://localhost:5173', 'api.intellima.tech']
@@ -141,10 +141,10 @@ EMAIL_HOST_PASSWORD = 'txqerssmxheiyruz'
 #EMAIL_HOST_PASSWORD = 'ymxllqbalildvjri'
 EMAIL_USE_SSL = False
 
-BASE_URL = 'scm-backend-f55v.onrender.com'
+BASE_URL = 'primecuts-logistics.onrender.com'
 
 PROTOCOL = 'https'
-DOMAIN = 'scm-backend-f55v.onrender.com'
+DOMAIN = 'primecuts-logistics.onrender.com'
 
 SITE_NAME = 'Intellima'
 
